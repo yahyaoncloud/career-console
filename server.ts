@@ -817,4 +817,10 @@ async function startServer() {
   });
 }
 
-startServer();
+// Export app for Vercel serverless (api/index.ts imports this)
+export { app };
+
+// Only start the HTTP server when running locally (not when imported by Vercel)
+if (!process.env.VERCEL) {
+  startServer();
+}
