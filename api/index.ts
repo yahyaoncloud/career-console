@@ -9,7 +9,7 @@
  * so it will NOT run here — Vercel handles the HTTP layer itself.
  */
 
-import { app } from '../server.js';
+import { app } from '../server';
 
 // Vercel reads the default export as the request handler
 export default app;
