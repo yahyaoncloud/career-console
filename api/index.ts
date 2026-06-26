@@ -9,7 +9,21 @@
  * so it will NOT run here — Vercel handles the HTTP layer itself.
  */
 
-import { app } from '../server';
-
-// Vercel reads the default export as the request handler
-export default app;
+export default async function (req: any, res: any) {
+  try {
+    // Dynamically import the app to prevent top-level invocation crashes on Vercel
+    // and to catch any module resolution or initialization errors.
+    const serverModule = await import('../server.js');
+    const app = serverModule.app;
+    
+    // Pass the request to the Express app
+    return app(req, res);
+  } catch (err: any) {
+    console.error('API Initialization Error:', err);
+    res.status(500).json({
+      error: 'Vercel Serverless Function Initialization Failed',
+      message: err.message,
+      stack: err.stack
+    });
+  }
+}
