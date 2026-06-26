@@ -7,10 +7,10 @@ import nodemailer from 'nodemailer';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import crypto from 'crypto';
-import { connectDB } from './server/mongodb';
-import apiRoutes from './server/routes/api';
-import { scheduleScraper, runJobScraper } from './server/services/scraper';
-import { handleTelegramUpdate, registerWebhook, deleteWebhook } from './server/integrations/telegramWebhook';
+import { connectDB } from './server/mongodb.js';
+import apiRoutes from './server/routes/api.js';
+import { scheduleScraper, runJobScraper } from './server/services/scraper.js';
+import { handleTelegramUpdate, registerWebhook, deleteWebhook } from './server/integrations/telegramWebhook.js';
 
 dotenv.config();
 

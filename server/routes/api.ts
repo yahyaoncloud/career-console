@@ -1,9 +1,9 @@
 import express from 'express';
-import { Application } from '../models/Application';
-import { Guestbook } from '../models/Guestbook';
-import { Log } from '../models/Log';
-import { PortfolioData } from '../models/Portfolio';
-import { validate, ApplicationSchema, GuestbookSchema } from '../validations';
+import { Application } from '../models/Application.js';
+import { Guestbook } from '../models/Guestbook.js';
+import { Log } from '../models/Log.js';
+import { PortfolioData } from '../models/Portfolio.js';
+import { validate, ApplicationSchema, GuestbookSchema } from '../validations/index.js';
 
 const router = express.Router();
 
