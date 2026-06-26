@@ -360,7 +360,7 @@ const defaultDb = {
 // -------------------------------------------------------------
 // app.use('/api', apiRoutes); // Commented out Mongo code for now
 
-const DB_PATH = path.join(process.cwd(), 'db.json');
+const DB_PATH = process.env.VERCEL ? path.join('/tmp', 'db.json') : path.join(process.cwd(), 'db.json');
 const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || '0123456789abcdef0123456789abcdef'; // 32 chars
 const IV_LENGTH = 16;
 
@@ -404,9 +404,13 @@ const getDb = () => {
 };
 
 const writeDb = (data: any) => {
-  const payload = JSON.stringify(data, null, 2);
-  const encrypted = encryptDbData(payload);
-  fs.writeFileSync(DB_PATH, encrypted, 'utf8');
+  try {
+    const payload = JSON.stringify(data, null, 2);
+    const encrypted = encryptDbData(payload);
+    fs.writeFileSync(DB_PATH, encrypted, 'utf8');
+  } catch (err) {
+    console.error('Failed to write db.json:', err);
+  }
 };
 
 app.get('/api/db', (req, res) => {
