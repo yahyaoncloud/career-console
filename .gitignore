@@ -1,0 +1,21 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+
+# Encrypted local database — keep personal data off GitHub
+db.json
+
+# Scraper state — incremental dedup index
+content/jobs/seen-urls.json
+
+# Raw Excel/JSON exports — these are generated artifacts
+content/jobs/*.json
+content/jobs/*.xlsx
+
+# Keep markdown job reports in git (they power the CMS on Vercel)
+!content/jobs/*.md

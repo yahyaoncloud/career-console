@@ -1,0 +1,95 @@
+import { useState, useEffect } from 'react';
+import { ResumeData } from '../../types/types';
+import PublicNavbar from './PublicNavbar';
+import { Link } from 'react-router-dom';
+import { BookOpen } from 'lucide-react';
+
+interface BlogListProps {
+  resume: ResumeData;
+  onEnterConsole: () => void;
+  isAuthenticated: boolean;
+}
+
+interface BlogPostMeta {
+  slug: string;
+  title: string;
+  date: string;
+  excerpt: string;
+  tags: string[];
+}
+
+export default function BlogList({ resume, onEnterConsole, isAuthenticated }: BlogListProps) {
+  const [posts, setPosts] = useState<BlogPostMeta[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/blogs')
+      .then(r => r.json())
+      .then(data => {
+        if (data.blogs) setPosts(data.blogs);
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
+
+  return (
+    <div className="max-w-5xl mx-auto px-4 py-12 space-y-16" id="blog-list-view">
+      <PublicNavbar 
+        resumeName={resume.name} 
+        onEnterConsole={onEnterConsole} 
+        isAuthenticated={isAuthenticated} 
+      />
+
+      <section className="space-y-8">
+        <div className="space-y-2">
+          <h2 className="mono-text text-xs uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center">
+            <BookOpen size={14} className="mr-2" /> Engineering Blog
+          </h2>
+          <p className="serif-header text-xl text-zinc-800 dark:text-zinc-200 leading-relaxed font-light max-w-2xl">
+            Writing about systems architecture, cloud infrastructure, and software engineering.
+          </p>
+        </div>
+
+        {loading ? (
+          <div className="animate-pulse space-y-6">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-32 bg-zinc-100 dark:bg-zinc-900 rounded"></div>
+            ))}
+          </div>
+        ) : posts.length === 0 ? (
+          <p className="text-sm text-zinc-500 font-mono italic">No posts published yet.</p>
+        ) : (
+          <div className="space-y-8">
+            {posts.map((post) => (
+              <div key={post.slug} className="group border-b border-zinc-200 dark:border-zinc-800 pb-8 last:border-0 hover:-translate-y-1 transition-transform">
+                <Link to={`/blog/${post.slug}`} className="space-y-3 block">
+                  <span className="mono-text text-[10px] text-zinc-400 block">{post.date}</span>
+                  <h3 className="serif-header text-xl md:text-2xl font-bold text-zinc-900 dark:text-zinc-100 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
+                    {post.title}
+                  </h3>
+                  <p className="text-sm text-zinc-600 dark:text-zinc-400 font-sans leading-relaxed">
+                    {post.excerpt}
+                  </p>
+                  <div className="flex gap-2 flex-wrap pt-2">
+                    {post.tags.map(tag => (
+                      <span key={tag} className="mono-text text-[9px] px-2 py-1 bg-zinc-100 dark:bg-zinc-900 text-zinc-500 rounded-full border border-zinc-200 dark:border-zinc-800">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </Link>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-zinc-200 dark:border-zinc-800 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-zinc-500 dark:text-zinc-500 space-y-4 md:space-y-0 pb-16">
+        <div className="space-y-1 text-center md:text-left">
+          <p className="serif-header italic font-light">© {new Date().getFullYear()} {resume.name}. Built with React & Tailwind.</p>
+        </div>
+      </footer>
+    </div>
+  );
+}

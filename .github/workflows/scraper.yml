@@ -1,0 +1,64 @@
+name: Daily Job Scraper
+
+on:
+  # Manual trigger from Telegram /scrape command via repository_dispatch
+  repository_dispatch:
+    types: [run-scraper]
+
+  # Scheduled daily at 9:00 AM UTC (2:30 PM IST)
+  schedule:
+    - cron: '0 9 * * *'
+
+  # Allow manual trigger from GitHub Actions UI
+  workflow_dispatch:
+    inputs:
+      model:
+        description: 'Gemini model to use'
+        required: false
+        default: 'gemini-2.5-pro'
+        type: choice
+        options:
+          - gemini-2.5-pro
+          - gemini-2.5-flash
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run job scraper
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          SCRAPER_MODEL: ${{ github.event.client_payload.model || github.event.inputs.model || 'gemini-2.5-pro' }}
+        run: node --import tsx/esm server/scripts/runScraper.ts
+
+      - name: Commit job reports to repository
+        run: |
+          git config --local user.email "scraper-bot@users.noreply.github.com"
+          git config --local user.name "Job Scraper Bot"
+          git add content/jobs/ --force
+          git diff --staged --quiet || git commit -m "chore: daily job report $(date -u +%Y-%m-%d)"
+
+      - name: Push changes
+        uses: ad-m/github-push-action@v0.8.0
+        with:
+          github_token: ${{ secrets.GH_PAT }}
+          branch: ${{ github.ref_name }}

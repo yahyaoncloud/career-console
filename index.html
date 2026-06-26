@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Yahya - Cloud Engineer Portfolio</title>
+    <meta name="description" content="Portfolio and engineering blog of Yahya, a Cloud Engineer specializing in AWS, Infrastructure as Code, and scalable systems." />
+    <meta name="keywords" content="Cloud Engineer, AWS, DevOps, Kubernetes, Terraform, Golang" />
+    <meta name="author" content="Yahya" />
+    <meta property="og:title" content="Yahya - Cloud Engineer Portfolio" />
+    <meta property="og:description" content="Explore my infrastructure projects, case studies, and engineering blog." />
+    <meta property="og:type" content="website" />
+    <script>
+      (function() {
+        try {
+          var localTheme = localStorage.getItem('theme');
+          var sysTheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (localTheme === 'dark' || (!localTheme && sysTheme)) {
+            document.documentElement.classList.add('dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

@@ -1,0 +1,809 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>HormuzWatch — Azure Architecture Notes</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-serif@5.0.0/index.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-mono@5.0.0/index.css">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#fbfaf7;color:#1a1a1a;font-family:'IBM Plex Serif',Georgia,serif;font-size:17px;line-height:1.6}
+  .mono{font-family:'IBM Plex Mono',Menlo,monospace}
+
+  .wrap{max-width:860px;margin:0 auto;padding:60px 32px 120px}
+
+  header{border-bottom:1px solid #1a1a1a;padding-bottom:20px;margin-bottom:40px}
+  header .kicker{font-family:'IBM Plex Mono',monospace;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#666;margin-bottom:8px}
+  header h1{font-size:32px;font-weight:500;letter-spacing:-0.01em;margin-bottom:4px}
+  header .meta{font-family:'IBM Plex Mono',monospace;font-size:12px;color:#888}
+  header .sub{font-size:15px;color:#444;margin-top:12px;font-style:italic}
+
+  h2{font-size:22px;font-weight:500;margin:48px 0 16px;letter-spacing:-0.01em;padding-bottom:8px;border-bottom:1px solid #d9d6cf}
+  h3{font-size:17px;font-weight:600;margin:28px 0 10px}
+  p{margin-bottom:12px}
+
+  .tabs{display:flex;gap:0;margin:0 0 40px;border:1px solid #1a1a1a}
+  .tab{flex:1;padding:14px 16px;background:transparent;border:none;border-right:1px solid #1a1a1a;font-family:'IBM Plex Mono',monospace;font-size:13px;cursor:pointer;color:#1a1a1a;text-align:left;transition:background 0.15s}
+  .tab:last-child{border-right:none}
+  .tab:hover{background:#f0ede5}
+  .tab .num{display:block;font-size:11px;color:#888;margin-bottom:2px}
+  .tab .name{display:block;font-size:14px;font-weight:500}
+  .tab.active{background:#1a1a1a;color:#fbfaf7}
+  .tab.active .num{color:#aaa}
+
+  .panel{display:none}
+  .panel.active{display:block;animation:fade 0.2s ease}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+
+  .summary{padding:20px 24px;border:1px solid #1a1a1a;margin-bottom:28px;background:#f5f2ea}
+  .summary .label{font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:#666;margin-bottom:6px}
+  .summary h3{margin:0 0 8px;font-size:24px;font-weight:500}
+  .summary p{margin:0;font-size:15px;color:#444}
+
+  .cost-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:20px}
+  .cost-item{padding:12px;border:1px solid #1a1a1a;background:#fbfaf7}
+  .cost-item .k{font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:#666}
+  .cost-item .v{font-size:18px;font-weight:500;margin-top:2px}
+
+  .total-cost{margin-top:16px;padding-top:16px;border-top:1px dashed #1a1a1a;display:flex;justify-content:space-between;align-items:baseline}
+  .total-cost .k{font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:#666}
+  .total-cost .v{font-size:24px;font-weight:500;font-family:'IBM Plex Mono',monospace}
+
+  .diagram{padding:24px;border:1px solid #1a1a1a;margin:16px 0 28px;background:#fff;overflow-x:auto}
+  .diagram svg{display:block;margin:0 auto;max-width:100%;height:auto}
+  .diagram-label{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#666;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px}
+
+  .layers{list-style:none;margin:0 0 28px;padding:0}
+  .layer{display:grid;grid-template-columns:160px 1fr auto;gap:20px;padding:12px 0;border-bottom:1px dashed #d9d6cf;align-items:baseline}
+  .layer:first-child{border-top:1px dashed #d9d6cf}
+  .layer .lname{font-family:'IBM Plex Mono',monospace;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;color:#555;font-weight:500}
+  .layer .services{font-size:15px}
+  .layer .services span{display:inline-block}
+  .layer .services span + span::before{content:"·";margin:0 6px;color:#888}
+  .layer .count{font-family:'IBM Plex Mono',monospace;font-size:12px;color:#888}
+
+  .features{display:grid;grid-template-columns:repeat(2,1fr);gap:0;border-top:1px solid #1a1a1a;border-left:1px solid #1a1a1a;margin-bottom:28px}
+  .feature{padding:16px;border-right:1px solid #1a1a1a;border-bottom:1px solid #1a1a1a}
+  .feature h5{font-size:15px;font-weight:600;margin-bottom:4px}
+  .feature p{font-size:14px;color:#444;margin:0;line-height:1.5}
+  .feature .marker{font-family:'IBM Plex Mono',monospace;color:#888;font-size:12px;margin-bottom:6px}
+
+  .flow{display:flex;align-items:center;gap:0;flex-wrap:wrap;margin:16px 0 28px;font-family:'IBM Plex Mono',monospace;font-size:13px}
+  .flow .step{padding:8px 12px;border:1px solid #1a1a1a;background:#fff}
+  .flow .arrow{padding:0 8px;color:#888}
+
+  .compare{width:100%;border-collapse:collapse;margin:16px 0 28px;font-size:14px}
+  .compare th,.compare td{padding:10px 12px;text-align:left;border-bottom:1px solid #d9d6cf}
+  .compare th{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#666;background:#f5f2ea}
+  .compare td{vertical-align:top}
+  .compare .yes{color:#1a1a1a;font-weight:500}
+  .compare .no{color:#aaa}
+  .compare .alt{color:#666;font-style:italic}
+
+  pre.code{font-family:'IBM Plex Mono',monospace;font-size:13px;background:#f5f2ea;padding:16px;border:1px solid #1a1a1a;overflow-x:auto;line-height:1.7;margin:16px 0 28px}
+
+  code{font-family:'IBM Plex Mono',monospace;font-size:14px;background:#f0ede5;padding:1px 6px;border-radius:2px}
+
+  .fn{margin-top:60px;padding-top:20px;border-top:1px solid #1a1a1a;font-size:13px;color:#666;font-family:'IBM Plex Mono',monospace}
+  .fn p{margin-bottom:6px}
+
+  .callout{padding:16px 20px;border-left:3px solid #1a1a1a;background:#f5f2ea;margin:16px 0 28px;font-size:15px}
+  .callout strong{font-weight:600}
+
+  table.specs{width:100%;border-collapse:collapse;margin:16px 0 28px;font-size:14px}
+  table.specs th,table.specs td{padding:10px 12px;text-align:left;border-bottom:1px solid #d9d6cf}
+  table.specs th{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#666;background:#f5f2ea;width:30%}
+
+  @media (max-width:640px){
+    .wrap{padding:32px 20px 80px}
+    header h1{font-size:24px}
+    .cost-grid{grid-template-columns:repeat(2,1fr)}
+    .features{grid-template-columns:1fr}
+    .layer{grid-template-columns:1fr;gap:4px}
+    .layer .count{display:none}
+    .tab{padding:10px 8px}
+    .tab .name{font-size:12px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">Technical Notes · Azure</div>
+  <h1>HormuzWatch Cloud Architecture</h1>
+  <div class="meta">Last updated · Thu, 25 Jun 2026 &nbsp;/&nbsp; v1.0 &nbsp;/&nbsp; 3 phases</div>
+  <div class="sub">A real-time intelligence platform built around continuous telemetry ingestion, low-latency event processing, and live geospatial queries.</div>
+</header>
+
+<p>HormuzWatch is a streaming intelligence system where data flows continuously from AIS, OpenSky, and satellite APIs through anomaly detection workers to a live operations dashboard. The architecture prioritizes low latency over throughput consistency and decouples ingestion from processing using an event-driven spine.</p>
+
+<p>The most consequential decision in this architecture is <strong>not using PostgreSQL as a queue</strong>. For a platform ingesting thousands of position reports per second, a database-backed job queue would collapse under write load. Instead, <code>Azure Event Hubs</code> becomes the system spine, with each worker group subscribing independently via consumer groups.</p>
+
+<div class="callout">
+  <strong>Design priorities:</strong> low latency · continuous ingestion · live maps · event processing · AI inference · geospatial queries · high availability.
+</div>
+
+<div class="tabs" role="tablist">
+  <button class="tab active" data-tab="mvp">
+    <span class="num">Phase 01</span>
+    <span class="name">MVP (10–100)</span>
+  </button>
+  <button class="tab" data-tab="growth">
+    <span class="num">Phase 02</span>
+    <span class="name">100–1,000 users</span>
+  </button>
+  <button class="tab" data-tab="enterprise">
+    <span class="num">Phase 03</span>
+    <span class="name">Enterprise</span>
+  </button>
+</div>
+
+<main>
+
+<!-- ================= MVP ================= -->
+<section class="panel active" id="mvp">
+
+  <div class="summary">
+    <div class="label">Phase 01 · MVP</div>
+    <h3>Streaming spine, lean surface.</h3>
+    <p>Validate the detection pipeline with a single Ubuntu VM running Python workers. Event Hubs is present from day one — this is the correct shape for streaming workloads even at low scale.</p>
+    <div class="cost-grid">
+      <div class="cost-item"><div class="k">Compute</div><div class="v">~$80</div></div>
+      <div class="cost-item"><div class="k">Event Hubs</div><div class="v">~$45</div></div>
+      <div class="cost-item"><div class="k">Database</div><div class="v">~$40</div></div>
+      <div class="cost-item"><div class="k">Other</div><div class="v">~$25</div></div>
+    </div>
+    <div class="total-cost">
+      <div class="k">Estimated monthly</div>
+      <div class="v">$150 – $250</div>
+    </div>
+  </div>
+
+  <h2>1 · Architecture diagram</h2>
+  <div class="diagram">
+    <div class="diagram-label">MVP topology · streaming spine · single region</div>
+    <svg viewBox="0 0 900 560" xmlns="http://www.w3.org/2000/svg">
+      <style>
+        .lbl{font-family:'IBM Plex Mono',monospace;font-size:10px;fill:#666;letter-spacing:1px}
+        .title{font-family:'IBM Plex Serif',serif;font-size:13px;fill:#1a1a1a;font-weight:500}
+        .sub{font-family:'IBM Plex Mono',monospace;font-size:10px;fill:#666}
+      </style>
+
+      <text x="20" y="30" class="lbl">EXTERNAL FEEDS</text>
+      <rect x="20" y="42" width="130" height="40" fill="#fff" stroke="#1a1a1a"/>
+      <text x="30" y="60" class="title">AIS Stream</text>
+      <text x="30" y="74" class="sub">vessel positions</text>
+      <rect x="160" y="42" width="130" height="40" fill="#fff" stroke="#1a1a1a"/>
+      <text x="170" y="60" class="title">OpenSky</text>
+      <text x="170" y="74" class="sub">aircraft tracks</text>
+      <rect x="300" y="42" width="130" height="40" fill="#fff" stroke="#1a1a1a"/>
+      <text x="310" y="60" class="title">Satellite APIs</text>
+      <text x="310" y="74" class="sub">imagery · sigint</text>
+
+      <text x="480" y="30" class="lbl">CLIENTS</text>
+      <rect x="480" y="42" width="190" height="40" fill="#fff" stroke="#1a1a1a"/>
+      <text x="490" y="60" class="title">Operations Dashboard</text>
+      <text x="490" y="74" class="sub">react + typescript</text>
+      <rect x="680" y="42" width="190" height="40" fill="#fff" stroke="#1a1a1a"/>
+      <text x="690" y="60" class="title">Mobile Client</text>
+      <text x="690" y="74" class="sub">alerts · live map</text>
+
+      <text x="480" y="120" class="lbl">EDGE</text>
+      <rect x="480" y="132" width="120" height="40" fill="#fff" stroke="#1a1a1a"/>
+      <text x="490" y="150" class="title">Azure DNS</text>
+      <text x="490" y="164" class="sub">custom domain</text>
+      <rect x="610" y="132" width="130" height="40" fill="#fff" stroke="#1a1a1a"/>
+      <text x="620" y="150" class="title">Static Web Apps</text>
+      <text x="620" y="164" class="sub">react frontend</text>
+
+      <text x="20" y="120" class="lbl">INGESTION</text>
+      <rect x="20" y="132" width="430" height="44" fill="#1a1a1a" stroke="#1a1a1a"/>
+      <text x="30" y="150" class="title" fill="#fbfaf7">Azure Event Hubs</text>
+      <text x="30" y="166" class="sub" fill="#aaa">telemetry spine · ais · air · sat partitions</text>
+
+      <text x="20" y="215" class="lbl">IDENTITY</text>
+      <rect x="20" y="227" width="300" height="40" fill="#fff" stroke="#1a1a1a"/>
+      <text x="30" y="245" class="title">Microsoft Entra External ID</text>
+      <text x="30" y="259" class="sub">jwt · rbac · mfa</text>
+
+      <text x="340" y="215" class="lbl">APPLICATION</text>
+      <rect x="340" y="227" width="270" height="40" fill="#1a1a1a" stroke="#1a1a1a"/>
+      <text x="350" y="245" class="title" fill="#fbfaf7">Container Apps · Go API</text>
+      <text x="350" y="259" class="sub" fill="#aaa">rest + websocket gateway</text>
+      <rect x="620" y="227" width="250" height="40" fill="#fff" stroke="#1a1a1a"/>
+      <text x="630" y="245" class="title">WebSocket Hub</text>
+      <text x="630" y="259" class="sub">realtime alerts → dashboard</text>
+
+      <text x="20" y="305" class="lbl">AI WORKERS</text>
+      <rect x="20" y="317" width="430" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="30" y="335" class="title">Single Ubuntu VM · Python Workers</text>
+      <text x="30" y="351" class="sub">cleaning · isolation forest · correlation</text>
+
+      <text x="20" y="400" class="lbl">DATA</text>
+      <rect x="20" y="412" width="140" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="30" y="430" class="title">PostgreSQL</text>
+      <text x="30" y="446" class="sub">tracks · alerts · users</text>
+      <rect x="170" y="412" width="140" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="180" y="430" class="title">Blob Storage</text>
+      <text x="180" y="446" class="sub">reports · models</text>
+      <rect x="320" y="412" width="130" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="330" y="430" class="title">Key Vault</text>
+      <text x="330" y="446" class="sub">api keys · secrets</text>
+
+      <text x="480" y="400" class="lbl">OBSERVABILITY</text>
+      <rect x="480" y="412" width="130" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="490" y="430" class="title">App Insights</text>
+      <text x="490" y="446" class="sub">otel traces</text>
+      <rect x="620" y="412" width="130" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="630" y="430" class="title">Azure Monitor</text>
+      <text x="630" y="446" class="sub">metrics</text>
+
+      <text x="20" y="495" class="lbl">DEVOPS</text>
+      <rect x="20" y="507" width="140" height="40" fill="#fff" stroke="#1a1a1a"/>
+      <text x="30" y="525" class="title">GitHub Actions</text>
+      <text x="30" y="539" class="sub">ci/cd</text>
+      <rect x="170" y="507" width="140" height="40" fill="#fff" stroke="#1a1a1a"/>
+      <text x="180" y="525" class="title">Container Registry</text>
+      <text x="180" y="539" class="sub">acr</text>
+      <rect x="320" y="507" width="130" height="40" fill="#fff" stroke="#1a1a1a"/>
+      <text x="330" y="525" class="title">Terraform</text>
+      <text x="330" y="539" class="sub">iac</text>
+
+      <g stroke="#1a1a1a" stroke-width="0.8" fill="none">
+        <path d="M85,82 L235,132"/>
+        <path d="M225,82 L235,132"/>
+        <path d="M365,82 L235,132"/>
+        <path d="M235,176 L235,227"/>
+        <path d="M475,247 L620,247"/>
+        <path d="M235,176 L475,317" stroke-dasharray="2,2"/>
+        <path d="M475,267 L475,317"/>
+        <path d="M235,361 L90,412"/>
+        <path d="M235,361 L240,412"/>
+      </g>
+
+      <g transform="translate(480,495)">
+        <rect width="390" height="50" fill="#f5f2ea" stroke="#1a1a1a"/>
+        <text x="12" y="20" class="sub" style="font-size:11px;fill:#1a1a1a">event hubs is the spine · not postgresql</text>
+        <text x="12" y="38" class="sub">decoupled ingestion · independent scaling · ~$200/mo</text>
+      </g>
+    </svg>
+  </div>
+
+  <h2>2 · The ingestion spine</h2>
+  <div class="flow">
+    <div class="step">ais stream</div><span class="arrow">→</span>
+    <div class="step">opensky</div><span class="arrow">→</span>
+    <div class="step">satellite apis</div><span class="arrow">→</span>
+    <div class="step">azure event hubs</div><span class="arrow">→</span>
+    <div class="step">python workers</div><span class="arrow">→</span>
+    <div class="step">go api</div><span class="arrow">→</span>
+    <div class="step">dashboard</div>
+  </div>
+  <p>Azure Event Hubs decouples producers from consumers for high-throughput telemetry. Every feed writes into its own partition, and each worker group subscribes independently via consumer groups.</p>
+
+  <h2>3 · AI worker pipeline</h2>
+  <div class="flow">
+    <div class="step">worker 1 · telemetry cleaning</div><span class="arrow">→</span>
+    <div class="step">worker 2 · isolation forest</div><span class="arrow">→</span>
+    <div class="step">worker 3 · threat correlation</div><span class="arrow">→</span>
+    <div class="step" style="border-style:dashed">worker 4 · llm summary</div>
+  </div>
+  <p>Worker 4 (LLM investigation summary) is deferred until detection workers produce enough structured alert data to make summaries meaningful.</p>
+
+  <h2>4 · Platform layers</h2>
+  <ul class="layers">
+    <li class="layer"><div class="lname">Edge / CDN</div><div class="services"><span>Azure DNS</span><span>Static Web Apps</span></div><div class="count">2</div></li>
+    <li class="layer"><div class="lname">Identity</div><div class="services"><span>Entra External ID</span><span>RBAC</span><span>MFA</span></div><div class="count">3</div></li>
+    <li class="layer"><div class="lname">Ingestion</div><div class="services"><span>Azure Event Hubs</span><span>Partitioned topics</span></div><div class="count">1</div></li>
+    <li class="layer"><div class="lname">Application</div><div class="services"><span>Container Apps (Go)</span><span>WebSocket Gateway</span><span>Auth Service</span></div><div class="count">3</div></li>
+    <li class="layer"><div class="lname">AI Workers</div><div class="services"><span>Single Ubuntu VM</span><span>Detection</span><span>Isolation Forest</span><span>Correlation</span></div><div class="count">1</div></li>
+    <li class="layer"><div class="lname">Data</div><div class="services"><span>PostgreSQL</span><span>Blob Storage</span><span>Key Vault</span></div><div class="count">3</div></li>
+    <li class="layer"><div class="lname">Observability</div><div class="services"><span>Application Insights</span><span>Azure Monitor</span></div><div class="count">2</div></li>
+    <li class="layer"><div class="lname">DevOps</div><div class="services"><span>GitHub Actions</span><span>ACR</span><span>Terraform</span></div><div class="count">3</div></li>
+  </ul>
+
+  <h2>5 · Database schema</h2>
+  <pre class="code">users
+tracks              -- live vessel / aircraft tracks
+positions           -- point-in-time telemetry
+alerts              -- anomaly detections
+events              -- correlated multi-source events
+investigations      -- analyst case files
+watchlists          -- user-defined entity lists
+geofences           -- polygonal regions of interest
+notifications
+audit_logs
+api_keys</pre>
+  <p>PostgreSQL is a state store, not a queue. Consider TimescaleDB or Citus at Growth tier if write throughput exceeds ~5,000 rows/sec sustained.</p>
+
+  <h2>6 · Core capabilities</h2>
+  <div class="features">
+    <div class="feature"><div class="marker">01</div><h5>Streaming ingestion</h5><p>Event Hubs absorbs bursty telemetry without backpressure on the API layer.</p></div>
+    <div class="feature"><div class="marker">02</div><h5>Independent workers</h5><p>Each Python worker group scales horizontally based on consumer-group lag.</p></div>
+    <div class="feature"><div class="marker">03</div><h5>Live WebSocket map</h5><p>Go WebSocket Hub fans out detections to connected dashboard sessions in real time.</p></div>
+    <div class="feature"><div class="marker">04</div><h5>Geospatial queries</h5><p>PostGIS on PostgreSQL enables polygon-in-point checks for geofences.</p></div>
+    <div class="feature"><div class="marker">05</div><h5>OpenTelemetry</h5><p>Traces from Go → App Insights → Log Analytics give end-to-end latency visibility.</p></div>
+    <div class="feature"><div class="marker">06</div><h5>Managed Identity</h5><p>Container Apps authenticates to Key Vault, Storage, and Event Hubs without credentials.</p></div>
+  </div>
+
+</section>
+
+<!-- ================= GROWTH ================= -->
+<section class="panel" id="growth">
+
+  <div class="summary">
+    <div class="label">Phase 02 · Growth</div>
+    <h3>Private, hardened, observable.</h3>
+    <p>Add Azure Front Door Premium with WAF, private endpoints, VM Scale Set for workers, and notification services. The spine stays the same; the perimeter gets serious.</p>
+    <div class="cost-grid">
+      <div class="cost-item"><div class="k">Compute</div><div class="v">~$380</div></div>
+      <div class="cost-item"><div class="k">Network</div><div class="v">~$180</div></div>
+      <div class="cost-item"><div class="k">Event Hubs</div><div class="v">~$140</div></div>
+      <div class="cost-item"><div class="k">Services</div><div class="v">~$220</div></div>
+    </div>
+    <div class="total-cost">
+      <div class="k">Estimated monthly</div>
+      <div class="v">$800 – $1,200</div>
+    </div>
+  </div>
+
+  <h2>1 · Architecture diagram</h2>
+  <div class="diagram">
+    <div class="diagram-label">Growth topology · vnet-isolated · waf-protected</div>
+    <svg viewBox="0 0 900 700" xmlns="http://www.w3.org/2000/svg">
+      <style>
+        .lbl{font-family:'IBM Plex Mono',monospace;font-size:10px;fill:#666;letter-spacing:1px}
+        .title{font-family:'IBM Plex Serif',serif;font-size:12px;fill:#1a1a1a;font-weight:500}
+        .sub{font-family:'IBM Plex Mono',monospace;font-size:9px;fill:#666}
+      </style>
+
+      <text x="20" y="28" class="lbl">CLIENTS</text>
+      <rect x="20" y="38" width="180" height="38" fill="#fff" stroke="#1a1a1a"/>
+      <text x="28" y="55" class="title">Operations Dashboard</text>
+      <text x="28" y="69" class="sub">react + typescript</text>
+      <rect x="210" y="38" width="120" height="38" fill="#fff" stroke="#1a1a1a"/>
+      <text x="218" y="55" class="title">Mobile Client</text>
+      <text x="218" y="69" class="sub">alerts · live map</text>
+
+      <text x="380" y="28" class="lbl">EXTERNAL FEEDS</text>
+      <rect x="380" y="38" width="100" height="38" fill="#fff" stroke="#1a1a1a"/>
+      <text x="388" y="55" class="title">AIS Stream</text>
+      <rect x="490" y="38" width="100" height="38" fill="#fff" stroke="#1a1a1a"/>
+      <text x="498" y="55" class="title">OpenSky</text>
+      <rect x="600" y="38" width="100" height="38" fill="#fff" stroke="#1a1a1a"/>
+      <text x="608" y="55" class="title">Satellite</text>
+      <rect x="710" y="38" width="170" height="38" fill="#fff" stroke="#1a1a1a"/>
+      <text x="718" y="55" class="title">Open-Source Intel</text>
+
+      <text x="20" y="108" class="lbl">EDGE</text>
+      <rect x="20" y="118" width="110" height="38" fill="#fff" stroke="#1a1a1a"/>
+      <text x="28" y="135" class="title">Azure DNS</text>
+      <rect x="140" y="118" width="180" height="38" fill="#1a1a1a" stroke="#1a1a1a"/>
+      <text x="148" y="135" class="title" fill="#fbfaf7">Front Door Premium</text>
+      <text x="148" y="149" class="sub" fill="#aaa">cdn · private link</text>
+      <rect x="330" y="118" width="100" height="38" fill="#1a1a1a" stroke="#1a1a1a"/>
+      <text x="338" y="135" class="title" fill="#fbfaf7">WAF</text>
+      <rect x="440" y="118" width="140" height="38" fill="#fff" stroke="#1a1a1a"/>
+      <text x="448" y="135" class="title">Static Web Apps</text>
+
+      <text x="600" y="108" class="lbl">IDENTITY</text>
+      <rect x="600" y="118" width="280" height="38" fill="#fff" stroke="#1a1a1a"/>
+      <text x="608" y="135" class="title">Entra External ID · RBAC · Conditional Access · MFA</text>
+
+      <text x="20" y="188" class="lbl">INGESTION SPINE</text>
+      <rect x="20" y="198" width="860" height="44" fill="#1a1a1a" stroke="#1a1a1a"/>
+      <text x="30" y="216" class="title" fill="#fbfaf7">Azure Event Hubs · Partitioned · Consumer Groups per Worker</text>
+      <text x="30" y="232" class="sub" fill="#aaa">ais · air · sat · osint partitions · retention 7d</text>
+
+      <text x="20" y="272" class="lbl">VIRTUAL NETWORK · ISOLATED</text>
+      <rect x="20" y="282" width="860" height="220" fill="#f5f2ea" stroke="#1a1a1a" stroke-dasharray="3,3"/>
+      <text x="32" y="299" class="sub" style="fill:#1a1a1a">azure vnet · private subnets · nsg · front door private link only</text>
+
+      <rect x="35" y="310" width="240" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="43" y="328" class="title">Container Apps Env</text>
+      <text x="43" y="342" class="sub">go api · websocket · auth</text>
+      <rect x="285" y="310" width="220" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="293" y="328" class="title">VM Scale Set</text>
+      <text x="293" y="342" class="sub">python detection workers</text>
+      <rect x="515" y="310" width="160" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="523" y="328" class="title">PostgreSQL</text>
+      <text x="523" y="342" class="sub">private endpoint</text>
+      <rect x="685" y="310" width="90" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="693" y="328" class="title">Blob</text>
+      <text x="693" y="342" class="sub">private</text>
+      <rect x="785" y="310" width="85" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="793" y="328" class="title">KV</text>
+      <text x="793" y="342" class="sub">private</text>
+
+      <rect x="35" y="370" width="240" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="43" y="388" class="title">Event Hubs Namespace</text>
+      <text x="43" y="402" class="sub">vnet-integrated</text>
+      <rect x="285" y="370" width="220" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="293" y="388" class="title">Notification Hubs</text>
+      <text x="293" y="402" class="sub">fcm · apns</text>
+      <rect x="515" y="370" width="160" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="523" y="388" class="title">Communication Svc</text>
+      <text x="523" y="402" class="sub">email · verification</text>
+      <rect x="685" y="370" width="90" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="693" y="388" class="title">App Insights</text>
+      <rect x="785" y="370" width="85" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="793" y="388" class="title">LAW</text>
+
+      <text x="35" y="445" class="sub" style="fill:#1a1a1a">container apps exposed only via front door premium private link origin</text>
+      <text x="35" y="460" class="sub">private endpoints: postgresql · blob · key vault · event hubs namespace</text>
+      <text x="35" y="475" class="sub">managed identity: container apps → kv / storage / event hubs (no secrets in env)</text>
+
+      <text x="20" y="530" class="lbl">DEVOPS</text>
+      <rect x="20" y="540" width="200" height="38" fill="#fff" stroke="#1a1a1a"/>
+      <text x="28" y="557" class="title">GitHub Actions</text>
+      <rect x="230" y="540" width="200" height="38" fill="#fff" stroke="#1a1a1a"/>
+      <text x="238" y="557" class="title">Azure Container Registry</text>
+      <rect x="440" y="540" width="200" height="38" fill="#fff" stroke="#1a1a1a"/>
+      <text x="448" y="557" class="title">Terraform</text>
+
+      <g transform="translate(20,605)">
+        <rect width="860" height="70" fill="#f5f2ea" stroke="#1a1a1a"/>
+        <text x="14" y="22" class="sub" style="font-size:11px;fill:#1a1a1a">growth · vnet-isolated · front door premium + waf · private endpoints · vmss · ~$1,000/mo</text>
+        <text x="14" y="42" class="sub">added: front door premium · waf · virtual network · private endpoints · vm scale set</text>
+        <text x="14" y="58" class="sub">added: notification hubs · communication services · log analytics · managed identity</text>
+      </g>
+    </svg>
+  </div>
+
+  <h2>2 · Networking model</h2>
+  <pre class="code">Azure Virtual Network
+├── Container Apps Environment        (subnet /23, delegated)
+├── VM Scale Set                      (subnet /24)
+├── PostgreSQL                        (Private Endpoint)
+├── Blob Storage                      (Private Endpoint)
+├── Key Vault                         (Private Endpoint)
+├── Event Hubs Namespace              (Private Endpoint)
+└── Private Endpoint Subnet           (non-delegated /24)
+
+Ingress:  only via Front Door Premium over Private Link
+Egress:   ACR, Entra, AIS Stream, OpenSky, satellite APIs
+NSG:      deny all inbound except Front Door service tag on 443</pre>
+
+  <div class="callout">
+    <strong>Why Front Door Premium.</strong> Standard Front Door cannot originate to Private Link. Premium is required to route traffic to an internal Container Apps environment through a private endpoint. The Container Apps environment has public network access disabled; the only way in is Front Door.
+  </div>
+
+  <h2>3 · Front Door + Container Apps integration</h2>
+  <table class="specs">
+    <tr><th>Requirement</th><td>Specification</td></tr>
+    <tr><th>Front Door SKU</th><td>Premium (required for Private Link origins)</td></tr>
+    <tr><th>Container Apps subnet</th><td>/23, delegated to Microsoft.App/environments</td></tr>
+    <tr><th>Private endpoint subnet</th><td>/24, separate non-delegated subnet</td></tr>
+    <tr><th>Workload profiles</th><td>Required (Consumption plan not supported)</td></tr>
+    <tr><th>Public network access</th><td>Disabled on Container Apps environment</td></tr>
+    <tr><th>Virtual IP type</th><td>Internal</td></tr>
+    <tr><th>Resource provider</th><td>Microsoft.Cdn must be registered</td></tr>
+    <tr><th>Origin target</th><td>managedEnvironments sub-resource</td></tr>
+  </table>
+
+  <h3>Traffic flow</h3>
+  <div class="flow">
+    <div class="step">user → front door edge</div><span class="arrow">→</span>
+    <div class="step">private link</div><span class="arrow">→</span>
+    <div class="step">private endpoint ip</div><span class="arrow">→</span>
+    <div class="step">internal ilb vip</div><span class="arrow">→</span>
+    <div class="step">ingress controller</div><span class="arrow">→</span>
+    <div class="step">container app</div>
+  </div>
+
+  <h3>Deployment checklist</h3>
+  <div class="features">
+    <div class="feature"><div class="marker">01</div><h5>Create VNet with two subnets</h5><p>Delegated /23 for Container Apps, non-delegated /24 for private endpoints.</p></div>
+    <div class="feature"><div class="marker">02</div><h5>Create workload profile environment</h5><p>Internal VIP, public access disabled, private endpoints enabled, zone redundancy if available.</p></div>
+    <div class="feature"><div class="marker">03</div><h5>Deploy container app with ingress</h5><p>Ensure ingress is enabled so Front Door can reach it through the private endpoint.</p></div>
+    <div class="feature"><div class="marker">04</div><h5>Create Front Door Premium profile</h5><p>Origin type: Container Apps. Enable Private Link. Target sub-resource: managedEnvironments.</p></div>
+    <div class="feature"><div class="marker">05</div><h5>Approve private endpoint connection</h5><p>In Container Apps environment → Networking → approve pending request matching your description.</p></div>
+    <div class="feature"><div class="marker">06</div><h5>Validate</h5><p>Browse Front Door endpoint hostname. Confirm direct Container Apps domain fails (public access disabled).</p></div>
+  </div>
+
+  <h2>4 · New capabilities added</h2>
+  <div class="features">
+    <div class="feature"><div class="marker">+1</div><h5>Front Door Premium + WAF</h5><p>Global CDN, Private Link origin to Container Apps, OWASP + geo-filter WAF rules.</p></div>
+    <div class="feature"><div class="marker">+2</div><h5>Virtual Network</h5><p>Private subnet for compute and data. No public endpoints except Front Door.</p></div>
+    <div class="feature"><div class="marker">+3</div><h5>Private Endpoints</h5><p>PostgreSQL, Blob, Key Vault, and Event Hubs accessed via private IP only.</p></div>
+    <div class="feature"><div class="marker">+4</div><h5>VM Scale Set</h5><p>Detection workers scale on Event Hubs consumer-group lag, independently of the API.</p></div>
+    <div class="feature"><div class="marker">+5</div><h5>Managed Identity</h5><p>Container Apps and VMSS authenticate to KV, Storage, and Event Hubs without stored secrets.</p></div>
+    <div class="feature"><div class="marker">+6</div><h5>Push Notifications</h5><p>Notification Hubs delivers critical alerts to FCM (Android) and APNs (iOS).</p></div>
+    <div class="feature"><div class="marker">+7</div><h5>Email Alerts</h5><p>Communication Services sends digest reports, watchlist matches, and investigation summaries.</p></div>
+    <div class="feature"><div class="marker">+8</div><h5>Log Analytics</h5><p>Centralized log workspace with KQL queries, dashboards, and alert rules.</p></div>
+  </div>
+
+  <h2>5 · Alert flows</h2>
+  <div class="flow">
+    <div class="step">anomaly detected</div><span class="arrow">→</span>
+    <div class="step">correlation match</div><span class="arrow">→</span>
+    <div class="step">watchlist hit</div><span class="arrow">→</span>
+    <div class="step">geofence breach</div><span class="arrow">→</span>
+    <div class="step">push + email</div>
+  </div>
+
+  <h2>6 · Service count by layer</h2>
+  <ul class="layers">
+    <li class="layer"><div class="lname">Edge / CDN</div><div class="services"><span>Azure DNS</span><span>Front Door Premium</span><span>WAF</span><span>Static Web Apps</span></div><div class="count">4</div></li>
+    <li class="layer"><div class="lname">Identity</div><div class="services"><span>Entra External ID</span><span>Entra ID RBAC</span><span>Conditional Access</span><span>MFA</span></div><div class="count">4</div></li>
+    <li class="layer"><div class="lname">Networking</div><div class="services"><span>Virtual Network</span><span>Private Endpoints</span><span>NSG</span></div><div class="count">3</div></li>
+    <li class="layer"><div class="lname">Ingestion</div><div class="services"><span>Event Hubs Standard</span><span>Partitioned topics</span></div><div class="count">1</div></li>
+    <li class="layer"><div class="lname">Application</div><div class="services"><span>Container Apps (Go)</span><span>WebSocket Gateway</span><span>Auth Service</span></div><div class="count">3</div></li>
+    <li class="layer"><div class="lname">AI Workers</div><div class="services"><span>VM Scale Set</span><span>Detection</span><span>Isolation Forest</span><span>Correlation</span></div><div class="count">4</div></li>
+    <li class="layer"><div class="lname">Data</div><div class="services"><span>PostgreSQL</span><span>Blob Storage</span><span>Key Vault</span></div><div class="count">3</div></li>
+    <li class="layer"><div class="lname">Notifications</div><div class="services"><span>Notification Hubs</span><span>Communication Services</span></div><div class="count">2</div></li>
+    <li class="layer"><div class="lname">Observability</div><div class="services"><span>Application Insights</span><span>Azure Monitor</span><span>Log Analytics</span></div><div class="count">3</div></li>
+    <li class="layer"><div class="lname">DevOps</div><div class="services"><span>GitHub Actions</span><span>ACR</span><span>Terraform</span></div><div class="count">3</div></li>
+  </ul>
+
+</section>
+
+<!-- ================= ENTERPRISE ================= -->
+<section class="panel" id="enterprise">
+
+  <div class="summary">
+    <div class="label">Phase 03 · Enterprise</div>
+    <h3>Multi-region, SOC-ready.</h3>
+    <p>Geo-replicated data, Event Hubs Premium for guaranteed throughput, Microsoft Sentinel for SOC integration, and an optional public API for partner intelligence sharing. AKS introduced only if microservice count justifies it.</p>
+    <div class="cost-grid">
+      <div class="cost-item"><div class="k">Compute</div><div class="v">~$2,400</div></div>
+      <div class="cost-item"><div class="k">Network</div><div class="v">~$900</div></div>
+      <div class="cost-item"><div class="k">Event Hubs</div><div class="v">~$1,100</div></div>
+      <div class="cost-item"><div class="k">Services</div><div class="v">~$1,500</div></div>
+    </div>
+    <div class="total-cost">
+      <div class="k">Estimated monthly</div>
+      <div class="v">$5,500 – $8,000</div>
+    </div>
+  </div>
+
+  <h2>1 · Architecture diagram</h2>
+  <div class="diagram">
+    <div class="diagram-label">Enterprise topology · multi-region · soc-integrated</div>
+    <svg viewBox="0 0 900 820" xmlns="http://www.w3.org/2000/svg">
+      <style>
+        .lbl{font-family:'IBM Plex Mono',monospace;font-size:10px;fill:#666;letter-spacing:1px}
+        .title{font-family:'IBM Plex Serif',serif;font-size:12px;fill:#1a1a1a;font-weight:500}
+        .sub{font-family:'IBM Plex Mono',monospace;font-size:9px;fill:#666}
+      </style>
+
+      <rect x="20" y="20" width="860" height="30" fill="#1a1a1a"/>
+      <text x="30" y="39" class="sub" style="fill:#fbfaf7;font-size:10px">multi-region · region a (primary) · region b (warm standby) · traffic manager · geo-replicated postgresql · event hubs premium</text>
+
+      <text x="20" y="76" class="lbl">CLIENTS</text>
+      <rect x="20" y="86" width="110" height="36" fill="#fff" stroke="#1a1a1a"/>
+      <text x="28" y="103" class="title">Dashboard</text>
+      <rect x="140" y="86" width="110" height="36" fill="#fff" stroke="#1a1a1a"/>
+      <text x="148" y="103" class="title">Mobile</text>
+      <rect x="260" y="86" width="110" height="36" fill="#fff" stroke="#1a1a1a"/>
+      <text x="268" y="103" class="title">Admin</text>
+      <rect x="380" y="86" width="110" height="36" fill="#fff" stroke="#1a1a1a" stroke-width="2"/>
+      <text x="388" y="103" class="title">Partner API</text>
+
+      <text x="520" y="76" class="lbl">EXTERNAL FEEDS</text>
+      <rect x="520" y="86" width="85" height="36" fill="#fff" stroke="#1a1a1a"/>
+      <text x="528" y="103" class="title">AIS</text>
+      <rect x="615" y="86" width="85" height="36" fill="#fff" stroke="#1a1a1a"/>
+      <text x="623" y="103" class="title">OpenSky</text>
+      <rect x="710" y="86" width="85" height="36" fill="#fff" stroke="#1a1a1a"/>
+      <text x="718" y="103" class="title">Satellite</text>
+      <rect x="805" y="86" width="75" height="36" fill="#fff" stroke="#1a1a1a"/>
+      <text x="813" y="103" class="title">OSINT</text>
+
+      <text x="20" y="150" class="lbl">EDGE · GLOBAL</text>
+      <rect x="20" y="160" width="120" height="36" fill="#fff" stroke="#1a1a1a"/>
+      <text x="28" y="177" class="title">DNS</text>
+      <text x="28" y="189" class="sub">traffic mgr</text>
+      <rect x="150" y="160" width="170" height="36" fill="#1a1a1a" stroke="#1a1a1a"/>
+      <text x="158" y="177" class="title" fill="#fbfaf7">Front Door Premium</text>
+      <text x="158" y="189" class="sub" fill="#aaa">multi-region</text>
+      <rect x="330" y="160" width="80" height="36" fill="#1a1a1a" stroke="#1a1a1a"/>
+      <text x="338" y="177" class="title" fill="#fbfaf7">WAF</text>
+      <rect x="420" y="160" width="150" height="36" fill="#fff" stroke="#1a1a1a" stroke-width="2"/>
+      <text x="428" y="177" class="title">API Management</text>
+      <text x="428" y="189" class="sub">rate limit</text>
+      <rect x="580" y="160" width="140" height="36" fill="#fff" stroke="#1a1a1a"/>
+      <text x="588" y="177" class="title">Static Web Apps</text>
+
+      <text x="20" y="225" class="lbl">IDENTITY · ENTERPRISE</text>
+      <rect x="20" y="235" width="860" height="36" fill="#fff" stroke="#1a1a1a"/>
+      <text x="28" y="252" class="title">Entra External ID · Entra ID · RBAC · Conditional Access · MFA · B2B · SCIM · PIM</text>
+
+      <text x="20" y="300" class="lbl">INGESTION SPINE · PREMIUM</text>
+      <rect x="20" y="310" width="860" height="44" fill="#1a1a1a" stroke="#1a1a1a"/>
+      <text x="30" y="328" class="title" fill="#fbfaf7">Azure Event Hubs Premium · Geo-Disaster Recovery · 100+ MB/s Throughput Units</text>
+      <text x="30" y="344" class="sub" fill="#aaa">active-passive failover · 90-day retention · kafka-compatible · capture to blob</text>
+
+      <text x="20" y="385" class="lbl">REGION A · PRIMARY VNET</text>
+      <rect x="20" y="395" width="860" height="160" fill="#f5f2ea" stroke="#1a1a1a" stroke-dasharray="3,3"/>
+
+      <rect x="35" y="410" width="180" height="44" fill="#1a1a1a" stroke="#1a1a1a"/>
+      <text x="43" y="428" class="title" fill="#fbfaf7">AKS Cluster</text>
+      <text x="43" y="442" class="sub" fill="#aaa">go · ws · microservices</text>
+      <rect x="225" y="410" width="160" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="233" y="428" class="title">VM Scale Set</text>
+      <text x="233" y="442" class="sub">detection + llm</text>
+      <rect x="395" y="410" width="130" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="403" y="428" class="title">Redis Cache</text>
+      <text x="403" y="442" class="sub">hot track state</text>
+      <rect x="535" y="410" width="140" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="543" y="428" class="title">PostgreSQL Geo</text>
+      <text x="543" y="442" class="sub">replicated · postgis</text>
+      <rect x="685" y="410" width="90" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="693" y="428" class="title">Blob GRS</text>
+      <rect x="785" y="410" width="85" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="793" y="428" class="title">KV HSM</text>
+
+      <rect x="35" y="468" width="180" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="43" y="486" class="title">Event Hubs NS</text>
+      <text x="43" y="500" class="sub">premium tier</text>
+      <rect x="225" y="468" width="160" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="233" y="486" class="title">Notification Hubs</text>
+      <rect x="395" y="468" width="130" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="403" y="486" class="title">Comms Svc</text>
+      <rect x="535" y="468" width="140" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="543" y="486" class="title">App Insights</text>
+      <rect x="685" y="468" width="90" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="693" y="486" class="title">LAW</text>
+      <rect x="785" y="468" width="85" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="793" y="486" class="title">Sentinel</text>
+
+      <text x="35" y="530" class="sub" style="fill:#1a1a1a">aks introduced only if independently scalable services justify kubernetes</text>
+      <text x="35" y="545" class="sub">redis caches last-known track state for sub-100ms map rendering</text>
+
+      <text x="20" y="585" class="lbl">SECURITY · SOC INTEGRATION</text>
+      <rect x="20" y="595" width="205" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="28" y="613" class="title">Microsoft Sentinel</text>
+      <text x="28" y="627" class="sub">soc · soar · workbooks</text>
+      <rect x="235" y="595" width="205" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="243" y="613" class="title">Defender for Cloud</text>
+      <text x="243" y="627" class="sub">cspm · cwpm</text>
+      <rect x="450" y="595" width="205" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="458" y="613" class="title">DDoS Standard</text>
+      <rect x="665" y="595" width="215" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="673" y="613" class="title">Backup · Policy · Compliance</text>
+
+      <text x="20" y="670" class="lbl">DEVOPS · PLATFORM</text>
+      <rect x="20" y="680" width="205" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="28" y="698" class="title">GitHub Actions</text>
+      <rect x="235" y="680" width="205" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="243" y="698" class="title">ACR Premium</text>
+      <rect x="450" y="680" width="205" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="458" y="698" class="title">Terraform · Bicep</text>
+      <rect x="665" y="680" width="215" height="44" fill="#fff" stroke="#1a1a1a"/>
+      <text x="673" y="698" class="title">Azure DevOps</text>
+
+      <g transform="translate(20,745)">
+        <rect width="860" height="55" fill="#f5f2ea" stroke="#1a1a1a"/>
+        <text x="14" y="22" class="sub" style="font-size:11px;fill:#1a1a1a">enterprise · 35+ services · multi-region · soc-integrated · event hubs premium · ~$6,800/mo</text>
+        <text x="14" y="42" class="sub">new: aks (optional) · event hubs premium · redis · sentinel · defender · api management · geo-postgresql</text>
+      </g>
+    </svg>
+  </div>
+
+  <h2>2 · Enterprise services added</h2>
+  <div class="features">
+    <div class="feature"><div class="marker">★</div><h5>Event Hubs Premium</h5><p>Guaranteed throughput units, 90-day retention, Kafka-compatible endpoints, capture to Blob.</p></div>
+    <div class="feature"><div class="marker">★</div><h5>Geo-replicated PostgreSQL</h5><p>Read replicas in secondary region; failover under 60 seconds for disaster recovery.</p></div>
+    <div class="feature"><div class="marker">★</div><h5>Azure Cache for Redis</h5><p>Caches last-known track state for sub-100ms map rendering across thousands of entities.</p></div>
+    <div class="feature"><div class="marker">★</div><h5>Microsoft Sentinel</h5><p>SOC integration with built-in playbooks, hunting queries, and automated incident response.</p></div>
+    <div class="feature"><div class="marker">★</div><h5>Microsoft Defender</h5><p>Cloud security posture management across containers, VMs, databases, and identity.</p></div>
+    <div class="feature"><div class="marker">★</div><h5>API Management</h5><p>Partner-facing intelligence API with rate limiting, OAuth, and versioning.</p></div>
+    <div class="feature"><div class="marker">★</div><h5>AKS (optional)</h5><p>Only introduced when microservice count justifies Kubernetes. Otherwise Container Apps suffices.</p></div>
+    <div class="feature"><div class="marker">★</div><h5>DDoS + Backup + Policy</h5><p>Immutable backups, enforced compliance policies for GDPR, SOC2, ISO27001.</p></div>
+  </div>
+
+  <h2>3 · End-to-end detection flow</h2>
+  <div class="flow">
+    <div class="step">external feed</div><span class="arrow">→</span>
+    <div class="step">event hubs</div><span class="arrow">→</span>
+    <div class="step">telemetry cleaner</div><span class="arrow">→</span>
+    <div class="step">isolation forest</div><span class="arrow">→</span>
+    <div class="step">threat correlation</div><span class="arrow">→</span>
+    <div class="step">llm summary</div><span class="arrow">→</span>
+    <div class="step">sentinel</div><span class="arrow">→</span>
+    <div class="step">analyst</div>
+  </div>
+
+  <h2>4 · Platform comparison</h2>
+  <table class="compare">
+    <thead>
+      <tr><th>Capability</th><th>MVP</th><th>Growth</th><th>Enterprise</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Streaming spine</td><td class="yes">Event Hubs</td><td class="yes">Event Hubs</td><td class="yes">Event Hubs Premium</td></tr>
+      <tr><td>Multi-region</td><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
+      <tr><td>WAF + Private Link</td><td class="no">—</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+      <tr><td>Private Networking</td><td class="no">—</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+      <tr><td>Worker scaling</td><td class="alt">single VM</td><td class="yes">VMSS</td><td class="yes">VMSS + AKS</td></tr>
+      <tr><td>Push / Email alerts</td><td class="no">—</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+      <tr><td>Distributed cache</td><td class="no">—</td><td class="no">—</td><td class="yes">Redis</td></tr>
+      <tr><td>Geo-replicated DB</td><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
+      <tr><td>SOC integration</td><td class="no">—</td><td class="no">—</td><td class="yes">Sentinel</td></tr>
+      <tr><td>Public partner API</td><td class="no">—</td><td class="no">—</td><td class="yes">APIM</td></tr>
+      <tr><td>Threat protection</td><td class="no">—</td><td class="no">—</td><td class="yes">Defender</td></tr>
+      <tr><td>Estimated cost</td><td class="alt">$150–$250</td><td class="alt">$800–$1,200</td><td class="alt">$5,500–$8,000</td></tr>
+    </tbody>
+  </table>
+
+  <h2>5 · Total service count</h2>
+  <ul class="layers">
+    <li class="layer"><div class="lname">Edge / Gateway</div><div class="services"><span>DNS + Traffic Manager</span><span>Front Door Premium</span><span>WAF</span><span>API Management</span><span>Static Web Apps</span></div><div class="count">5</div></li>
+    <li class="layer"><div class="lname">Identity / Access</div><div class="services"><span>Entra External ID</span><span>Entra ID</span><span>Conditional Access</span><span>PIM</span><span>SCIM</span></div><div class="count">5</div></li>
+    <li class="layer"><div class="lname">Networking</div><div class="services"><span>Virtual Network (×2)</span><span>Private Endpoints</span><span>NSG</span><span>VNet Peering</span></div><div class="count">4</div></li>
+    <li class="layer"><div class="lname">Ingestion</div><div class="services"><span>Event Hubs Premium</span><span>Geo-DR</span><span>Capture</span></div><div class="count">3</div></li>
+    <li class="layer"><div class="lname">Compute</div><div class="services"><span>AKS (optional)</span><span>VM Scale Set</span><span>Container Apps</span></div><div class="count">3</div></li>
+    <li class="layer"><div class="lname">Data</div><div class="services"><span>PostgreSQL Geo</span><span>Blob GRS</span><span>Key Vault HSM</span><span>Redis Cache</span></div><div class="count">4</div></li>
+    <li class="layer"><div class="lname">Notifications</div><div class="services"><span>Notification Hubs</span><span>Communication Services</span></div><div class="count">2</div></li>
+    <li class="layer"><div class="lname">Security / SOC</div><div class="services"><span>Microsoft Sentinel</span><span>Defender for Cloud</span><span>DDoS Standard</span><span>Backup Vault</span><span>Policy</span></div><div class="count">5</div></li>
+    <li class="layer"><div class="lname">Observability</div><div class="services"><span>Application Insights</span><span>Azure Monitor</span><span>Log Analytics</span></div><div class="count">3</div></li>
+    <li class="layer"><div class="lname">DevOps</div><div class="services"><span>GitHub Actions</span><span>ACR Premium</span><span>Terraform</span><span>Azure DevOps</span></div><div class="count">4</div></li>
+  </ul>
+
+  <h2>6 · When to introduce each service</h2>
+  <p><strong>VM Scale Set</strong> — when single VM CPU is consistently above 70% or consumer-group lag grows beyond acceptable thresholds.</p>
+  <p><strong>Event Hubs Premium</strong> — when you need guaranteed throughput units, Kafka compatibility, or 90-day retention for audit.</p>
+  <p><strong>Redis</strong> — when the dashboard's live map starts pinging PostgreSQL for last-known-position queries and p95 latency exceeds 200ms.</p>
+  <p><strong>Geo-replicated PostgreSQL</strong> — when regional outage becomes unacceptable to the business, not before.</p>
+  <p><strong>Microsoft Sentinel</strong> — when a customer or compliance framework requires SOC-grade log correlation and incident response.</p>
+  <p><strong>AKS</strong> — only when independently deployable services make Container Apps' revision model painful. Don't add it for its own sake.</p>
+  <p><strong>API Management</strong> — when you ship a partner-facing intelligence API or need fine-grained rate limiting per customer.</p>
+
+  <h2>7 · CI/CD pipeline</h2>
+  <pre class="code">GitHub
+  ↓
+GitHub Actions
+  ↓
+Terraform Validate
+  ↓
+Build Go Image
+  ↓
+Build Python Image
+  ↓
+Security Scan (Trivy, Snyk)
+  ↓
+Push
+  ↓
+Azure Container Registry
+  ↓
+Deploy Azure Container Apps (canary)
+  ↓
+Deploy VMSS Image (rolling)
+  ↓
+Terraform Apply
+  ↓
+Health check + synthetic monitor</pre>
+
+</section>
+
+</main>
+
+<div class="fn">
+  <p>— end of notes —</p>
+  <p>architecture is streaming-first · do not let postgresql become the spine</p>
+  <p>revisit every 6 months or when worker lag exceeds thresholds</p>
+  <p>aks is never the default · container apps is enough until it isn't</p>
+</div>
+
+</div>
+
+<script>
+  const tabs = document.querySelectorAll('.tab');
+  const panels = document.querySelectorAll('.panel');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const target = tab.dataset.tab;
+      tabs.forEach(t => t.classList.remove('active'));
+      panels.forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(target).classList.add('active');
+      window.scrollTo({top: 0, behavior: 'smooth'});
+    });
+  });
+</script>
+</body>
+</html>
+```

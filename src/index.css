@@ -1,0 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-serif: "IBM Plex Serif", Georgia, serif;
+  --font-mono: "IBM Plex Mono", SFMono-Regular, Consolas, Menlo, monospace;
+  --font-sans: "Inter", system-ui, sans-serif;
+}
+
+/* Base style resets following premium engineering documentation style */
+body {
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  background-color: #fafafa;
+  color: #09090b;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Light Mode Overrides mapped perfectly using CSS variables */
+:root {
+  background-color: #fafafa;
+  color: #09090b;
+}
+
+html.dark body {
+  background-color: #09090b;
+  color: #fafafa;
+}
+
+html.dark :root {
+  background-color: #09090b;
+  color: #fafafa;
+}
+
+/* Custom minimal scrollbar for technical high-density lists */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #2e3034;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #44484d;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #2b2d31;
+}
+
+/* Typography styles */
+.serif-header {
+  font-family: var(--font-serif);
+}
+
+.mono-text {
+  font-family: var(--font-mono);
+}
+
+/* Layout transition speed */
+/* Use Tailwind's built-in transition utility classes (e.g., transition-colors duration-200) instead of global selectors */
+

@@ -1,0 +1,138 @@
+\documentclass[10pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.60in]{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{tabularx}
+\usepackage{hyperref}
+\usepackage{lmodern}
+
+% Custom Colors (Teal theme)
+\definecolor{teal}{RGB}{15, 118, 110}
+\definecolor{darkteal}{RGB}{0, 115, 79}
+\definecolor{textmain}{RGB}{51, 65, 85}
+\definecolor{textdark}{RGB}{15, 23, 42}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=teal,
+    urlcolor=teal,
+}
+
+\titleformat{\section}
+  {\normalfont\large\bfseries\color{darkteal}}
+  {}{0em}
+  {}[\color{black!20}\titlerule]
+\titlespacing*{\section}{0pt}{2ex plus 0.3ex minus .1ex}{1ex plus .2ex}
+
+\newcommand{\jobheading}[4]{
+  \vspace{1.5ex}\noindent
+  {\large\textbf{\color{darkteal}#1}} \hfill \textbf{\color{textmain}#2} \\[0.3ex]
+  \textbf{\color{textdark}#3} \hfill \textit{\color{textmain}#4} \vspace{0.8ex}
+}
+
+\begin{document}
+
+\pagestyle{empty}
+\color{textmain}
+
+\noindent
+\begin{minipage}[c]{0.75\textwidth}
+    {\Huge \textbf{\color{textdark} YAHYA}}\\[0.1ex]
+    \textbf{\color{teal} Cloud Engineer} | AWS \& Azure Certified | 1.5 Years Experience\\[0.1ex]
+    +91 8096278589 \quad|\quad 
+    \href{mailto:ykinwork1@gmail.com}{ykinwork1@gmail.com} \quad|\quad 
+    \href{https://linkedin.com/in/ykinwork1}{linkedin.com/in/ykinwork1} \quad|\quad 
+    Hyderabad, India
+\end{minipage}%
+\begin{minipage}[c]{0.25\textwidth}
+    \raggedleft
+    \includegraphics[width=3cm,height=3cm,keepaspectratio]{../../../Assets/Yahya_profile.jpeg}
+\end{minipage}
+
+\vspace{2ex}
+
+\vspace{-2ex}
+\section*{PROFESSIONAL SUMMARY}
+\textbf{Cloud Engineer} with 1.5 years of experience designing, deploying, and operating secure, highly available cloud infrastructure. Experienced in cloud operations, infrastructure automation with Terraform, production workload management, and incident troubleshooting. Hands-on with VPC design, IPsec VPN, IAM (RBAC), WAF, CI/CD workflows, and automation using Python and Bash. Skilled in monitoring, logging, and implementing operational best practices to build resilient, secure, and scalable cloud environments, with exposure to backup, disaster recovery, and continuous service improvement.
+
+\section*{TECHNICAL SKILLS}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{\textwidth}{@{}l X@{}}
+    \textbf{Cloud Ecosystem:} & \textbf{AWS} (VPC, EC2, ECS, Lambda, SNS, SQS, S3, CloudFront), \textbf{Azure} (VNet), \textbf{GCP} \\
+    \textbf{Security \& Identity:} & \textbf{AWS WAF}, IAM (RBAC, least privilege), Security Groups, Entra ID, TLS/SSL encryption \\
+    \textbf{Automation \& IaC:} & \textbf{Terraform} (GitOps, S3/DynamoDB state), \textbf{Ansible} (Jinja), \textbf{Python}, Bash \\
+    \textbf{CI/CD \& DevOps:} & \textbf{AWS CodePipeline}, CodeBuild, GitHub Actions, Git, \textbf{Ubuntu}, \textbf{Rocky Linux} \\
+    \textbf{Monitoring \& Operations:} & \textbf{CloudWatch}, log monitoring, \textbf{Change/Incident Management}, SLA Resolution \\
+    \textbf{Resilience (Exposure):} & Backup and disaster recovery concepts (snapshots, multi-AZ, basic restore workflows)
+\end{tabularx}
+
+\section*{PROFESSIONAL EXPERIENCE}
+
+\jobheading{Associate Cloud Engineer}{Nov 2024 -- Mar 2026}{Minute KSA}{Riyadh, Saudi Arabia}
+\begin{itemize}[label={\color{teal}\textbullet},leftmargin=*,itemsep=5pt,parsep=2pt,topsep=2pt]
+\item \textbf{Designed and deployed} highly available \textbf{AWS VPC} architectures for \textbf{DEV/PROD}, privatizing databases and crucial services using private subnets, NAT, and Security Groups.
+\item Hosted a secure \textbf{monolith application} on \textbf{ECS} behind an \textbf{ALB} and \textbf{WAF}, utilizing \textbf{AWS Lambda, SNS, and SQS} for asynchronous resource distribution while enforcing strict network, access, and data security.
+\item Provisioned infrastructure via \textbf{Terraform} using a strict \textbf{GitOps} model, managing state locking securely with \textbf{S3 and DynamoDB}.
+\item Hosted secure, highly available static websites leveraging \textbf{Amazon S3 and CloudFront} for global content delivery.
+\item Architected a \textbf{multi-cloud setup} integrating AWS infrastructure with GCP services to securely consume Google Maps APIs.
+\item Managed \textbf{ECS production workloads} and \textbf{EC2 Linux servers} (\textbf{Ubuntu, Rocky Linux}), aggressively \textbf{troubleshooting operational issues} to maintain uptime.
+\item Maintained server configurations, dependencies, and dynamic environment provisioning using \textbf{Ansible} playbooks and \textbf{Jinja} templates.
+\item Performed rigorous \textbf{audits of cloud designs} and implemented IAM least privilege policies, WAF rules, and NACLs to harden internet-facing boundaries.
+\item Deployed \textbf{observability} solutions using \textbf{open-source tools} (Prometheus, Grafana) alongside \textbf{CloudWatch} and \textbf{CloudTrail} to proactively manage servers, adhering to \textbf{SLA} targets and \textbf{change/incident management}.
+\item Executed cloud migrations of \textbf{staging environments} from Mobily Cloud to \textbf{AWS}, validating post-migration connectivity and encrypting data at rest using \textbf{AWS KMS}.
+\item Managed \textbf{RDS Multi-AZ setups} and robust backup strategies using \textbf{S3} snapshots, actively implementing \textbf{cost optimization strategies} across RDS and ECS workloads.
+\item Authored comprehensive \textbf{documentation}, runbooks, and architectural diagrams to streamline team operations.
+\item Supported hybrid connectivity between cloud and on-premises environments by troubleshooting VPN connectivity, routing, DNS resolution, and firewall policies to maintain secure access to internal services.
+\item Managed secure third-party (FAZZA) and on-premises connectivity using \textbf{FortiGate Firewalls}, configuring IPsec VPN tunnels, firewall policies, NAT, and routing to ensure reliable inter-site communication.
+\item Maintained server configurations, dependencies, and dynamic environment provisioning using \textbf{Ansible} playbooks and \textbf{Jinja} templates.
+\item Routinely investigated and resolved L2/L3 cloud infrastructure incidents, utilizing root cause analysis (RCA) and structured \textbf{problem-solving}.
+\item Managed daily operational chores including patching EC2 instances, auditing security groups, and rotating IAM keys to maintain compliance.
+\item Proactively monitored application performance metrics and refined automated alerts to resolve system bottlenecks before they impacted users.
+\item Collaborated with development teams during daily stand-ups to validate infrastructure updates, troubleshoot deployments, and unblock pipelines.
+\end{itemize}
+
+
+\section*{PROJECTS}
+
+\jobheading{HormuzWatch}{\href{https://github.com/ykinwork1/hormuzwatch}{GitHub} | \href{https://hormuzwatch.example.com}{Live}}{Stack: Azure Event Hubs, Container Apps, PostgreSQL, Python, Go}{} \vspace{-1ex}
+\begin{itemize}[label={\color{teal}\textbullet},leftmargin=*,itemsep=5pt,parsep=2pt,topsep=2pt]
+    \item \textbf{Description:} A real-time intelligence platform built for continuous telemetry ingestion, low-latency event processing, and live geospatial queries.
+    \item Decoupled ingestion from processing using Azure Event Hubs as the system spine for high-throughput telemetry without database backpressure.
+    \item Implemented real-time WebSocket fanout via Container Apps (Go API) and scalable Python workers (VMSS) for anomaly detection.
+    \item Provisioned enterprise-grade infrastructure with Terraform, utilizing Front Door Premium and VNet isolation for a hardened, SOC-ready architecture.
+\end{itemize}
+
+\jobheading{RaweeGo}{\href{https://github.com/ykinwork1/raweego}{GitHub} | \href{https://raweego.example.com}{Live}}{Stack: Azure Container Apps, PostgreSQL, Blob Storage, Entra ID, Terraform}{} \vspace{-1ex}
+\begin{itemize}[label={\color{teal}\textbullet},leftmargin=*,itemsep=5pt,parsep=2pt,topsep=2pt]
+    \item \textbf{Description:} An AI-powered document-to-audio platform utilizing OCR and an LLMOps pipeline built with Gunicorn and Python services to produce natural voice audio streams, featuring semantic search and reading reminders.
+    \item Architected an MVP utilizing Azure Container Apps, PostgreSQL Flexible Server, and an isolated Ubuntu VM for Python-based AI workers.
+    \item Engineered a hardened growth phase featuring Azure Front Door Premium, WAF, and Virtual Network isolation with Private Endpoints.
+    \item Designed automated CI/CD workflows using GitHub Actions and orchestrated multi-region deployments with Terraform and Azure Bicep.
+\end{itemize}
+
+\section*{CERTIFICATIONS}
+\begin{tabularx}{\textwidth}{@{}X X@{}}
+    \textbullet~ \textbf{AWS} Solutions Architect Associate & \textbullet~ \textbf{Cisco} Certified (CCNP \& CCNA) \\
+    \textbullet~ \textbf{Azure} Solutions Architect (AZ-305) & \textbullet~ \textbf{Azure} Administrator (AZ-104) \\
+    \textbullet~ \textbf{HashiCorp} Terraform Associate (Ongoing) & \textbullet~ \textbf{Cisco} ENCC (Ongoing) \\
+\end{tabularx}
+
+\vspace{-1.5ex}
+\section*{EDUCATION}
+\jobheading{B.Tech -- CS Engineering}{2018 -- 2022}{Global Institute of Engineering \& Technology}{Hyderabad, India}
+
+\textit{Relevant Coursework:} Computer Networks, Scripting Languages, Cloud Computing, Cryptography \& Network Security
+
+\section*{LANGUAGES \& ADDITIONAL INFO}
+\begin{itemize}[label={\color{teal}\textbullet},leftmargin=*,itemsep=5pt,parsep=2pt,topsep=2pt]
+    \item \textbf{Availability}: Immediate Joining
+    \item \textbf{Languages}: English (Proficient), Arabic (Basic), Hindi (Native)
+\end{itemize}
+
+
+\end{document}

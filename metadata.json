@@ -1,0 +1,6 @@
+{
+  "name": "Job Application Tracker & Portfolio",
+  "description": "A premium, production-grade Career Portfolio and Job Application Tracker with Google Sheets sync, interactive resume builder, and Gemini career analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
