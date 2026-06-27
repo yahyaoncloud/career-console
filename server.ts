@@ -18,7 +18,7 @@ const app = express();
 const PORT = 3000;
 
 // Connect to MongoDB
-// connectDB(); // Commented out for now
+connectDB();
 
 // Only run node-cron scheduler in local dev. In production (Vercel), use Vercel Cron.
 if (!process.env.VERCEL) {
@@ -88,7 +88,7 @@ async function generateWithFallback(prompt: string, mimeType = 'application/json
 }
 
 // Initial high-fidelity seeded dataset for the internal platform
-const defaultDb = {
+export const defaultDb = {
   applications: [
     {
       id: 'app-1',
@@ -357,129 +357,17 @@ const defaultDb = {
 // -------------------------------------------------------------
 // SECURE MONGO DATABASE & API ROUTES
 // -------------------------------------------------------------
-// app.use('/api', apiRoutes); // Commented out Mongo code for now
+app.use('/api', apiRoutes);
 
-const DB_PATH = process.env.VERCEL ? path.join('/tmp', 'db.json') : path.join(process.cwd(), 'db.json');
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || '0123456789abcdef0123456789abcdef'; // 32 chars
-const IV_LENGTH = 16;
-
-function encryptDbData(text: string) {
-  const iv = crypto.randomBytes(IV_LENGTH);
-  const cipher = crypto.createCipheriv('aes-256-gcm', Buffer.from(ENCRYPTION_KEY), iv);
-  let encrypted = cipher.update(text);
-  encrypted = Buffer.concat([encrypted, cipher.final()]);
-  const authTag = cipher.getAuthTag();
-  return iv.toString('hex') + ':' + authTag.toString('hex') + ':' + encrypted.toString('hex');
-}
-
-function decryptDbData(text: string) {
-  const textParts = text.split(':');
-  const iv = Buffer.from(textParts.shift()!, 'hex');
-  const authTag = Buffer.from(textParts.shift()!, 'hex');
-  const encryptedText = Buffer.from(textParts.join(':'), 'hex');
-  const decipher = crypto.createDecipheriv('aes-256-gcm', Buffer.from(ENCRYPTION_KEY), iv);
-  decipher.setAuthTag(authTag);
-  let decrypted = decipher.update(encryptedText);
-  decrypted = Buffer.concat([decrypted, decipher.final()]);
-  return decrypted.toString();
-}
-
-const getDb = () => {
-  if (!fs.existsSync(DB_PATH)) {
-    writeDb(defaultDb);
-    return defaultDb;
-  }
+// Import Log model for local addLog usage within server.ts (e.g. Gemini endpoints)
+import { Log } from './server/models/Log.js';
+const addLog = async (event: string, status: 'SUCCESS' | 'WARNING' | 'ERROR' | 'INFO', module: string) => {
   try {
-    const raw = fs.readFileSync(DB_PATH, 'utf8');
-    try {
-      const decrypted = decryptDbData(raw);
-      return JSON.parse(decrypted);
-    } catch {
-      return JSON.parse(raw);
-    }
+    await new Log({ event, status, module }).save();
   } catch (err) {
-    return defaultDb;
+    console.error('Failed to add log to MongoDB:', err);
   }
 };
-
-const writeDb = (data: any) => {
-  try {
-    const payload = JSON.stringify(data, null, 2);
-    const encrypted = encryptDbData(payload);
-    fs.writeFileSync(DB_PATH, encrypted, 'utf8');
-  } catch (err) {
-    console.error('Failed to write db.json:', err);
-  }
-};
-
-app.get('/api/db', (req, res) => {
-  res.json(getDb());
-});
-
-app.post('/api/db', (req, res) => {
-  const db = getDb();
-  const updated = { ...db, ...req.body };
-  writeDb(updated);
-  res.json({ success: true, db: updated });
-});
-
-const addLog = (event: string, status: 'SUCCESS' | 'WARNING' | 'ERROR' | 'INFO', module: string) => {
-  const db = getDb();
-  const log = { timestamp: new Date().toISOString(), event, status, module };
-  db.logs = [log, ...(db.logs || [])].slice(0, 100);
-  writeDb(db);
-};
-
-app.post('/api/applications/create', (req, res) => {
-  const db = getDb();
-  const newApp = { id: `app-${Date.now()}`, ...req.body };
-  db.applications.push(newApp);
-  writeDb(db);
-  addLog(`Added application for ${newApp.company} (${newApp.position})`, 'SUCCESS', 'TRACKER');
-  res.json({ success: true, application: newApp });
-});
-
-app.post('/api/applications/update', (req, res) => {
-  const db = getDb();
-  const { id, ...updates } = req.body;
-  const idx = db.applications.findIndex((a: any) => a.id === id);
-  if (idx !== -1) {
-    db.applications[idx] = { ...db.applications[idx], ...updates };
-    writeDb(db);
-    addLog(`Updated application for ${db.applications[idx].company}`, 'SUCCESS', 'TRACKER');
-    res.json({ success: true, application: db.applications[idx] });
-  } else {
-    res.status(404).json({ error: 'Application not found' });
-  }
-});
-
-app.post('/api/applications/delete', (req, res) => {
-  const db = getDb();
-  const { id } = req.body;
-  const item = db.applications.find((a: any) => a.id === id);
-  db.applications = db.applications.filter((a: any) => a.id !== id);
-  writeDb(db);
-  if (item) {
-    addLog(`Deleted application for ${item.company}`, 'WARNING', 'TRACKER');
-  }
-  res.json({ success: true });
-});
-
-app.get('/api/guestbook', (req, res) => {
-  const db = getDb();
-  res.json({ entries: db.guestbook || [] });
-});
-
-app.post('/api/guestbook', async (req, res) => {
-  const { name, message } = req.body;
-  if (!name || !message) return res.status(400).json({ error: 'Missing fields' });
-  const db = getDb();
-  if (!db.guestbook) db.guestbook = [];
-  const entry = { id: `gb-${Date.now()}`, name, message, timestamp: new Date().toISOString() };
-  db.guestbook.unshift(entry);
-  writeDb(db);
-  res.json({ success: true, entry });
-});
 
 // AI endpoints
 app.post('/api/gemini/analyze-resume', async (req, res) => {

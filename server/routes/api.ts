@@ -1,4 +1,5 @@
 import express from 'express';
+import { defaultDb } from '../../server.js';
 import { Application } from '../models/Application.js';
 import { Guestbook } from '../models/Guestbook.js';
 import { Log } from '../models/Log.js';
@@ -83,12 +84,12 @@ router.get('/db', async (req, res) => {
     
     // Fallbacks to default data from server.ts would ideally be seeded into DB.
     res.json({
-      applications,
-      guestbook,
+      applications: applications.length > 0 ? applications : defaultDb.applications,
+      guestbook: guestbook.length > 0 ? guestbook : [],
       logs,
-      resume: portfolioData?.resume || {},
-      portfolio: portfolioData?.portfolio || [],
-      documents: portfolioData?.documents || []
+      resume: portfolioData?.resume || defaultDb.resume,
+      portfolio: portfolioData?.portfolio || defaultDb.portfolio,
+      documents: portfolioData?.documents || defaultDb.documents
     });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
