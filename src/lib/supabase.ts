@@ -11,7 +11,7 @@ export const supabase = createClient(supabaseUrl || '', supabaseAnon || '');
 
 /** Default Bucket name in Supabase Storage */
 export const STORAGE_BUCKET = 'career-assets';
-export const BUCKETS = ['career-assets', 'career-profile', 'career-resume'];
+export const BUCKETS = ['career-assets'];
 
 /**
  * Upload a file to Supabase Storage.

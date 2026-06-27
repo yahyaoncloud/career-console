@@ -37,7 +37,7 @@ export default function ProfileEditor({ resume, onUpdateResume }: ProfileEditorP
     
     setUploadingImage(true);
     try {
-      const { url } = await uploadFile(file, 'avatars', 'career-profile');
+      const { url } = await uploadFile(file, 'avatars');
       setFormData(prev => ({ ...prev!, profileImage: url }));
       toast({ variant: 'success', title: 'Upload Success', description: 'Profile image securely synced to S3 bucket.' });
     } catch (err: any) {
@@ -151,7 +151,7 @@ export default function ProfileEditor({ resume, onUpdateResume }: ProfileEditorP
                     {uploadingImage ? 'Syncing to S3...' : 'Upload Image'}
                   </button>
                   <p className="text-[10px] mono-text text-zinc-400 mt-1.5 flex items-center gap-1">
-                    Bucket: <span className="text-indigo-500">career-profile</span>
+                    Bucket: <span className="text-indigo-500">career-assets (avatars/)</span>
                   </p>
                 </div>
               </div>
