@@ -51,7 +51,10 @@ export default function DocumentsManager({ onRefresh }: DocumentsManagerProps) {
 
       // Try Supabase upload; if not configured, fall back to URL-only entry
       try {
-        const result = await uploadFile(file, 'documents');
+        const docType = meta.type || inferType(file.name);
+        // e.g. "Cover Letter" -> "cover-letters"
+        const folderName = docType.toLowerCase().replace(/ /g, '-') + 's';
+        const result = await uploadFile(file, folderName);
         url = result.url;
         storagePath = result.path;
         size = result.size;
