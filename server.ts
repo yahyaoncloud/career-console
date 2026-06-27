@@ -253,16 +253,16 @@ export const defaultDb = {
     }
   ],
   resume: {
-    name: 'Alexander Mercer',
-    title: 'Staff Systems & Cloud Infrastructure Architect',
+    name: 'Yahya',
+    title: 'Cloud Engineer',
     contact: {
-      email: 'alexander.mercer@dev.io',
-      phone: '+1 (555) 489-3012',
-      location: 'San Francisco, CA',
-      github: 'github.com/amercer-systems',
-      linkedin: 'linkedin.com/in/alex-mercer-systems',
+      email: 'yahya@example.com',
+      phone: '+1 (555) 123-4567',
+      location: 'Global',
+      github: 'github.com/yahyaoncloud',
+      linkedin: 'linkedin.com/in/yahyaoncloud',
     },
-    summary: 'Senior Infrastructure Engineer and Technical Architect specializing in building ultra-low-latency, high-availability distributed systems, container orchestration planes, and kernel-level network routing agents. Veteran of multi-region database replication strategies and Spanner transaction coordination.',
+    summary: 'Cloud Engineer specializing in scalable infrastructure, serverless deployments, and robust web applications. Experienced in cloud platforms and modern development workflows.',
     experience: [
       {
         company: 'Cloud Native Systems Corp',
