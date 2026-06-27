@@ -4,6 +4,8 @@ import dotenv from 'dotenv';
 import nodemailer from 'nodemailer';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import path from 'path';
+import fs from 'fs';
 import { connectDB } from './server/mongodb.js';
 import apiRoutes from './server/routes/api.js';
 import { scheduleScraper, runJobScraper } from './server/services/scraper.js';

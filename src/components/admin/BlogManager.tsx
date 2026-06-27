@@ -166,7 +166,7 @@ ${data.blog.content}`;
           <button
             onClick={async () => {
               try {
-                toast({ variant: 'default', title: 'Running Scraper...', description: 'Fetching jobs in background.' });
+                toast({ variant: 'info', title: 'Running Scraper...', description: 'Fetching jobs in background.' });
                 const res = await fetch('/api/scraper/trigger', { method: 'POST' });
                 const data = await res.json();
                 if (data.success) {

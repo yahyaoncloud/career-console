@@ -38,10 +38,17 @@ export interface PortfolioProject {
   description: string;
   architectureDiagram?: string;
   techStack: string[];
+  /** Alias used by ProjectsPage.tsx */
+  technologies?: string[];
   githubLink?: string;
+  /** Alias used by ProjectsPage.tsx */
+  github?: string;
   demoLink?: string;
+  /** Alias used by ProjectsPage.tsx */
+  link?: string;
   caseStudy: string;
   category: 'Infrastructure' | 'Full-stack' | 'DevOps' | 'AI & ML';
+  metrics?: Array<{ label: string; value: string }>;
 }
 
 export interface ResumeData {

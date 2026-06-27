@@ -71,6 +71,10 @@ function CareerConsoleEngine() {
   const [resume, setResume] = useState<ResumeData | null>(null);
   const [documents, setDocuments] = useState<DocumentAsset[]>([]);
   const [logs, setLogs] = useState<SystemLog[]>([]);
+  const [isDbLoading, setIsDbLoading] = useState<boolean>(() => {
+    // Start with false (no spinner) if we already have cached data — instant paint on repeat visits
+    try { return !localStorage.getItem('cc-db-cache'); } catch { return true; }
+  });
 
   // Auth States
   const [user, setUser] = useState<any>(null);
@@ -95,20 +99,40 @@ function CareerConsoleEngine() {
   // Inspect detail modal states
   const [inspectedApp, setInspectedApp] = useState<JobApplication | null>(null);
 
-  // Load Seeded DB from backend express service
+  // Stale-While-Revalidate: paint from cache immediately, then refresh from server in background.
+  // First visit: fetches from /api/db, shows spinner briefly, then caches.
+  // Every visit after: reads cache instantly (0ms paint), silently revalidates in background.
   const loadDatabase = async () => {
+    const CACHE_KEY = 'cc-db-cache';
+
+    const hydrate = (data: any) => {
+      if (!data) return;
+      setApplications(data.applications || []);
+      setPortfolio(data.portfolio || []);
+      setResume(data.resume || null);
+      setDocuments(data.documents || []);
+      setLogs(data.logs || []);
+    };
+
+    // 1️⃣ Instant paint from localStorage cache
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
+        hydrate(JSON.parse(cached));
+        setIsDbLoading(false); // unblock render NOW — no spinner
+      }
+    } catch {}
+
+    // 2️⃣ Fetch fresh data from server (runs regardless, updates silently if already painted)
     try {
       const res = await fetch('/api/db');
       const data = await res.json();
-      if (data) {
-        setApplications(data.applications || []);
-        setPortfolio(data.portfolio || []);
-        setResume(data.resume || null);
-        setDocuments(data.documents || []);
-        setLogs(data.logs || []);
-      }
+      hydrate(data);
+      localStorage.setItem(CACHE_KEY, JSON.stringify(data));
     } catch (err) {
-      console.error('Failed to load local DB state:', err);
+      console.error('[DB] Failed to load from server:', err);
+    } finally {
+      setIsDbLoading(false); // always unblock on completion or error
     }
   };
 
@@ -620,6 +644,18 @@ function CareerConsoleEngine() {
 
         {/* Main Content View Port */}
         <main className={`flex-1 ${isPublicRoute ? 'w-full' : 'p-4 md:p-6'}`}>
+          {isDbLoading ? (
+            <div className="flex items-center justify-center min-h-[60vh] w-full">
+              <div className="flex flex-col items-center gap-4">
+                <div className="relative w-8 h-8">
+                  <div className="absolute inset-0 rounded-full border-2 border-zinc-200 dark:border-zinc-800" />
+                  <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-zinc-900 dark:border-t-zinc-200 animate-spin" />
+                </div>
+                <span className="mono-text text-[10px] tracking-[0.2em] uppercase text-zinc-400">Initializing Console...</span>
+              </div>
+            </div>
+          ) : (
+          <>
           <Routes>
             <Route path="/" element={
               resume && (
@@ -974,6 +1010,8 @@ function CareerConsoleEngine() {
                 </div>
               </div>
             </div>
+          )}
+          </>
           )}
         </main>
       </div>

@@ -39,17 +39,19 @@ const ImageRenderer = ({ node, src, alt, ...props }: any) => {
   );
 };
 
-const CodeBlock = ({ node, inline, className, children, theme, ...props }: any) => {
+const CodeBlock = ({ node, className, children, theme, ...props }: any) => {
   const [copied, setCopied] = useState(false);
   const match = /language-(\w+)/.exec(className || '');
-  
+  // In react-markdown v9 there is no 'inline' prop; detect block code by language class presence
+  const isBlock = !!match;
+
   const handleCopy = () => {
     navigator.clipboard.writeText(String(children).replace(/\n$/, ''));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  if (!inline && match) {
+  if (isBlock) {
     return (
       <div className="relative group rounded-md overflow-hidden my-6 border border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center justify-between px-4 py-2 bg-transparent border-b border-zinc-200 dark:border-zinc-800">
@@ -75,13 +77,14 @@ const CodeBlock = ({ node, inline, className, children, theme, ...props }: any) 
       </div>
     );
   }
-  
+
   return (
     <code className={`${className} mono-text bg-transparent px-1 py-0.5 font-semibold text-sm`} {...props}>
       {children}
     </code>
   );
 };
+
 
 export default function BlogPost({ resume, onEnterConsole, isAuthenticated }: BlogPostProps) {
   const { slug } = useParams<{ slug: string }>();
@@ -152,8 +155,8 @@ export default function BlogPost({ resume, onEnterConsole, isAuthenticated }: Bl
 
             <div className="prose prose-zinc dark:prose-invert max-w-none serif-header font-light leading-relaxed prose-headings:font-bold prose-a:text-teal-600 dark:prose-a:text-teal-400 prose-pre:bg-transparent prose-pre:p-0 prose-pre:m-0">
               <ReactMarkdown 
-                remarkPlugins={[remarkGfm]} 
-                rehypePlugins={[rehypeRaw, rehypeSlug]}
+                remarkPlugins={[remarkGfm] as any[]} 
+                rehypePlugins={[rehypeRaw, rehypeSlug] as any[]}
                 components={{
                   code: (props) => <CodeBlock theme={resolvedTheme} {...props} />,
                   img: ImageRenderer

@@ -64,7 +64,7 @@ export default function JobBoard() {
 
   const triggerScrape = async () => {
     try {
-      toast({ variant: 'default', title: 'Running Scraper...', description: `Fetching jobs using ${selectedModel}` });
+      toast({ variant: 'info', title: 'Running Scraper...', description: `Fetching jobs using ${selectedModel}` });
       const res = await fetch('/api/scraper/trigger', { 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

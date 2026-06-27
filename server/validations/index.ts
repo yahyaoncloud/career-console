@@ -25,14 +25,14 @@ export const OtpVerifySchema = z.object({
   otp: z.string().length(6),
 });
 
-export const validate = (schema: z.AnyZodObject) => {
+export const validate = (schema: z.ZodTypeAny) => {
   return (req: Request, res: Response, next: NextFunction) => {
     try {
       schema.parse(req.body);
       next();
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ success: false, errors: error.errors });
+        res.status(400).json({ success: false, errors: error.issues });
       } else {
         res.status(400).json({ success: false, error: 'Validation failed' });
       }
