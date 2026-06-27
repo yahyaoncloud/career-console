@@ -10,6 +10,8 @@ import { connectDB } from './server/mongodb.js';
 import apiRoutes from './server/routes/api.js';
 import { scheduleScraper, runJobScraper } from './server/services/scraper.js';
 import { handleTelegramUpdate, registerWebhook, deleteWebhook } from './server/integrations/telegramWebhook.js';
+import { LearningTopic } from './server/models/LearningTopic.js';
+import { Config } from './server/models/Config.js';
 
 dotenv.config();
 
@@ -440,25 +442,83 @@ Provide 3 high-probability architectural or technical questions specific to this
   }
 });
 
-app.get('/api/gemini/recommend-learning', async (req, res) => {
-  if (!ai) {
-    return res.json({
-      success: false,
-      error: 'GEMINI_API_KEY is not configured on the server.',
-    });
-  }
-
+app.get('/api/config', async (req, res) => {
   try {
+    let aiMentorConfig = await Config.findOne({ key: 'enableAiMentor' });
+    if (!aiMentorConfig) {
+      aiMentorConfig = await Config.create({ key: 'enableAiMentor', value: true });
+    }
+    res.json({ success: true, enableAiMentor: aiMentorConfig.value });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/config', async (req, res) => {
+  try {
+    const { enableAiMentor } = req.body;
+    await Config.findOneAndUpdate(
+      { key: 'enableAiMentor' },
+      { value: enableAiMentor },
+      { upsert: true }
+    );
+    res.json({ success: true });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.get('/api/gemini/recommend-learning', async (req, res) => {
+  try {
+    const aiMentorConfig = await Config.findOne({ key: 'enableAiMentor' });
+    if (aiMentorConfig && aiMentorConfig.value === false) {
+      return res.json({ success: true, disabled: true });
+    }
+
+    const today = new Date().toISOString().split('T')[0];
+    const existingTopic = await LearningTopic.findOne({ date: today });
+    
+    if (existingTopic) {
+      return res.json({ success: true, recommendation: {
+        topic: existingTopic.topic,
+        description: existingTopic.description,
+        action: existingTopic.action
+      }});
+    }
+
+    if (!ai) {
+      return res.json({
+        success: false,
+        error: 'GEMINI_API_KEY is not configured on the server.',
+      });
+    }
+
+    const pastTopics = await LearningTopic.find().sort({ createdAt: -1 }).limit(30);
+    const avoidStr = pastTopics.length > 0 
+      ? `\nAvoid these past topics (do not repeat them): ${pastTopics.map(t => t.topic).join(', ')}.`
+      : '';
+
     const prompt = `You are an expert technical mentor for senior engineers.
 Provide a concise, high-impact learning recommendation for today.
 Target topics: Cloud Engineering, DevOps, Network Security.
+Ensure the topic balances trending tech with core fundamentals.${avoidStr}
 Format your output as a strict JSON object with:
-- "topic": The specific technical concept (e.g. "eBPF for Network Observability", "Zero Trust Architectures", "Terraform Drift Management").
+- "topic": The specific technical concept.
 - "description": A 2-sentence explanation of why it's critical to learn.
 - "action": One concrete, actionable task to practice it today.`;
 
     const text = await generateWithFallback(prompt);
     const parsed = JSON.parse(text || '{}');
+    
+    if (parsed.topic) {
+      await LearningTopic.create({
+        topic: parsed.topic,
+        description: parsed.description,
+        action: parsed.action,
+        date: today
+      });
+    }
+
     res.json({ success: true, recommendation: parsed });
   } catch (error: any) {
     console.error('Gemini learning recommendation error:', error);

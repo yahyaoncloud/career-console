@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ResumeData } from '../../types/types';
-import { UserCircle, Save, Loader2, Plus, X, Github, Linkedin, Mail, MapPin, Phone } from 'lucide-react';
+import { UserCircle, Save, Loader2, Plus, X, Github, Linkedin, Mail, MapPin, Phone, Upload, Image as ImageIcon } from 'lucide-react';
 import { useToast } from '../ui/Toast';
+import { uploadFile } from '../../lib/supabase';
 
 interface ProfileEditorProps {
   resume: ResumeData | null;
@@ -12,7 +13,9 @@ export default function ProfileEditor({ resume, onUpdateResume }: ProfileEditorP
   const { toast } = useToast();
   const [formData, setFormData] = useState<ResumeData | null>(null);
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [skillInput, setSkillInput] = useState({ category: 'languages' as keyof ResumeData['skills'], value: '' });
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (resume && !formData) {
@@ -26,6 +29,23 @@ export default function ProfileEditor({ resume, onUpdateResume }: ProfileEditorP
 
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev!, [field]: value }));
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setUploadingImage(true);
+    try {
+      const { url } = await uploadFile(file, 'avatars', 'career-profile');
+      setFormData(prev => ({ ...prev!, profileImage: url }));
+      toast({ variant: 'success', title: 'Upload Success', description: 'Profile image securely synced to S3 bucket.' });
+    } catch (err: any) {
+      toast({ variant: 'error', title: 'Upload Failed', description: err.message });
+    } finally {
+      setUploadingImage(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   };
 
   const handleContactChange = (field: string, value: string) => {
@@ -98,6 +118,45 @@ export default function ProfileEditor({ resume, onUpdateResume }: ProfileEditorP
           <h3 className="text-sm font-mono font-bold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider mb-4 border-b border-zinc-100 dark:border-zinc-900 pb-2">Basic Info</h3>
           
           <div className="space-y-4">
+            {/* Profile Image Uploader */}
+            <div>
+              <label className="block text-xs font-mono text-zinc-500 mb-2">Profile Avatar</label>
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center overflow-hidden relative group shrink-0 shadow-sm">
+                  {formData.profileImage ? (
+                    <img src={formData.profileImage} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <ImageIcon size={24} className="text-zinc-400" />
+                  )}
+                  {uploadingImage && (
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                      <Loader2 size={16} className="animate-spin text-white" />
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleImageUpload}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadingImage}
+                    className="px-3 py-1.5 text-xs font-mono font-bold bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors flex items-center gap-2"
+                  >
+                    <Upload size={14} />
+                    {uploadingImage ? 'Syncing to S3...' : 'Upload Image'}
+                  </button>
+                  <p className="text-[10px] mono-text text-zinc-400 mt-1.5 flex items-center gap-1">
+                    Bucket: <span className="text-indigo-500">career-profile</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <div>
               <label className="block text-xs font-mono text-zinc-500 mb-1">Full Name</label>
               <input

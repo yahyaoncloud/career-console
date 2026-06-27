@@ -20,7 +20,9 @@ import JobBoard from './components/admin/JobBoard';
 import ProfileEditor from './components/admin/ProfileEditor';
 import CompaniesManager from './components/admin/CompaniesManager';
 import DocumentsManager from './components/admin/DocumentsManager';
+import SettingsPage from './components/admin/SettingsPage';
 import { loginWithEmail, logout, initAuth } from './lib/firebase';
+import { getStorageUsage } from './lib/supabase';
 import { useToast } from './components/ui/Toast';
 import { Briefcase, LayoutDashboard, Table, Kanban, FileText, Settings, Database, LogOut, ChevronRight, ShieldCheck, FolderOpen, Info, Sparkles, Building2, X, AlertTriangle, XCircle, Menu, Eye, UserCircle } from 'lucide-react';
 
@@ -102,6 +104,9 @@ function CareerConsoleEngine() {
   // Inspect detail modal states
   const [inspectedApp, setInspectedApp] = useState<JobApplication | null>(null);
 
+  // Supabase Storage state
+  const [storageUsageMb, setStorageUsageMb] = useState<number | null>(null);
+
   // Stale-While-Revalidate: paint from cache immediately, then refresh from server in background.
   // First visit: fetches from /api/db, shows spinner briefly, then caches.
   // Every visit after: reads cache instantly (0ms paint), silently revalidates in background.
@@ -139,8 +144,18 @@ function CareerConsoleEngine() {
     }
   };
 
+  const loadStorageUsage = async () => {
+    try {
+      const mb = await getStorageUsage();
+      setStorageUsageMb(mb);
+    } catch (err) {
+      console.error('[Storage] Failed to track usage:', err);
+    }
+  };
+
   useEffect(() => {
     loadDatabase();
+    loadStorageUsage();
 
     // Auth bypassed for local development
     setUser({ email: 'admin@local', uid: '123' } as any);
@@ -518,17 +533,7 @@ function CareerConsoleEngine() {
                   <Briefcase size={14} />
                   <span>Portfolio CMS</span>
                 </button>
-                <button
-                  onClick={() => handleNavigation('profile')}
-                  className={`flex items-center space-x-2.5 px-3 py-2 text-xs font-mono rounded transition-all cursor-pointer ${
-                    activeTab === 'profile'
-                      ? 'bg-zinc-200 dark:bg-zinc-900 text-zinc-950 dark:text-zinc-50 font-bold border border-zinc-300/60 dark:border-zinc-800'
-                      : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-900/50'
-                  }`}
-                >
-                  <UserCircle size={14} />
-                  <span>Profile Update</span>
-                </button>
+
                 <button
                   onClick={() => handleNavigation('blog-manager')}
                   className={`flex items-center space-x-2.5 px-3 py-2 text-xs font-mono rounded transition-all cursor-pointer ${
@@ -620,26 +625,68 @@ function CareerConsoleEngine() {
               </div>
             </div>
             {/* User card at bottom of sidebar */}
-            <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800 mt-auto">
-              <div className="flex items-center justify-between px-3">
+            <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800 mt-auto flex flex-col space-y-2">
+              <div 
+                onClick={() => handleNavigation('profile')}
+                className="flex items-center justify-between px-3 py-2 mx-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900/50 transition-colors cursor-pointer border border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 group"
+              >
                 <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold border border-indigo-200 dark:border-indigo-800/50">
-                    {user?.email?.charAt(0).toUpperCase() || 'A'}
-                  </div>
+                  {resume?.profileImage ? (
+                    <img src={resume.profileImage} alt="Profile" className="w-8 h-8 rounded-full object-cover border border-zinc-200 dark:border-zinc-700" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold border border-indigo-200 dark:border-indigo-800/50">
+                      {user?.email?.charAt(0).toUpperCase() || 'A'}
+                    </div>
+                  )}
                   <div className="flex flex-col">
-                    <span className="text-[9px] mono-text text-zinc-400">TELEMETRY_STATUS</span>
-                    <span className="text-xs font-bold font-mono text-zinc-800 dark:text-zinc-200 truncate max-w-[100px]">
-                      {user?.email?.split('@')[0] || 'ADMIN'}
+                    <span className="text-xs font-bold font-mono text-zinc-800 dark:text-zinc-200 truncate max-w-[80px] group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                      {resume?.name || user?.email?.split('@')[0] || 'ADMIN'}
+                    </span>
+                    <span className="text-[9px] mono-text text-zinc-400 truncate max-w-[80px]">
+                      {resume?.title || 'System Owner'}
                     </span>
                   </div>
                 </div>
-                <button
-                  onClick={handleLogout}
-                  className="p-1.5 rounded hover:bg-zinc-200 dark:hover:bg-zinc-900 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer"
-                  title="Disconnect CMS Console"
-                >
-                  <LogOut size={14} />
-                </button>
+                <div className="flex items-center space-x-1">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleNavigation('settings');
+                    }}
+                    className="p-1.5 rounded hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+                    title="Settings"
+                  >
+                    <Settings size={14} />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleLogout();
+                    }}
+                    className="p-1.5 rounded hover:bg-rose-100 dark:hover:bg-rose-900/30 text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
+                    title="Disconnect CMS Console"
+                  >
+                    <LogOut size={14} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Storage Tracker */}
+              <div className="px-5 pb-3">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="mono-text text-[9px] text-zinc-500 uppercase flex items-center gap-1">
+                    <Database size={10} /> S3 Storage
+                  </span>
+                  <span className="mono-text text-[9px] font-bold text-zinc-700 dark:text-zinc-300">
+                    {storageUsageMb !== null ? `${storageUsageMb.toFixed(2)} MB` : '...'} / 50 MB
+                  </span>
+                </div>
+                <div className="w-full bg-zinc-200 dark:bg-zinc-800 h-1 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full ${storageUsageMb && storageUsageMb > 40 ? 'bg-rose-500' : 'bg-indigo-500'}`} 
+                    style={{ width: `${storageUsageMb ? Math.min((storageUsageMb / 50) * 100, 100) : 0}%` }} 
+                  />
+                </div>
               </div>
             </div>
           </aside>
@@ -864,6 +911,11 @@ function CareerConsoleEngine() {
               onUpdateResume={handleUpdateResume}
               onParseWithAI={handleParseResumeWithAI}
             />
+          )}
+
+          {/* 2c-3. SETTINGS CMS VIEW */}
+          {activeTab === 'settings' && (
+            <SettingsPage />
           )}
 
           {/* 6. COMPANIES DATABASE */}

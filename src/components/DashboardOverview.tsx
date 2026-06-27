@@ -49,17 +49,41 @@ export default function DashboardOverview({
   // Gemini Learning Recommendation State
   const [learningRec, setLearningRec] = useState<{ topic: string, description: string, action: string } | null>(null);
   const [loadingRec, setLoadingRec] = useState(true);
+  const [aiMentorDisabled, setAiMentorDisabled] = useState(false);
+  const [minutesToMidnight, setMinutesToMidnight] = useState(0);
+  const [timeRemainingStr, setTimeRemainingStr] = useState('');
 
   useEffect(() => {
     fetch('/api/gemini/recommend-learning')
       .then(res => res.json())
       .then(data => {
-        if (data.success && data.recommendation) {
-          setLearningRec(data.recommendation);
+        if (data.success) {
+          if (data.disabled) {
+            setAiMentorDisabled(true);
+          } else if (data.recommendation) {
+            setLearningRec(data.recommendation);
+          }
         }
       })
       .catch(err => console.error('Failed to load recommendation:', err))
       .finally(() => setLoadingRec(false));
+  }, []);
+
+  useEffect(() => {
+    const updateExpiry = () => {
+      const now = new Date();
+      const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+      const diffMs = tomorrow.getTime() - now.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      setMinutesToMidnight(diffMins);
+      
+      const hours = Math.floor(diffMins / 60);
+      const mins = diffMins % 60;
+      setTimeRemainingStr(`${hours}h ${mins}m`);
+    };
+    updateExpiry();
+    const interval = setInterval(updateExpiry, 60000);
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -239,48 +263,61 @@ export default function DashboardOverview({
         {/* Right 1 Column: Looms & System Telemetry CLI Log */}
         <div className="space-y-6">
           {/* Gemini Learning Recommendation */}
-          <div className="bg-gradient-to-br from-indigo-50/50 to-purple-50/50 dark:from-indigo-950/20 dark:to-purple-950/20 p-5 rounded border border-indigo-100 dark:border-indigo-900/30 space-y-4 shadow-sm relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-10">
-              <Sparkles size={64} className="text-indigo-500" />
-            </div>
-            <div className="flex justify-between items-center border-b border-indigo-200/50 dark:border-indigo-800/30 pb-2 relative z-10">
-              <div>
-                <span className="mono-text text-sm text-indigo-500 uppercase tracking-widest block font-bold flex items-center gap-1">
-                  <Sparkles size={12} /> AI_MENTOR_SYNC
-                </span>
-                <h4 className="serif-header text-lg font-bold text-zinc-900 dark:text-zinc-50">What to Learn Today</h4>
+          {!aiMentorDisabled && (
+            <div className="bg-gradient-to-br from-indigo-50/50 to-purple-50/50 dark:from-indigo-950/20 dark:to-purple-950/20 p-5 rounded border border-indigo-100 dark:border-indigo-900/30 space-y-4 shadow-sm relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-10">
+                <Sparkles size={64} className="text-indigo-500" />
+              </div>
+              <div className="flex justify-between items-center border-b border-indigo-200/50 dark:border-indigo-800/30 pb-2 relative z-10">
+                <div>
+                  <span className="mono-text text-sm text-indigo-500 uppercase tracking-widest block font-bold flex items-center gap-1">
+                    <Sparkles size={12} /> AI_MENTOR_SYNC
+                  </span>
+                  <h4 className="serif-header text-lg font-bold text-zinc-900 dark:text-zinc-50">What to Learn Today</h4>
+                </div>
+                {!loadingRec && learningRec && (
+                  <div className="flex items-center gap-2" title={`Expires in ${timeRemainingStr}`}>
+                    <span className="mono-text text-[9px] text-zinc-500">{timeRemainingStr}</span>
+                    <div className="relative w-6 h-6 flex items-center justify-center">
+                      <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                        <circle cx="18" cy="18" r="16" fill="none" className="stroke-indigo-100 dark:stroke-indigo-900/50" strokeWidth="4" />
+                        <circle cx="18" cy="18" r="16" fill="none" className="stroke-indigo-500" strokeWidth="4" strokeDasharray="100" strokeDashoffset={100 - (minutesToMidnight / (24 * 60)) * 100} strokeLinecap="round" />
+                      </svg>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-3 relative z-10">
+                {loadingRec ? (
+                  <div className="flex flex-col items-center justify-center py-6 space-y-2 opacity-50">
+                    <div className="w-5 h-5 rounded-full border-2 border-indigo-200 dark:border-indigo-800 border-t-indigo-600 dark:border-t-indigo-400 animate-spin" />
+                    <span className="mono-text text-xs text-indigo-600 dark:text-indigo-400">Synthesizing curriculum...</span>
+                  </div>
+                ) : learningRec ? (
+                  <div className="space-y-3 animate-in fade-in zoom-in-95 duration-300">
+                    <div>
+                      <h5 className="font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5 text-base">
+                        <BookOpen size={16} className="text-purple-500" />
+                        {learningRec.topic}
+                      </h5>
+                      <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1 leading-relaxed">
+                        {learningRec.description}
+                      </p>
+                    </div>
+                    <div className="bg-white/60 dark:bg-zinc-900/60 p-3 rounded border border-indigo-100 dark:border-indigo-900/50">
+                      <span className="mono-text text-xs text-indigo-500 font-bold block mb-1">ACTION_ITEM</span>
+                      <p className="text-sm text-zinc-800 dark:text-zinc-300 font-medium">
+                        {learningRec.action}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-zinc-500 text-center py-4">Unable to load recommendation.</p>
+                )}
               </div>
             </div>
-
-            <div className="space-y-3 relative z-10">
-              {loadingRec ? (
-                <div className="flex flex-col items-center justify-center py-6 space-y-2 opacity-50">
-                  <div className="w-5 h-5 rounded-full border-2 border-indigo-200 dark:border-indigo-800 border-t-indigo-600 dark:border-t-indigo-400 animate-spin" />
-                  <span className="mono-text text-xs text-indigo-600 dark:text-indigo-400">Synthesizing curriculum...</span>
-                </div>
-              ) : learningRec ? (
-                <div className="space-y-3 animate-in fade-in zoom-in-95 duration-300">
-                  <div>
-                    <h5 className="font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5 text-base">
-                      <BookOpen size={16} className="text-purple-500" />
-                      {learningRec.topic}
-                    </h5>
-                    <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1 leading-relaxed">
-                      {learningRec.description}
-                    </p>
-                  </div>
-                  <div className="bg-white/60 dark:bg-zinc-900/60 p-3 rounded border border-indigo-100 dark:border-indigo-900/50">
-                    <span className="mono-text text-xs text-indigo-500 font-bold block mb-1">ACTION_ITEM</span>
-                    <p className="text-sm text-zinc-800 dark:text-zinc-300 font-medium">
-                      {learningRec.action}
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <p className="text-sm text-zinc-500 text-center py-4">Unable to load recommendation.</p>
-              )}
-            </div>
-          </div>
+          )}
 
           {/* Priority action items/deadlines */}
           <div className="bg-white dark:bg-zinc-950 p-5 rounded border border-zinc-200 dark:border-zinc-800 space-y-4">

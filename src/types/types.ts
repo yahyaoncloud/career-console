@@ -72,6 +72,7 @@ export interface PortfolioProject {
 export interface ResumeData {
   name: string;
   title: string;
+  profileImage?: string;
   contact: {
     email: string;
     phone: string;
