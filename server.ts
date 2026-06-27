@@ -1,12 +1,9 @@
 import express from 'express';
-import path from 'path';
-import fs from 'fs';
 import { GoogleGenAI } from '@google/genai';
 import dotenv from 'dotenv';
 import nodemailer from 'nodemailer';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import crypto from 'crypto';
 import { connectDB } from './server/mongodb.js';
 import apiRoutes from './server/routes/api.js';
 import { scheduleScraper, runJobScraper } from './server/services/scraper.js';
@@ -16,6 +13,9 @@ dotenv.config();
 
 const app = express();
 const PORT = 3000;
+
+// Trust Vercel's reverse proxy so express-rate-limit can read X-Forwarded-For correctly
+app.set('trust proxy', 1);
 
 // Connect to MongoDB
 connectDB();
