@@ -11,7 +11,7 @@ interface BlogPostMeta {
 }
 
 export default function BlogManager() {
-  const { toast } = useToast();
+  const { toast, confirm } = useToast();
   const [posts, setPosts] = useState<BlogPostMeta[]>([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -56,16 +56,22 @@ ${data.blog.content}`;
   };
 
   const handleDelete = async (slug: string) => {
-    if (!confirm('Are you sure you want to delete this post?')) return;
-    try {
-      const res = await fetch(`/api/blogs/${slug}`, { method: 'DELETE' });
-      if (res.ok) {
-        toast({ variant: 'success', title: 'Deleted', description: 'Post deleted successfully' });
-        loadPosts();
+    confirm({
+      title: 'Delete post?',
+      description: `This post will be permanently deleted.`,
+      confirmLabel: 'Delete',
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`/api/blogs/${slug}`, { method: 'DELETE' });
+          if (res.ok) {
+            toast({ variant: 'success', title: 'Deleted', description: 'Post deleted successfully' });
+            loadPosts();
+          }
+        } catch (err) {
+          toast({ variant: 'error', title: 'Error', description: 'Failed to delete post' });
+        }
       }
-    } catch (err) {
-      toast({ variant: 'error', title: 'Error', description: 'Failed to delete post' });
-    }
+    });
   };
 
   const handleSave = async () => {

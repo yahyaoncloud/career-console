@@ -32,6 +32,24 @@ export interface JobApplication {
   tags: string[];
 }
 
+export interface Company {
+  id: string;
+  name: string;
+  website?: string;
+  industry?: string;
+  hq?: string;
+  size?: string;
+  status: 'Target' | 'Applied' | 'Interviewing' | 'Blacklisted' | 'Tracking';
+  notes?: string;
+  recruiter?: string;
+  contactEmail?: string;
+  linkedinUrl?: string;
+  tags?: string[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+
 export interface PortfolioProject {
   id: string;
   title: string;
@@ -90,8 +108,11 @@ export interface ResumeData {
 export interface DocumentAsset {
   id: string;
   name: string;
-  type: 'Resume' | 'Cover Letter' | 'Certificate' | 'Offer Letter';
+  type: 'Resume' | 'Cover Letter' | 'Certificate' | 'Offer Letter' | 'Other';
   version: string;
+  url?: string;          // Supabase Storage public URL
+  storagePath?: string;  // Supabase Storage path (for deletion)
+  mimeType?: string;
   uploadedAt: string;
   size: string;
 }

@@ -440,6 +440,32 @@ Provide 3 high-probability architectural or technical questions specific to this
   }
 });
 
+app.get('/api/gemini/recommend-learning', async (req, res) => {
+  if (!ai) {
+    return res.json({
+      success: false,
+      error: 'GEMINI_API_KEY is not configured on the server.',
+    });
+  }
+
+  try {
+    const prompt = `You are an expert technical mentor for senior engineers.
+Provide a concise, high-impact learning recommendation for today.
+Target topics: Cloud Engineering, DevOps, Network Security.
+Format your output as a strict JSON object with:
+- "topic": The specific technical concept (e.g. "eBPF for Network Observability", "Zero Trust Architectures", "Terraform Drift Management").
+- "description": A 2-sentence explanation of why it's critical to learn.
+- "action": One concrete, actionable task to practice it today.`;
+
+    const text = await generateWithFallback(prompt);
+    const parsed = JSON.parse(text || '{}');
+    res.json({ success: true, recommendation: parsed });
+  } catch (error: any) {
+    console.error('Gemini learning recommendation error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Diagnostic: list available Gemini models for this API key
 app.get('/api/gemini/models', async (req, res) => {
   if (!ai) {
@@ -599,19 +625,35 @@ app.get('/api/jobs/:slug', (req, res) => {
     res.json({ 
       success: true, 
       job: {
-        slug,
         title: titleMatch ? titleMatch[1].trim() : 'Untitled',
-        date: dateMatch ? dateMatch[1].trim() : '',
-        content: cleanContent
-      } 
+        date: dateMatch ? dateMatch[1].trim() : 'Unknown date',
+        content: cleanContent,
+      }
     });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
   }
 });
 
+app.delete('/api/jobs/:slug', (req, res) => {
+  try {
+    const slug = req.params.slug;
+    const mdPath = path.join(JOBS_DIR, `${slug}.md`);
+    const jsonPath = path.join(JOBS_DIR, `${slug}.json`);
+    const xlsxPath = path.join(JOBS_DIR, `${slug}.xlsx`);
+    
+    if (fs.existsSync(mdPath)) fs.unlinkSync(mdPath);
+    if (fs.existsSync(jsonPath)) fs.unlinkSync(jsonPath);
+    if (fs.existsSync(xlsxPath)) fs.unlinkSync(xlsxPath);
+    
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // -------------------------------------------------------------
-// SCRAPER ROUTES
+// CLOUD SYSTEM HEALTH & TELEMETRY ROUTES
 // -------------------------------------------------------------
 app.post('/api/scraper/trigger', async (req, res) => {
   try {

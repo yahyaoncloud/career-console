@@ -10,6 +10,7 @@ interface JobReport {
 }
 
 interface JobDetail {
+  slug: string;
   title: string;
   date: string;
   content: string;
@@ -53,7 +54,7 @@ export default function JobBoard() {
       }
       const data = await res.json();
       if (data.success) {
-        setActiveReport(data.job);
+        setActiveReport({ ...data.job, slug });
       }
     } catch (err) {
       console.error('Failed to load report details', err);
@@ -84,6 +85,22 @@ export default function JobBoard() {
       }
     } catch (err: any) {
       toast({ variant: 'error', title: 'Error', description: err.message || 'Failed to trigger scraper' });
+    }
+  };
+
+  const handleDeleteReport = async (slug: string) => {
+    if (!confirm('Are you sure you want to delete this report?')) return;
+    try {
+      const res = await fetch(`/api/jobs/${slug}`, { method: 'DELETE' });
+      if (res.ok) {
+        toast({ variant: 'success', title: 'Deleted', description: 'Report deleted successfully' });
+        setReports(reports.filter(r => r.slug !== slug));
+        setActiveReport(null);
+      } else {
+        throw new Error('Failed to delete report');
+      }
+    } catch (err: any) {
+      toast({ variant: 'error', title: 'Error', description: err.message || 'Failed to delete report' });
     }
   };
 
@@ -168,12 +185,20 @@ export default function JobBoard() {
               </div>
             ) : activeReport ? (
               <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-8 md:p-12 shadow-sm">
-                <div className="mb-8">
-                  <h2 className="serif-header text-3xl font-bold text-zinc-900 dark:text-white mb-2">{activeReport.title}</h2>
-                  <div className="flex items-center space-x-4 text-sm font-mono text-zinc-500">
-                    <span className="flex items-center"><Calendar size={14} className="mr-1.5" /> Published: {activeReport.date}</span>
-                    <span className="flex items-center"><Briefcase size={14} className="mr-1.5" /> Source: WeWorkRemotely</span>
+                <div className="mb-8 flex justify-between items-start">
+                  <div>
+                    <h2 className="serif-header text-3xl font-bold text-zinc-900 dark:text-white mb-2">{activeReport.title}</h2>
+                    <div className="flex items-center space-x-4 text-sm font-mono text-zinc-500">
+                      <span className="flex items-center"><Calendar size={14} className="mr-1.5" /> Published: {activeReport.date}</span>
+                      <span className="flex items-center"><Briefcase size={14} className="mr-1.5" /> Source: WeWorkRemotely</span>
+                    </div>
                   </div>
+                  <button
+                    onClick={() => handleDeleteReport(activeReport.slug)}
+                    className="px-3 py-1.5 border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded text-xs font-mono transition-colors"
+                  >
+                    Delete Report
+                  </button>
                 </div>
 
                 <div className="prose prose-zinc dark:prose-invert max-w-none prose-headings:font-serif prose-headings:font-bold prose-a:text-teal-600 dark:prose-a:text-teal-400 hover:prose-a:text-teal-500 prose-a:no-underline hover:prose-a:underline">

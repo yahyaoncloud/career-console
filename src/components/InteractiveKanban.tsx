@@ -1,5 +1,5 @@
 import { JobApplication, ApplicationStatus } from '../types/types';
-import { ArrowLeft, ArrowRight, Eye, Briefcase, Trash2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Eye, Briefcase, Trash2, Plus } from 'lucide-react';
 import { useToast } from './ui/Toast';
 
 interface InteractiveKanbanProps {
@@ -7,6 +7,7 @@ interface InteractiveKanbanProps {
   onUpdateStatus: (id: string, newStatus: ApplicationStatus) => void;
   onViewApplication: (app: JobApplication) => void;
   onDeleteApplication: (id: string) => void;
+  onAddApplication: (status: ApplicationStatus) => void;
 }
 
 const COLUMNS: Array<{ label: string; status: ApplicationStatus }> = [
@@ -27,6 +28,7 @@ export default function InteractiveKanban({
   onUpdateStatus,
   onViewApplication,
   onDeleteApplication,
+  onAddApplication,
 }: InteractiveKanbanProps) {
   const { confirm } = useToast();
   const getNextStatus = (current: ApplicationStatus): ApplicationStatus | null => {
@@ -74,9 +76,18 @@ export default function InteractiveKanban({
                   <span className="mono-text text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                     {col.label.toUpperCase()}
                   </span>
-                  <span className="mono-text text-[10px] bg-zinc-200 dark:bg-zinc-800 px-2 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
-                    {columnApps.length}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => onAddApplication(col.status)}
+                      className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+                      title="Add Application"
+                    >
+                      <Plus size={12} />
+                    </button>
+                    <span className="mono-text text-[10px] bg-zinc-200 dark:bg-zinc-800 px-2 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
+                      {columnApps.length}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Column Cards */}

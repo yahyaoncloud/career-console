@@ -25,5 +25,7 @@
   },
   "references": [
     { "path": "./tsconfig.app.json" }
-  ]
+  ],
+  "include": ["server", "server.ts", "vite.config.ts"],
+  "exclude": ["src"]
 }

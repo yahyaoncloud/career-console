@@ -17,9 +17,12 @@ import BlogPost from './components/public/BlogPost';
 import Guestbook from './components/public/Guestbook';
 import ProjectsPage from './components/public/ProjectsPage';
 import JobBoard from './components/admin/JobBoard';
+import ProfileEditor from './components/admin/ProfileEditor';
+import CompaniesManager from './components/admin/CompaniesManager';
+import DocumentsManager from './components/admin/DocumentsManager';
 import { loginWithEmail, logout, initAuth } from './lib/firebase';
 import { useToast } from './components/ui/Toast';
-import { Briefcase, LayoutDashboard, Table, Kanban, FileText, Settings, Database, LogOut, ChevronRight, ShieldCheck, FolderOpen, Info, Sparkles, Building2, X, AlertTriangle, XCircle, Menu, Eye } from 'lucide-react';
+import { Briefcase, LayoutDashboard, Table, Kanban, FileText, Settings, Database, LogOut, ChevronRight, ShieldCheck, FolderOpen, Info, Sparkles, Building2, X, AlertTriangle, XCircle, Menu, Eye, UserCircle } from 'lucide-react';
 
 export default function App() {
   return (
@@ -139,26 +142,15 @@ function CareerConsoleEngine() {
   useEffect(() => {
     loadDatabase();
 
-    // Init Auth listener — returns unsubscribe so React StrictMode doesn't stack listeners
-    const unsubscribe = initAuth(
-      (currentUser) => {
-        setUser(currentUser);
-        setAuthLoading(false);
-        setNeedsAuthPrompt(false);
-        // If session rehydrates to an already-logged-in user and they are on landing/login,
-        // silently forward them to the dashboard
-        const currentPath = window.location.pathname;
-        if (currentPath === '/' || currentPath === '/login') {
-          setActiveTab('dashboard');
-        }
-      },
-      () => {
-        setUser(null);
-        setAuthLoading(false);
-      }
-    );
-
-    return () => unsubscribe?.();
+    // Auth bypassed for local development
+    setUser({ email: 'admin@local', uid: '123' } as any);
+    setAuthLoading(false);
+    setNeedsAuthPrompt(false);
+    
+    const currentPath = window.location.pathname;
+    if (currentPath === '/' || currentPath === '/login') {
+      setActiveTab('dashboard');
+    }
   }, []);
 
   const handleEmailLogin = async (email: string, pass: string) => {
@@ -356,20 +348,7 @@ function CareerConsoleEngine() {
           <div className="flex items-center space-x-3">
             <ThemeToggle />
   
-            {user && (
-              <div className="hidden md:flex items-center space-x-2">
-                <span className="mono-text text-[10px] uppercase font-bold text-zinc-600 dark:text-zinc-400">
-                  {user.email.split('@')[0]}
-                </span>
-                <button
-                  onClick={handleLogout}
-                  className="p-1.5 rounded hover:bg-zinc-200 dark:hover:bg-zinc-900 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer"
-                  title="Disconnect telemetry channel"
-                >
-                  <LogOut size={14} />
-                </button>
-              </div>
-            )}
+
   
             {/* Mobile Menu Toggle Button */}
             <button
@@ -429,6 +408,14 @@ function CareerConsoleEngine() {
               }`}
             >
               PORTFOLIO CONTENT CMS
+            </button>
+            <button
+              onClick={() => handleNavigation('profile')}
+              className={`w-full text-left px-3 py-2 text-xs mono-text rounded transition-colors ${
+                activeTab === 'profile' ? 'bg-zinc-200 dark:bg-zinc-900 text-zinc-950 dark:text-zinc-50 font-bold border border-zinc-300 dark:border-zinc-800' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 border border-transparent'
+              }`}
+            >
+              PROFILE UPDATE
             </button>
             <button
               onClick={() => handleNavigation('applications')}
@@ -532,6 +519,17 @@ function CareerConsoleEngine() {
                   <span>Portfolio CMS</span>
                 </button>
                 <button
+                  onClick={() => handleNavigation('profile')}
+                  className={`flex items-center space-x-2.5 px-3 py-2 text-xs font-mono rounded transition-all cursor-pointer ${
+                    activeTab === 'profile'
+                      ? 'bg-zinc-200 dark:bg-zinc-900 text-zinc-950 dark:text-zinc-50 font-bold border border-zinc-300/60 dark:border-zinc-800'
+                      : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-900/50'
+                  }`}
+                >
+                  <UserCircle size={14} />
+                  <span>Profile Update</span>
+                </button>
+                <button
                   onClick={() => handleNavigation('blog-manager')}
                   className={`flex items-center space-x-2.5 px-3 py-2 text-xs font-mono rounded transition-all cursor-pointer ${
                     activeTab === 'blog-manager'
@@ -624,11 +622,16 @@ function CareerConsoleEngine() {
             {/* User card at bottom of sidebar */}
             <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800 mt-auto">
               <div className="flex items-center justify-between px-3">
-                <div className="flex flex-col">
-                  <span className="text-[9px] mono-text text-zinc-400">TELEMETRY_STATUS</span>
-                  <span className="text-xs font-bold font-mono text-zinc-800 dark:text-zinc-200 truncate max-w-[120px]">
-                    {user?.email?.split('@')[0] || 'ADMIN'}
-                  </span>
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold border border-indigo-200 dark:border-indigo-800/50">
+                    {user?.email?.charAt(0).toUpperCase() || 'A'}
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[9px] mono-text text-zinc-400">TELEMETRY_STATUS</span>
+                    <span className="text-xs font-bold font-mono text-zinc-800 dark:text-zinc-200 truncate max-w-[100px]">
+                      {user?.email?.split('@')[0] || 'ADMIN'}
+                    </span>
+                  </div>
                 </div>
                 <button
                   onClick={handleLogout}
@@ -797,6 +800,11 @@ function CareerConsoleEngine() {
             <BlogManager />
           )}
 
+          {/* 2c-2. PROFILE EDITOR CMS VIEW */}
+          {activeTab === 'profile' && (
+            <ProfileEditor resume={resume} onUpdateResume={handleUpdateResume} />
+          )}
+
           {/* 2d. JOB SOURCING CMS VIEW */}
           {activeTab === 'jobs' && (
             <JobBoard />
@@ -842,6 +850,10 @@ function CareerConsoleEngine() {
                 setInspectedApp(app);
               }}
               onDeleteApplication={handleDeleteApplication}
+              onAddApplication={(status) => {
+                setIsAddingNewApp(true);
+                setActiveTab('applications');
+              }}
             />
           )}
 
@@ -856,120 +868,12 @@ function CareerConsoleEngine() {
 
           {/* 6. COMPANIES DATABASE */}
           {activeTab === 'companies' && (
-            <div className="space-y-6" id="companies-db-panel">
-              <div className="border-b border-zinc-200 dark:border-zinc-800 pb-2">
-                <h3 className="serif-header text-lg font-bold text-zinc-900 dark:text-zinc-50 flex items-center">
-                  <Building2 size={16} className="mr-2 text-zinc-500" />
-                  Company Database
-                </h3>
-                <span className="mono-text text-[10px] text-zinc-500 block">
-                  Registered Employers · {uniqueCompaniesCount} unique
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {Array.from(new Set(applications.map((a) => a.company))).map((companyName) => {
-                  const companyApps = applications.filter((a) => a.company === companyName);
-                  const latestApp = companyApps[0];
-
-                  return (
-                    <div
-                      key={companyName}
-                      className="bg-white dark:bg-zinc-950 p-4 rounded border border-zinc-200 dark:border-zinc-800 space-y-3 shadow-xs"
-                    >
-                      <div className="flex justify-between items-start border-b border-zinc-100 dark:border-zinc-900 pb-2">
-                        <h4 className="serif-header text-sm font-bold text-zinc-900 dark:text-zinc-100">{companyName}</h4>
-                        <span className="mono-text text-[9px] bg-zinc-100 dark:bg-zinc-900 px-1.5 py-0.5 rounded border text-zinc-500">
-                          {companyApps.length} Processes
-                        </span>
-                      </div>
-
-                      <div className="space-y-1.5 text-xs">
-                        {latestApp.recruiter && (
-                          <p className="mono-text text-[10px] text-zinc-500">
-                            Recruiter: <span className="text-zinc-800 dark:text-zinc-300">{latestApp.recruiter}</span>
-                          </p>
-                        )}
-                        {latestApp.salary && (
-                          <p className="mono-text text-[10px] text-zinc-500">
-                            Salary Scale: <span className="text-zinc-800 dark:text-zinc-300">{latestApp.salary}</span>
-                          </p>
-                        )}
-                        {latestApp.contact && (
-                          <p className="mono-text text-[10px] text-zinc-500">
-                            Contact Channel: <span className="text-zinc-800 dark:text-zinc-300 select-all">{latestApp.contact}</span>
-                          </p>
-                        )}
-                      </div>
-
-                      <div className="pt-2 border-t border-zinc-100 dark:border-zinc-900 flex justify-between items-center">
-                        <button
-                          onClick={() => {
-                            setActiveTab('applications');
-                          }}
-                          className="mono-text text-[9px] text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
-                        >
-                          View All Records
-                        </button>
-                        {latestApp.website && (
-                          <a
-                            href={latestApp.website}
-                            target="_blank"
-                            referrerPolicy="no-referrer"
-                            className="text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-white flex items-center space-x-1"
-                          >
-                            <span>Website</span>
-                            <ChevronRight size={10} />
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+            <CompaniesManager externalCompanies={[]} onRefresh={loadDatabase} />
           )}
 
-          {/* 7. DIGITAL DOCUMENTS LIST ASSETS */}
+          {/* 7. ASSETS REPOSITORY (Documents) */}
           {activeTab === 'documents' && (
-            <div className="space-y-6" id="documents-assets-panel">
-              <div className="border-b border-zinc-200 dark:border-zinc-800 pb-2">
-                <h3 className="serif-header text-lg font-bold text-zinc-900 dark:text-zinc-50 flex items-center">
-                  <FolderOpen size={16} className="mr-2 text-zinc-500" />
-                  Document Repository
-                </h3>
-                <span className="mono-text text-[10px] text-zinc-500 block">
-                  Verified Assets · {documents.length} files
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {documents.map((doc) => (
-                  <div
-                    key={doc.id}
-                    className="bg-white dark:bg-zinc-950 p-4 rounded border border-zinc-200 dark:border-zinc-800 space-y-3 flex flex-col justify-between"
-                  >
-                    <div className="space-y-1">
-                      <span className="mono-text text-[8px] bg-zinc-100 dark:bg-zinc-900 text-zinc-500 px-1.5 py-0.5 rounded border uppercase">
-                        {doc.type}
-                      </span>
-                      <h4 className="serif-header text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate pt-1">{doc.name}</h4>
-                      <p className="mono-text text-[9px] text-zinc-400">UPLOADED: {doc.uploadedAt} // SIZE: {doc.size}</p>
-                    </div>
-
-                    <div className="pt-2 border-t border-zinc-100 dark:border-zinc-900 flex justify-between items-center">
-                      <span className="mono-text text-[9px] text-emerald-600 dark:text-emerald-400">Version: {doc.version}</span>
-                      <button
-                        onClick={() => toast({ variant: 'info', title: 'Download simulated', description: `Secure PDF decryption initiated for: ${doc.name}` })}
-                        className="mono-text text-[9px] border border-zinc-200 dark:border-zinc-800 px-2 py-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-900"
-                      >
-                        Download Raw File
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <DocumentsManager onRefresh={loadDatabase} />
           )}
 
           {/* 8. ADMIN DASHBOARD & AUDIT LOGS */}

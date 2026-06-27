@@ -137,6 +137,23 @@ export default function PortfolioManager({
     });
   };
 
+  const handleReorder = async (index: number, direction: 'up' | 'down') => {
+    if ((direction === 'up' && index === 0) || (direction === 'down' && index === portfolio.length - 1)) return;
+    
+    const newPortfolio = [...portfolio];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    
+    const temp = newPortfolio[index];
+    newPortfolio[index] = newPortfolio[targetIndex];
+    newPortfolio[targetIndex] = temp;
+    
+    try {
+      await onUpdatePortfolio(newPortfolio);
+    } catch (err) {
+      toast({ variant: 'error', title: 'Reorder failed', description: 'Failed to save new order.' });
+    }
+  };
+
   return (
     <div className="space-y-6" id="portfolio-manager-module">
       {/* View Header */}
@@ -311,7 +328,7 @@ export default function PortfolioManager({
 
       {/* Grid of Existing Projects */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {portfolio.map((project) => (
+        {portfolio.map((project, index) => (
           <div
             key={project.id}
             className="bg-white dark:bg-zinc-950 p-5 rounded border border-zinc-200 dark:border-zinc-800 flex flex-col justify-between space-y-4 hover:border-zinc-400 dark:hover:border-zinc-700 transition-all duration-150 group shadow-xs"
@@ -322,6 +339,24 @@ export default function PortfolioManager({
                   {project.category}
                 </span>
                 <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {index > 0 && (
+                    <button
+                      onClick={() => handleReorder(index, 'up')}
+                      className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded text-zinc-500 hover:text-zinc-900 dark:hover:text-white text-[10px] font-mono"
+                      title="Move up"
+                    >
+                      ↑
+                    </button>
+                  )}
+                  {index < portfolio.length - 1 && (
+                    <button
+                      onClick={() => handleReorder(index, 'down')}
+                      className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded text-zinc-500 hover:text-zinc-900 dark:hover:text-white text-[10px] font-mono"
+                      title="Move down"
+                    >
+                      ↓
+                    </button>
+                  )}
                   <button
                     onClick={() => startEdit(project)}
                     className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
