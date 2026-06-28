@@ -19,3 +19,6 @@ content/jobs/*.xlsx
 
 # Keep markdown job reports in git (they power the CMS on Vercel)
 !content/jobs/*.md
+
+# Local image cache directory
+.cache/

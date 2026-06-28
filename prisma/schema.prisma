@@ -1,0 +1,264 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("SUPABASE_POSTGRES_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  firebaseUid   String    @unique
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  image         String?
+  role          Role      @default(USER)
+  authorStatus  AuthorStatus @default(ACTIVE)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+  createdBy     String?
+  updatedBy     String?
+
+  applications  Application[]
+  portfolio     Portfolio[]
+  guestbook     Guestbook[]
+  logs          Log[]
+  config        Config[]
+  learningTopics LearningTopic[]
+  profile       Profile?
+  companies     Company[]
+  documents     Document[]
+
+  @@index([email])
+  @@index([deletedAt])
+  @@index([authorStatus])
+}
+
+model Application {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  company         String
+  position        String
+  location        String?
+  salary          String?
+  employmentType  String?
+  appliedDate     DateTime
+  deadline        DateTime?
+  referral        String?
+  recruiter       String?
+  contact         String?
+  website         String?
+  priority        Priority  @default(MEDIUM)
+  status          Status    @default(APPLIED)
+  interviewDate   DateTime?
+  notes           String?
+  resumeUsed      String?
+  coverLetter     String?
+  tags            String[]
+  version         Int       @default(1)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+  createdBy       String?
+  updatedBy       String?
+
+  @@index([userId])
+  @@index([status])
+  @@index([priority])
+  @@index([deletedAt])
+}
+
+model Portfolio {
+  id                String    @id @default(cuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id])
+  title             String
+  description       String
+  architectureDiagram String?
+  techStack         String[]
+  githubLink        String?
+  demoLink          String?
+  caseStudy         String?
+  category          String
+  version           Int       @default(1)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime?
+  createdBy         String?
+  updatedBy         String?
+
+  @@index([userId])
+  @@index([category])
+  @@index([deletedAt])
+}
+
+model Guestbook {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  name      String
+  message   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  @@index([userId])
+  @@index([deletedAt])
+}
+
+model Log {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  event     String
+  status    LogStatus
+  module    String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Config {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  key       String   @unique
+  value     Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@unique([userId, key])
+}
+
+model LearningTopic {
+  id          String   @id @default(cuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  topic       String
+  description String
+  action      String
+  date        String
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([date])
+}
+
+model Profile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id])
+  displayName     String
+  slug            String   @unique
+  bio             String?
+  avatar          String?
+  coverImage      String?
+  website         String?
+  socialLinks     Json?
+  theme           Json?
+  customDomain    String?
+  analyticsEnabled Boolean  @default(true)
+  guestbookEnabled Boolean @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([slug])
+  @@index([userId])
+}
+
+model Company {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  name          String
+  website       String?
+  industry      String?
+  hq            String?
+  size          String?
+  status        CompanyStatus @default(TRACKING)
+  notes         String?
+  recruiter     String?
+  contactEmail  String?
+  linkedinUrl   String?
+  tags          String[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Document {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  name          String
+  type          DocumentType @default(OTHER)
+  url           String
+  version       String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+
+  @@index([userId])
+}
+
+enum CompanyStatus {
+  TARGET
+  APPLIED
+  INTERVIEWING
+  BLACKLISTED
+  TRACKING
+}
+
+enum DocumentType {
+  RESUME
+  COVER_LETTER
+  CERTIFICATE
+  OFFER_LETTER
+  OTHER
+}
+
+enum Role {
+  USER
+  AUTHOR
+  ADMIN
+}
+
+enum AuthorStatus {
+  NONE
+  PENDING
+  ACTIVE
+  SUSPENDED
+  REVOKED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum Status {
+  WISHLIST
+  APPLIED
+  HR_SCREENING
+  TECHNICAL
+  OFFER
+  REJECTED
+}
+
+enum LogStatus {
+  SUCCESS
+  WARNING
+  ERROR
+  INFO
+}

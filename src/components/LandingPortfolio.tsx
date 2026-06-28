@@ -1,6 +1,11 @@
 import { PortfolioProject, ResumeData } from '../types/types';
 import { Mail, Phone, MapPin, Github, Linkedin, ExternalLink, ChevronRight } from 'lucide-react';
 import PublicNavbar from './public/PublicNavbar';
+import { Container } from './ui/Container';
+import { Card } from './ui/Card';
+import { Heading } from './ui/Heading';
+import { Helmet } from 'react-helmet-async';
+import OptimizedImage from './ui/OptimizedImage';
 
 interface LandingPortfolioProps {
   portfolio: PortfolioProject[];
@@ -16,7 +21,14 @@ export default function LandingPortfolio({
   isAuthenticated,
 }: LandingPortfolioProps) {
   return (
-    <div className="max-w-5xl mx-auto px-4 py-12 space-y-16" id="landing-portfolio-view">
+    <>
+      <Helmet>
+        <title>{resume.name} | Portfolio</title>
+        <meta name="description" content={resume.summary.substring(0, 155) + '...'} />
+        <meta property="og:title" content={`${resume.name} | Portfolio`} />
+        <meta property="og:description" content={resume.summary.substring(0, 155) + '...'} />
+      </Helmet>
+      <Container id="landing-portfolio-view">
       <PublicNavbar 
         resumeName={resume.name} 
         onEnterConsole={onEnterConsole} 
@@ -29,21 +41,40 @@ export default function LandingPortfolio({
           <h2 className="mono-text text-xs uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
             About Me
           </h2>
-          <p className="serif-header text-lg text-zinc-800 dark:text-zinc-200 leading-relaxed font-light">
-            {resume.summary}
-          </p>
-          <div className="flex flex-wrap gap-4 pt-2">
-            <span className="flex items-center text-xs text-zinc-600 dark:text-zinc-300 mono-text">
-              <MapPin size={12} className="mr-1.5" /> {resume.contact.location}
-            </span>
-            <span className="flex items-center text-xs text-zinc-600 dark:text-zinc-300 mono-text">
-              <Mail size={12} className="mr-1.5" /> {resume.contact.email}
-            </span>
+          
+          <div className="flex flex-col sm:flex-row gap-6 items-start pt-2">
+            {resume.showProfileImage && resume.profileImage && (
+              <div className="shrink-0 relative group">
+                <div className="absolute inset-0 bg-zinc-200 dark:bg-zinc-800 rounded-2xl rotate-3 transition-transform group-hover:rotate-6"></div>
+                <OptimizedImage 
+                  src={resume.profileImage} 
+                  alt="Profile" 
+                  width={160}
+                  height={160}
+                  loading="eager"
+                  className="relative w-32 h-32 sm:w-40 sm:h-40 rounded-2xl object-cover shadow-xl border border-white dark:border-zinc-950"
+                />
+              </div>
+            )}
+            
+            <div className="space-y-4">
+              <Heading as="p" variant="h3" className="text-zinc-800 dark:text-zinc-200 leading-relaxed font-light">
+                {resume.summary}
+              </Heading>
+              <div className="flex flex-wrap gap-4 pt-2">
+                <span className="flex items-center text-xs text-zinc-600 dark:text-zinc-300 mono-text bg-zinc-100 dark:bg-zinc-950 px-2 py-1 rounded">
+                  <MapPin size={12} className="mr-1.5" /> {resume.contact.location}
+                </span>
+                <span className="flex items-center text-xs text-zinc-600 dark:text-zinc-300 mono-text bg-zinc-100 dark:bg-zinc-950 px-2 py-1 rounded">
+                  <Mail size={12} className="mr-1.5" /> {resume.contact.email}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Info Bento Column */}
-        <div className="bg-zinc-100 dark:bg-zinc-900 p-5 rounded border border-zinc-200 dark:border-zinc-800 space-y-4">
+        <Card className="bg-zinc-100 dark:bg-zinc-950 !p-5 space-y-4">
           <span className="mono-text text-[10px] text-zinc-500 dark:text-zinc-400 uppercase tracking-widest block">
             Links & Socials
           </span>
@@ -52,7 +83,7 @@ export default function LandingPortfolio({
               href={`https://${resume.contact.github}`}
               target="_blank"
               referrerPolicy="no-referrer"
-              className="flex items-center justify-between text-xs text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white mono-text"
+              className="flex items-center justify-between text-xs text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white mono-text"
             >
               <span className="flex items-center"><Github size={12} className="mr-1.5" /> {resume.contact.github}</span>
               <ExternalLink size={10} />
@@ -61,7 +92,7 @@ export default function LandingPortfolio({
               href={`https://${resume.contact.linkedin}`}
               target="_blank"
               referrerPolicy="no-referrer"
-              className="flex items-center justify-between text-xs text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white mono-text"
+              className="flex items-center justify-between text-xs text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white mono-text"
             >
               <span className="flex items-center"><Linkedin size={12} className="mr-1.5" /> {resume.contact.linkedin}</span>
               <ExternalLink size={10} />
@@ -78,7 +109,7 @@ export default function LandingPortfolio({
               ))}
             </ul>
           </div>
-        </div>
+        </Card>
       </section>
 
       {/* Systems & Architecture Portfolio */}
@@ -93,14 +124,14 @@ export default function LandingPortfolio({
           {portfolio.map((project) => (
             <div
               key={project.id}
-              className="bg-zinc-50 dark:bg-zinc-900/40 p-6 rounded border border-zinc-200 dark:border-zinc-800 space-y-4 hover:border-zinc-400 dark:hover:border-zinc-700 transition-colors"
+              className="bg-zinc-50 dark:bg-zinc-950/40 p-6 rounded border border-zinc-200 dark:border-zinc-800 space-y-4 hover:border-zinc-400 dark:hover:border-zinc-700 transition-colors"
             >
               <div className="flex justify-between items-start">
                 <div className="space-y-1">
                   <span className="mono-text text-xs bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-2 py-0.5 rounded uppercase font-bold">
                     {project.category}
                   </span>
-                  <h3 className="serif-header text-xl font-bold text-zinc-900 dark:text-zinc-100">
+                  <h3 className="serif-header text-xl font-bold text-zinc-950 dark:text-zinc-100">
                     {project.title}
                   </h3>
                 </div>
@@ -109,7 +140,7 @@ export default function LandingPortfolio({
                     href={project.githubLink}
                     target="_blank"
                     referrerPolicy="no-referrer"
-                    className="p-1 text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                    className="p-1 text-zinc-500 hover:text-zinc-950 dark:hover:text-white"
                   >
                     <Github size={16} />
                   </a>
@@ -121,7 +152,7 @@ export default function LandingPortfolio({
               </p>
 
               {project.architectureDiagram && (
-                <div className="bg-zinc-100 dark:bg-black p-3.5 rounded border border-zinc-200 dark:border-zinc-900">
+                <div className="bg-zinc-100 dark:bg-black p-3.5 rounded border border-zinc-200 dark:border-zinc-950">
                   <span className="mono-text text-xs text-zinc-400 uppercase block mb-1.5">
                     Architecture Overview:
                   </span>
@@ -160,7 +191,7 @@ export default function LandingPortfolio({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-zinc-50 dark:bg-zinc-900/20 p-4 rounded border border-zinc-200 dark:border-zinc-800 space-y-2">
+          <div className="bg-zinc-50 dark:bg-zinc-950/20 p-4 rounded border border-zinc-200 dark:border-zinc-800 space-y-2">
             <span className="mono-text text-[10px] text-zinc-400 uppercase font-bold block">
               Languages
             </span>
@@ -173,7 +204,7 @@ export default function LandingPortfolio({
             </div>
           </div>
 
-          <div className="bg-zinc-50 dark:bg-zinc-900/20 p-4 rounded border border-zinc-200 dark:border-zinc-800 space-y-2">
+          <div className="bg-zinc-50 dark:bg-zinc-950/20 p-4 rounded border border-zinc-200 dark:border-zinc-800 space-y-2">
             <span className="mono-text text-[10px] text-zinc-400 uppercase font-bold block">
               Frameworks & APIs
             </span>
@@ -186,7 +217,7 @@ export default function LandingPortfolio({
             </div>
           </div>
 
-          <div className="bg-zinc-50 dark:bg-zinc-900/20 p-4 rounded border border-zinc-200 dark:border-zinc-800 space-y-2">
+          <div className="bg-zinc-50 dark:bg-zinc-950/20 p-4 rounded border border-zinc-200 dark:border-zinc-800 space-y-2">
             <span className="mono-text text-[10px] text-zinc-400 uppercase font-bold block">
               Cloud Infrastructure
             </span>
@@ -199,7 +230,7 @@ export default function LandingPortfolio({
             </div>
           </div>
 
-          <div className="bg-zinc-50 dark:bg-zinc-900/20 p-4 rounded border border-zinc-200 dark:border-zinc-800 space-y-2">
+          <div className="bg-zinc-50 dark:bg-zinc-950/20 p-4 rounded border border-zinc-200 dark:border-zinc-800 space-y-2">
             <span className="mono-text text-[10px] text-zinc-400 uppercase font-bold block">
               Diagnostics & Tools
             </span>
@@ -225,12 +256,12 @@ export default function LandingPortfolio({
         <div className="space-y-6 relative before:absolute before:inset-0 before:left-3.5 before:w-[1px] before:bg-zinc-200 dark:before:bg-zinc-800">
           {resume.experience.map((exp, index) => (
             <div key={index} className="relative pl-8 space-y-2 group">
-              <div className="absolute left-3.5 top-1.5 w-1.5 h-1.5 rounded-full bg-zinc-900 dark:bg-zinc-200 -translate-x-1/2 group-hover:scale-125 transition-transform" />
+              <div className="absolute left-3.5 top-1.5 w-1.5 h-1.5 rounded-full bg-zinc-950 dark:bg-zinc-200 -translate-x-1/2 group-hover:scale-125 transition-transform" />
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start">
                 <div className="space-y-0.5">
-                  <h3 className="serif-header text-xl font-bold text-zinc-900 dark:text-zinc-100">
+                  <Heading as="h3" variant="h2">
                     {exp.company}
-                  </h3>
+                  </Heading>
                   <p className="mono-text text-xs text-zinc-500 dark:text-zinc-400 uppercase">
                     {exp.role}
                   </p>
@@ -252,14 +283,15 @@ export default function LandingPortfolio({
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-zinc-200 dark:border-zinc-800 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-zinc-500 dark:text-zinc-500 space-y-4 md:space-y-0 pb-16">
-        <div className="space-y-1 text-center md:text-left">
-          <p className="serif-header italic font-light">© {new Date().getFullYear()} {resume.name}. Built with React & Tailwind.</p>
+      <footer className="border-t border-zinc-200 dark:border-zinc-800 pt-12 pb-16 flex flex-col md:flex-row justify-between items-center gap-4 text-zinc-400 dark:text-zinc-600">
+        <div className="mono-text text-[10px] tracking-widest uppercase font-bold">
+          {new Date().getFullYear()} © {resume.name}
         </div>
-        <div className="mono-text text-[10px] tracking-wider text-center md:text-right">
-          All Rights Reserved.
+        <div className="mono-text text-[10px] tracking-widest uppercase">
+          Minimalist Edition
         </div>
       </footer>
-    </div>
+    </Container>
+    </>
   );
 }

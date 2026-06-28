@@ -236,7 +236,7 @@ export default function ApplicationsTable({
           </thead>
           <tbody className="divide-y divide-zinc-200 dark:divide-zinc-900">
             {filteredApps.length === 0 ? (
-              <tr>
+              <tr key="no-results">
                 <td colSpan={7} className="p-8 text-center text-zinc-400 mono-text text-xs">
                   NO_ACTIVE_RECORDS_MATCH_FILTER_CRITERIA
                 </td>
@@ -244,7 +244,7 @@ export default function ApplicationsTable({
             ) : (
               filteredApps.map((app) => (
                 <tr
-                  key={app.id}
+                  key={app.id || app._id || Math.random()}
                   className="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/10 text-xs text-zinc-750 dark:text-zinc-300"
                 >
                   <td className="p-3 font-semibold text-zinc-900 dark:text-zinc-100">
@@ -327,7 +327,7 @@ export default function ApplicationsTable({
                             title: `Delete ${app.company}?`,
                             description: 'Application records will be permanently removed.',
                             confirmLabel: 'Delete',
-                            onConfirm: () => onDeleteApplication(app.id),
+                            onConfirm: () => onDeleteApplication(app.id || app._id),
                           });
                         }}
                         className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-red-500 transition-colors"

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { ResumeData } from '../types/types';
 import { FileText, Save, Sparkles, Copy, Download, History, RefreshCw, Eye, Edit3, Clipboard } from 'lucide-react';
 import { useToast } from './ui/Toast';
+import { Card } from './ui/Card';
+import { Heading } from './ui/Heading';
 
 interface ResumeBuilderProps {
   resume: ResumeData;
@@ -149,16 +151,14 @@ ${exp.highlights.map((h) => `    \\item ${h}`).join('\n')}
 
   return (
     <div className="space-y-6" id="resume-builder-module">
-      <div className="border-b border-zinc-200 dark:border-zinc-800 pb-3 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <div>
-          <h3 className="serif-header text-lg font-bold text-zinc-900 dark:text-zinc-50 flex items-center">
-            <FileText size={16} className="mr-2 text-zinc-500" />
-            LaTeX Resume Builder
-          </h3>
-          <span className="mono-text text-[10px] text-zinc-500 block">
-            Technical Template Formatting · System v1.0
-          </span>
-        </div>
+      <div className="flex justify-between items-center pb-2 border-b border-zinc-200 dark:border-zinc-800">
+        <Heading variant="h3" className="flex items-center">
+          <Sparkles size={16} className="mr-2 text-indigo-500" />
+          AI Resume Analysis
+        </Heading>
+        <span className="mono-text text-[10px] text-zinc-500 block">
+          Technical Template Formatting · System v1.0
+        </span>
 
         {/* Tab Controls */}
         <div className="flex bg-zinc-250 dark:bg-zinc-900 p-0.5 rounded border border-zinc-200 dark:border-zinc-800 justify-between sm:justify-start">
@@ -192,8 +192,7 @@ ${exp.highlights.map((h) => `    \\item ${h}`).join('\n')}
 
       {activeTab === 'editor' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-          {/* Left Panel: Form fields */}
-          <div className="bg-white dark:bg-zinc-950 p-5 rounded border border-zinc-200 dark:border-zinc-800 space-y-4">
+          <Card className="md:col-span-1 space-y-4 !p-5">
             <span className="mono-text text-[10px] text-zinc-400 uppercase font-bold block">
               Candidate Details
             </span>
@@ -285,69 +284,62 @@ ${exp.highlights.map((h) => `    \\item ${h}`).join('\n')}
                 <span>Save and Recompile</span>
               </button>
             </div>
-          </div>
+          </Card>
 
-          {/* Right Panel: Rendered HTML representation of resume */}
-          <div className="bg-zinc-100/50 dark:bg-zinc-900/40 p-6 rounded border border-zinc-200 dark:border-zinc-800 space-y-6">
-            <span className="mono-text text-[9px] text-zinc-400 uppercase tracking-widest block">
-              Form Data Preview
-            </span>
-
-            <div className="bg-white dark:bg-zinc-950 p-6 rounded border border-zinc-200 dark:border-zinc-800 space-y-6 shadow-sm font-sans text-xs max-h-[600px] overflow-y-auto">
-              <div className="text-center space-y-1 border-b border-zinc-150 dark:border-zinc-900 pb-4">
-                <h2 className="serif-header text-xl font-bold text-zinc-900 dark:text-zinc-100">{name}</h2>
-                <p className="mono-text text-zinc-500 uppercase">{title}</p>
-                <p className="mono-text text-[10px] text-zinc-400">
-                  {resume.contact.email} • {resume.contact.location}
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <h3 className="mono-text text-[10px] font-bold text-zinc-400 uppercase tracking-wider border-b border-zinc-100 dark:border-zinc-900 pb-0.5">
-                  Summary
-                </h3>
-                <p className="text-zinc-700 dark:text-zinc-300 italic">{summary}</p>
-              </div>
-
-              <div className="space-y-2">
-                <h3 className="mono-text text-[10px] font-bold text-zinc-400 uppercase tracking-wider border-b border-zinc-100 dark:border-zinc-900 pb-0.5">
-                  Technical Profiles
-                </h3>
-                <ul className="list-none pl-0 space-y-1 text-zinc-700 dark:text-zinc-300 mono-text text-[11px]">
-                  <li><strong>Languages:</strong> {languages}</li>
-                  <li><strong>Frameworks:</strong> {frameworks}</li>
-                  <li><strong>Cloud:</strong> {cloud}</li>
-                  <li><strong>Tools:</strong> {tools}</li>
-                </ul>
-              </div>
-
-              <div className="space-y-3">
-                <h3 className="mono-text text-[10px] font-bold text-zinc-400 uppercase tracking-wider border-b border-zinc-100 dark:border-zinc-900 pb-0.5">
-                  Chronology
-                </h3>
-                {resume.experience.map((exp, index) => (
-                  <div key={index} className="space-y-1">
-                    <div className="flex justify-between font-bold text-zinc-800 dark:text-zinc-200">
-                      <span className="serif-header">{exp.company}</span>
-                      <span className="mono-text text-[10px] text-zinc-400">{exp.period}</span>
-                    </div>
-                    <p className="mono-text text-[10px] text-zinc-500 uppercase">{exp.role}</p>
-                    <ul className="list-disc pl-4 space-y-0.5 text-zinc-600 dark:text-zinc-400">
-                      {exp.highlights.map((h, i) => (
-                        <li key={i}>{h}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
+          <Card className="space-y-6 shadow-sm font-sans text-xs max-h-[600px] overflow-y-auto !p-6">
+            <div className="text-center space-y-1 pb-4 border-b border-zinc-200 dark:border-zinc-800">
+              <Heading variant="h2">{name}</Heading>
+              <p className="text-zinc-600 dark:text-zinc-400">{resume.contact.email} | {resume.contact.location}</p>
+              <p className="mono-text text-[10px] text-zinc-400">
+                {resume.contact.email} • {resume.contact.location}
+              </p>
             </div>
-          </div>
+
+            <div className="space-y-2">
+              <h3 className="mono-text text-[10px] font-bold text-zinc-400 uppercase tracking-wider border-b border-zinc-100 dark:border-zinc-900 pb-0.5">
+                Summary
+              </h3>
+              <p className="text-zinc-700 dark:text-zinc-300 italic">{summary}</p>
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="mono-text text-[10px] font-bold text-zinc-400 uppercase tracking-wider border-b border-zinc-100 dark:border-zinc-900 pb-0.5">
+                Technical Profiles
+              </h3>
+              <ul className="list-none pl-0 space-y-1 text-zinc-700 dark:text-zinc-300 mono-text text-[11px]">
+                <li><strong>Languages:</strong> {languages}</li>
+                <li><strong>Frameworks:</strong> {frameworks}</li>
+                <li><strong>Cloud:</strong> {cloud}</li>
+                <li><strong>Tools:</strong> {tools}</li>
+              </ul>
+            </div>
+
+            <div className="space-y-3">
+              <h3 className="mono-text text-[10px] font-bold text-zinc-400 uppercase tracking-wider border-b border-zinc-100 dark:border-zinc-900 pb-0.5">
+                Chronology
+              </h3>
+              {resume.experience.map((exp, index) => (
+                <div key={index} className="space-y-1">
+                  <div className="flex justify-between font-bold text-zinc-900 dark:text-zinc-100 text-sm">
+                    <Heading as="span" variant="h4" className="text-sm font-bold">{exp.company}</Heading>
+                    <span>{exp.period}</span>
+                  </div>
+                  <p className="mono-text text-[10px] text-zinc-500 uppercase">{exp.role}</p>
+                  <ul className="list-disc pl-4 space-y-0.5 text-zinc-600 dark:text-zinc-400">
+                    {exp.highlights.map((h, i) => (
+                      <li key={i}>{h}</li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </Card>
         </div>
       )}
 
       {activeTab === 'raw_parse' && (
         <div className="space-y-4 max-w-2xl mx-auto">
-          <div className="bg-white dark:bg-zinc-950 p-5 rounded border border-zinc-200 dark:border-zinc-800 space-y-4">
+          <Card className="space-y-4 !p-5">
             <div className="space-y-1">
               <span className="mono-text text-[10px] text-zinc-400 uppercase font-bold block">
                 Paste Raw Resume Content
@@ -376,7 +368,7 @@ ${exp.highlights.map((h) => `    \\item ${h}`).join('\n')}
                 <span>{isParsing ? 'Formatting LaTeX Layout...' : 'Format with AI'}</span>
               </button>
             </div>
-          </div>
+          </Card>
         </div>
       )}
 

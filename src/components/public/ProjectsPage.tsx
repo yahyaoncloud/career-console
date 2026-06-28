@@ -1,6 +1,9 @@
 import { PortfolioProject, ResumeData } from '../../types/types';
 import PublicNavbar from './PublicNavbar';
 import { ExternalLink, Github } from 'lucide-react';
+import { Container } from '../ui/Container';
+import { Card } from '../ui/Card';
+import { Heading } from '../ui/Heading';
 
 interface ProjectsPageProps {
   portfolio: PortfolioProject[];
@@ -11,7 +14,7 @@ interface ProjectsPageProps {
 
 export default function ProjectsPage({ portfolio, resume, onEnterConsole, isAuthenticated }: ProjectsPageProps) {
   return (
-    <div className="max-w-5xl mx-auto px-4 py-12 space-y-16" id="projects-view">
+    <Container id="projects-view">
       <PublicNavbar 
         resumeName={resume.name} 
         onEnterConsole={onEnterConsole} 
@@ -23,21 +26,22 @@ export default function ProjectsPage({ portfolio, resume, onEnterConsole, isAuth
           <h2 className="mono-text text-xs uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
             Featured Projects & Systems
           </h2>
-          <p className="serif-header text-xl text-zinc-800 dark:text-zinc-200 leading-relaxed font-light max-w-2xl">
+          <Heading variant="h2" as="p" className="text-zinc-800 dark:text-zinc-200 leading-relaxed font-light max-w-2xl">
             A deep dive into the operational systems, pipelines, and architecture I've built and scaled in production environments.
-          </p>
+          </Heading>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {portfolio.map((project) => (
-            <div
+            <Card
               key={project.id}
-              className="group bg-white dark:bg-zinc-950 p-6 rounded-lg border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all space-y-4"
+              className="group space-y-4"
+              hover
             >
               <div className="flex justify-between items-start">
-                <h3 className="serif-header text-xl font-bold text-zinc-900 dark:text-zinc-100 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
+                <Heading variant="h3" className="group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
                   {project.title}
-                </h3>
+                </Heading>
                 <span className="mono-text text-xs bg-zinc-100 dark:bg-zinc-900 px-2 py-1 rounded text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 tracking-wider font-bold">
                   {project.category}
                 </span>
@@ -93,7 +97,7 @@ export default function ProjectsPage({ portfolio, resume, onEnterConsole, isAuth
                   </div>
                 )}
               </div>
-            </div>
+            </Card>
           ))}
         </div>
       </section>
@@ -104,6 +108,6 @@ export default function ProjectsPage({ portfolio, resume, onEnterConsole, isAuth
           <p className="serif-header italic font-light">© {new Date().getFullYear()} {resume.name}. Built with React & Tailwind.</p>
         </div>
       </footer>
-    </div>
+    </Container>
   );
 }

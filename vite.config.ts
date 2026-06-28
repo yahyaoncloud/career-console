@@ -1,14 +1,15 @@
 import tailwindcss from '@tailwindcss/vite';
-import react from '@vitejs/plugin-react';
+import { reactRouter } from '@react-router/dev/vite';
 import path from 'path';
 import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [reactRouter(), tailwindcss()],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
+        '~': path.resolve(__dirname, './app'),
       },
     },
     server: {
@@ -22,7 +23,7 @@ export default defineConfig(() => {
       // Pre-transform critical entry files when the dev server starts so they
       // are ready instantly on the first browser request (reduces cold-load blank flash).
       warmup: {
-        clientFiles: ['./src/main.tsx', './src/App.tsx', './src/index.css'],
+        clientFiles: ['./app/entry.client.tsx', './app/root.tsx'],
       },
     },
     optimizeDeps: {

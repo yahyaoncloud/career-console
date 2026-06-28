@@ -1,3 +1,4 @@
+import { authFetch } from '../../lib/api';
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ResumeData } from '../../types/types';
@@ -6,10 +7,14 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import rehypeSlug from 'rehype-slug';
-import { ChevronLeft, Check, Copy } from 'lucide-react';
+import { BookOpen, Copy, Check, ChevronLeft, Terminal } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 import { useTheme } from '../../providers/ThemeProvider';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { vscDarkPlus, vs } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { Container } from '../ui/Container';
+import { Card } from '../ui/Card';
+import { Heading } from '../ui/Heading';
 
 interface BlogPostProps {
   resume: ResumeData;
@@ -48,7 +53,9 @@ const CodeBlock = ({ node, className, children, theme, ...props }: any) => {
   const handleCopy = () => {
     navigator.clipboard.writeText(String(children).replace(/\n$/, ''));
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    // Reset copied state after 2 seconds
+    const timer = setTimeout(() => setCopied(false), 2000);
+    return () => clearTimeout(timer);
   };
 
   if (isBlock) {
@@ -65,7 +72,7 @@ const CodeBlock = ({ node, className, children, theme, ...props }: any) => {
           </button>
         </div>
         <SyntaxHighlighter
-          style={theme === 'dark' ? oneDark : oneLight}
+          style={theme === 'dark' ? vscDarkPlus : vs}
           language={match[1]}
           PreTag="div"
           customStyle={{ margin: 0, borderRadius: 0, background: 'transparent' }}
@@ -93,17 +100,21 @@ export default function BlogPost({ resume, onEnterConsole, isAuthenticated }: Bl
   const [date, setDate] = useState('');
   const [loading, setLoading] = useState(true);
   const [toc, setToc] = useState<TocItem[]>([]);
-
   const { resolvedTheme } = useTheme();
+  
+  const [authorName, setAuthorName] = useState('');
+  const [authorLinkedin, setAuthorLinkedin] = useState('');
 
   useEffect(() => {
-    fetch(`/api/blogs/${slug}`)
+    authFetch(`/api/blogs/${slug}`)
       .then(r => r.json())
       .then(data => {
         if (data.success) {
           setContent(data.blog.content);
           setTitle(data.blog.title);
           setDate(data.blog.date);
+          setAuthorName(data.blog.authorName || resume.name);
+          setAuthorLinkedin(data.blog.authorLinkedin || resume.contact.linkedin);
           
           // Generate TOC
           const extractedToc: TocItem[] = [];
@@ -124,7 +135,14 @@ export default function BlogPost({ resume, onEnterConsole, isAuthenticated }: Bl
   }, [slug]);
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-12 space-y-16" id="blog-post-view">
+    <>
+      <Helmet>
+        <title>{title || 'Blog'} | {resume.name}</title>
+        <meta name="description" content={content.substring(0, 155) + '...'} />
+        <meta property="og:title" content={`${title || 'Blog'} | ${resume.name}`} />
+        <meta property="og:description" content={content.substring(0, 155) + '...'} />
+      </Helmet>
+      <Container id="blog-post-view">
       <PublicNavbar 
         resumeName={resume.name} 
         onEnterConsole={onEnterConsole} 
@@ -145,11 +163,26 @@ export default function BlogPost({ resume, onEnterConsole, isAuthenticated }: Bl
             </Link>
             
             <header className="space-y-4 border-b border-zinc-200 dark:border-zinc-800 pb-8">
-              <h1 className="serif-header text-3xl md:text-5xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight">
+              <Heading variant="h1" className="text-3xl md:text-5xl tracking-tight">
                 {title}
-              </h1>
-              <div className="mono-text text-xs text-zinc-500 tracking-wider">
-                {date}
+              </Heading>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mono-text text-xs text-zinc-500 tracking-wider">
+                <span>{date}</span>
+                <span className="hidden sm:inline text-zinc-300 dark:text-zinc-700">•</span>
+                <span className="flex items-center gap-1.5">
+                  By{' '}
+                  <a 
+                    href={authorLinkedin.startsWith('http') ? authorLinkedin : `https://${authorLinkedin}`} 
+                    target="_blank" 
+                    rel="noreferrer" 
+                    className="text-zinc-950 dark:text-zinc-100 font-bold hover:underline"
+                  >
+                    {authorName}
+                  </a>
+                  <span className="ml-2 px-1.5 py-0.5 bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded text-[9px] uppercase font-bold tracking-widest border border-zinc-300 dark:border-zinc-700">
+                    Author
+                  </span>
+                </span>
               </div>
             </header>
 
@@ -170,7 +203,7 @@ export default function BlogPost({ resume, onEnterConsole, isAuthenticated }: Bl
           {/* Sticky TOC Sidebar */}
           {toc.length > 0 && (
             <aside className="hidden lg:block w-64 shrink-0 sticky top-24 self-start">
-              <div className="bg-zinc-50 dark:bg-zinc-900/50 p-6 rounded-lg border border-zinc-200 dark:border-zinc-800">
+              <Card className="bg-zinc-50 dark:bg-zinc-900/50 !p-6">
                 <h3 className="mono-text text-xs uppercase tracking-wider text-zinc-900 dark:text-zinc-100 font-bold mb-4 flex items-center">
                   Table of Contents
                 </h3>
@@ -186,13 +219,13 @@ export default function BlogPost({ resume, onEnterConsole, isAuthenticated }: Bl
                     </li>
                   ))}
                 </ul>
-              </div>
+              </Card>
             </aside>
           )}
         </div>
       ) : (
         <div className="text-center py-24 space-y-4">
-          <h2 className="serif-header text-2xl font-bold text-zinc-900 dark:text-zinc-100">Post Not Found</h2>
+          <Heading variant="h2">Post Not Found</Heading>
           <p className="text-zinc-500 font-sans">The article you're looking for doesn't exist or was removed.</p>
           <Link to="/blog" className="inline-block mt-4 text-sm mono-text text-teal-600 dark:text-teal-400 hover:underline">
             Return to Blog
@@ -206,6 +239,7 @@ export default function BlogPost({ resume, onEnterConsole, isAuthenticated }: Bl
           <p className="serif-header italic font-light">© {new Date().getFullYear()} {resume.name}. Built with React & Tailwind.</p>
         </div>
       </footer>
-    </div>
+    </Container>
+    </>
   );
 }

@@ -1,7 +1,11 @@
+import { authFetch } from '../../lib/api';
 import { useState, useEffect } from 'react';
 import { ResumeData } from '../../types/types';
 import PublicNavbar from './PublicNavbar';
 import { MessageSquare, Send } from 'lucide-react';
+import { Container } from '../ui/Container';
+import { Card } from '../ui/Card';
+import { Heading } from '../ui/Heading';
 
 interface GuestbookProps {
   resume: ResumeData;
@@ -23,7 +27,7 @@ export default function Guestbook({ resume, onEnterConsole, isAuthenticated }: G
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    fetch('/api/guestbook')
+    authFetch('/api/guestbook')
       .then(r => r.json())
       .then(data => {
         if (data.entries) setEntries(data.entries);
@@ -37,7 +41,7 @@ export default function Guestbook({ resume, onEnterConsole, isAuthenticated }: G
 
     setIsSubmitting(true);
     try {
-      const res = await fetch('/api/guestbook', {
+      const res = await authFetch('/api/guestbook', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, message }),
@@ -56,7 +60,7 @@ export default function Guestbook({ resume, onEnterConsole, isAuthenticated }: G
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-12 space-y-16" id="guestbook-view">
+    <Container id="guestbook-view">
       <PublicNavbar 
         resumeName={resume.name} 
         onEnterConsole={onEnterConsole} 
@@ -68,12 +72,12 @@ export default function Guestbook({ resume, onEnterConsole, isAuthenticated }: G
           <h2 className="mono-text text-xs uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center">
             <MessageSquare size={14} className="mr-2" /> Digital Guestbook
           </h2>
-          <p className="serif-header text-xl text-zinc-800 dark:text-zinc-200 leading-relaxed font-light max-w-2xl">
+          <Heading variant="h2" as="p" className="text-zinc-800 dark:text-zinc-200 leading-relaxed font-light max-w-2xl">
             Drop a message, say hello, or let me know what brought you here.
-          </p>
+          </Heading>
         </div>
 
-        <div className="bg-white dark:bg-zinc-950 p-6 rounded border border-zinc-200 dark:border-zinc-800 shadow-sm">
+        <Card className="!p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-[10px] mono-text text-zinc-500 mb-1 uppercase tracking-wider">Your Name</label>
@@ -106,7 +110,7 @@ export default function Guestbook({ resume, onEnterConsole, isAuthenticated }: G
               {isSubmitting ? 'Signing...' : 'Sign Guestbook'}
             </button>
           </form>
-        </div>
+        </Card>
 
         <div className="space-y-4 pt-8">
           {entries.length === 0 ? (
@@ -115,7 +119,7 @@ export default function Guestbook({ resume, onEnterConsole, isAuthenticated }: G
             entries.map((entry) => (
               <div key={entry.id} className="border-l-2 border-zinc-200 dark:border-zinc-800 pl-4 py-1 space-y-1">
                 <div className="flex items-center space-x-2">
-                  <span className="serif-header text-lg font-bold text-zinc-900 dark:text-zinc-100">{entry.name}</span>
+                  <Heading as="span" variant="h3" className="text-lg">{entry.name}</Heading>
                   <span className="text-[10px] mono-text text-zinc-400">
                     {new Date(entry.timestamp).toLocaleDateString()}
                   </span>
@@ -135,6 +139,6 @@ export default function Guestbook({ resume, onEnterConsole, isAuthenticated }: G
           <p className="serif-header italic font-light">© {new Date().getFullYear()} {resume.name}. Built with React & Tailwind.</p>
         </div>
       </footer>
-    </div>
+    </Container>
   );
 }
