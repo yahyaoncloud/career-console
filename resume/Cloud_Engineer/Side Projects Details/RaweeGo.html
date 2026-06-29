@@ -1,0 +1,1199 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Raweego — Azure Cloud Architecture</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.0/index.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono@5.0.0/index.css">
+<style>
+  :root{
+    --azure:#0078D4;
+    --azure-dark:#004578;
+    --azure-light:#50E6FF;
+    --violet:#7B61FF;
+    --bg:#0A0E1A;
+    --bg-2:#0F1524;
+    --panel:rgba(255,255,255,0.04);
+    --panel-border:rgba(255,255,255,0.08);
+    --text:#E6EDF7;
+    --muted:#8A94A6;
+    --success:#22C55E;
+    --warn:#F59E0B;
+    --danger:#EF4444;
+    --accent:#50E6FF;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;min-height:100vh;overflow-x:hidden}
+  body::before{
+    content:'';position:fixed;inset:0;z-index:-1;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 0%, rgba(0,120,212,0.18), transparent 60%),
+      radial-gradient(ellipse 60% 50% at 80% 10%, rgba(123,97,255,0.15), transparent 60%),
+      radial-gradient(ellipse 80% 60% at 50% 100%, rgba(80,230,255,0.08), transparent 60%),
+      var(--bg);
+  }
+  .mono{font-family:'JetBrains Mono',monospace}
+
+  /* Header */
+  header{
+    padding:32px 48px 16px;
+    display:flex;align-items:center;justify-content:space-between;
+    border-bottom:1px solid var(--panel-border);
+    backdrop-filter:blur(10px);
+    position:sticky;top:0;z-index:50;
+    background:rgba(10,14,26,0.7);
+  }
+  .brand{display:flex;align-items:center;gap:14px}
+  .logo{
+    width:44px;height:44px;border-radius:12px;
+    background:linear-gradient(135deg,var(--azure) 0%,var(--violet) 100%);
+    display:grid;place-items:center;font-weight:800;font-size:20px;
+    box-shadow:0 8px 24px rgba(0,120,212,0.35);
+    position:relative;overflow:hidden;
+  }
+  .logo::after{
+    content:'';position:absolute;inset:0;
+    background:linear-gradient(135deg,transparent 40%,rgba(255,255,255,0.25) 50%,transparent 60%);
+  }
+  .brand h1{font-size:20px;font-weight:700;letter-spacing:-0.02em}
+  .brand p{font-size:12px;color:var(--muted);margin-top:2px}
+  .badge{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:6px 12px;border-radius:999px;
+    background:rgba(34,197,94,0.12);color:var(--success);
+    font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;
+    border:1px solid rgba(34,197,94,0.25);
+  }
+  .badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--success);box-shadow:0 0 8px var(--success);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+  /* Hero */
+  .hero{padding:48px 48px 32px;text-align:center;max-width:1100px;margin:0 auto}
+  .hero h2{
+    font-size:clamp(32px,5vw,56px);font-weight:800;letter-spacing:-0.03em;line-height:1.05;
+    background:linear-gradient(135deg,#fff 0%,#50E6FF 50%,#7B61FF 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    margin-bottom:16px;
+  }
+  .hero p{color:var(--muted);font-size:16px;max-width:680px;margin:0 auto;line-height:1.6}
+
+  /* Tabs */
+  .tabs-wrap{padding:0 48px;margin-top:24px;display:flex;justify-content:center}
+  .tabs{
+    display:inline-flex;gap:4px;padding:6px;
+    background:var(--panel);border:1px solid var(--panel-border);
+    border-radius:16px;backdrop-filter:blur(12px);
+  }
+  .tab{
+    position:relative;
+    padding:14px 24px;border:none;background:transparent;color:var(--muted);
+    font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;
+    border-radius:12px;transition:color 0.25s;display:flex;flex-direction:column;align-items:flex-start;gap:2px;
+    min-width:180px;
+  }
+  .tab .tier{font-size:11px;color:var(--muted);font-weight:500;letter-spacing:0.05em;text-transform:uppercase}
+  .tab .name{color:var(--text);font-size:15px}
+  .tab:hover{color:var(--text)}
+  .tab.active{background:linear-gradient(135deg,rgba(0,120,212,0.2),rgba(123,97,255,0.2));color:#fff;box-shadow:inset 0 0 0 1px rgba(80,230,255,0.2)}
+  .tab.active .tier{color:var(--accent)}
+
+  /* Content */
+  main{padding:40px 48px 80px;max-width:1400px;margin:0 auto}
+  .panel{display:none;animation:fadeIn 0.45s ease}
+  .panel.active{display:block}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+  /* Tier header */
+  .tier-header{
+    display:grid;grid-template-columns:1.2fr 1fr;gap:24px;margin-bottom:32px;
+  }
+  .tier-card{
+    padding:28px;border-radius:20px;
+    background:linear-gradient(135deg,rgba(0,120,212,0.1),rgba(123,97,255,0.08));
+    border:1px solid var(--panel-border);
+    position:relative;overflow:hidden;
+  }
+  .tier-card::before{
+    content:'';position:absolute;top:-50%;right:-20%;width:300px;height:300px;
+    background:radial-gradient(circle,rgba(80,230,255,0.15),transparent 70%);
+    pointer-events:none;
+  }
+  .tier-card h3{font-size:14px;color:var(--accent);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px}
+  .tier-card h2{font-size:32px;font-weight:800;letter-spacing:-0.02em;margin-bottom:12px}
+  .tier-card p{color:var(--muted);line-height:1.6;font-size:14px}
+
+  .cost-card{
+    padding:28px;border-radius:20px;
+    background:rgba(255,255,255,0.03);border:1px solid var(--panel-border);
+    display:flex;flex-direction:column;justify-content:center;
+  }
+  .cost-card .label{font-size:12px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px}
+  .cost-card .amount{font-size:48px;font-weight:800;letter-spacing:-0.03em;background:linear-gradient(135deg,#fff,#50E6FF);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .cost-card .period{font-size:14px;color:var(--muted);margin-top:4px}
+  .cost-breakdown{display:flex;gap:16px;margin-top:20px;flex-wrap:wrap}
+  .cost-item{flex:1;min-width:100px;padding:12px;background:rgba(0,0,0,0.2);border-radius:10px;border:1px solid var(--panel-border)}
+  .cost-item .k{font-size:11px;color:var(--muted);margin-bottom:4px}
+  .cost-item .v{font-size:15px;font-weight:700}
+
+  /* Architecture diagram */
+  .arch-section{margin-bottom:40px}
+  .section-title{
+    display:flex;align-items:center;gap:12px;margin-bottom:20px;
+    font-size:13px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);
+  }
+  .section-title::before{content:'';width:24px;height:2px;background:linear-gradient(90deg,var(--azure),var(--violet))}
+  .section-title .num{
+    display:inline-grid;place-items:center;width:28px;height:28px;border-radius:8px;
+    background:rgba(0,120,212,0.15);color:var(--accent);font-size:12px;
+    border:1px solid rgba(80,230,255,0.2);
+  }
+
+  .diagram{
+    padding:32px;border-radius:20px;
+    background:linear-gradient(180deg,rgba(15,21,36,0.8),rgba(10,14,26,0.9));
+    border:1px solid var(--panel-border);
+    overflow-x:auto;
+  }
+  .diagram svg{display:block;margin:0 auto;max-width:100%;height:auto}
+
+  /* Services grid */
+  .services{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+  .service{
+    padding:20px;border-radius:16px;
+    background:var(--panel);border:1px solid var(--panel-border);
+    transition:all 0.25s;position:relative;overflow:hidden;
+  }
+  .service:hover{transform:translateY(-2px);border-color:rgba(80,230,255,0.3);box-shadow:0 12px 32px rgba(0,120,212,0.15)}
+  .service .icon{
+    width:40px;height:40px;border-radius:10px;display:grid;place-items:center;
+    margin-bottom:14px;font-size:18px;font-weight:700;
+    background:linear-gradient(135deg,rgba(0,120,212,0.2),rgba(123,97,255,0.2));
+    border:1px solid rgba(80,230,255,0.15);
+  }
+  .service h4{font-size:15px;font-weight:700;margin-bottom:6px}
+  .service p{font-size:13px;color:var(--muted);line-height:1.5}
+  .service .tag{
+    display:inline-block;margin-top:10px;padding:3px 8px;border-radius:6px;
+    font-size:10px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;
+    background:rgba(80,230,255,0.1);color:var(--accent);border:1px solid rgba(80,230,255,0.2);
+  }
+
+  /* Layers */
+  .layers{display:flex;flex-direction:column;gap:12px}
+  .layer{
+    padding:20px 24px;border-radius:16px;
+    background:var(--panel);border:1px solid var(--panel-border);
+    display:grid;grid-template-columns:180px 1fr auto;gap:24px;align-items:center;
+  }
+  .layer .lname{font-weight:700;font-size:14px;display:flex;align-items:center;gap:10px}
+  .layer .lname .dot{width:8px;height:8px;border-radius:50%}
+  .layer .services-list{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{
+    padding:6px 12px;border-radius:8px;font-size:12px;font-weight:500;
+    background:rgba(255,255,255,0.04);border:1px solid var(--panel-border);
+    color:var(--text);
+  }
+  .layer .count{
+    padding:4px 10px;border-radius:8px;font-size:12px;font-weight:700;
+    background:rgba(80,230,255,0.1);color:var(--accent);border:1px solid rgba(80,230,255,0.2);
+  }
+
+  /* Features list */
+  .features{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+  .feature{
+    padding:18px 20px;border-radius:14px;
+    background:var(--panel);border:1px solid var(--panel-border);
+    display:flex;gap:14px;align-items:flex-start;
+  }
+  .feature .check{
+    flex-shrink:0;width:24px;height:24px;border-radius:8px;
+    background:rgba(34,197,94,0.15);color:var(--success);
+    display:grid;place-items:center;font-size:14px;font-weight:700;
+    border:1px solid rgba(34,197,94,0.25);
+  }
+  .feature h5{font-size:14px;font-weight:700;margin-bottom:4px}
+  .feature p{font-size:12px;color:var(--muted);line-height:1.5}
+
+  /* Comparison table */
+  .compare{
+    background:var(--panel);border:1px solid var(--panel-border);
+    border-radius:20px;overflow:hidden;
+  }
+  .compare table{width:100%;border-collapse:collapse}
+  .compare th,.compare td{padding:14px 20px;text-align:left;font-size:13px;border-bottom:1px solid var(--panel-border)}
+  .compare th{background:rgba(0,0,0,0.2);font-weight:700;color:var(--muted);font-size:11px;letter-spacing:0.08em;text-transform:uppercase}
+  .compare td:first-child{font-weight:600}
+  .compare tr:last-child td{border-bottom:none}
+  .compare .yes{color:var(--success)}
+  .compare .no{color:var(--muted);opacity:0.4}
+
+  /* Flow */
+  .flow{
+    display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+    padding:20px;border-radius:14px;background:var(--panel);border:1px solid var(--panel-border);
+  }
+  .flow .step{
+    padding:10px 16px;border-radius:10px;font-size:13px;font-weight:600;
+    background:rgba(0,120,212,0.15);border:1px solid rgba(80,230,255,0.2);color:var(--text);
+  }
+  .flow .arrow{color:var(--accent);font-size:18px}
+
+  @media (max-width:900px){
+    header,.hero,.tabs-wrap,main{padding-left:20px;padding-right:20px}
+    .tier-header{grid-template-columns:1fr}
+    .tab{min-width:auto;padding:10px 14px}
+    .tab .tier{font-size:10px}
+    .tab .name{font-size:13px}
+    .layer{grid-template-columns:1fr;gap:12px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="logo">R</div>
+    <div>
+      <h1>Raweego Cloud Architecture</h1>
+      <p>Azure Platform Blueprint · v2.0</p>
+    </div>
+  </div>
+  <div class="badge">Production Ready</div>
+</header>
+
+<section class="hero">
+  <h2>From MVP to Global Scale</h2>
+  <p>A complete Azure architecture roadmap for Raweego — designed to grow affordably from your first user to ten thousand, without re-architecting at every milestone.</p>
+</section>
+
+<div class="tabs-wrap">
+  <div class="tabs" role="tablist">
+    <button class="tab active" data-tab="mvp">
+      <span class="tier">Phase 01</span>
+      <span class="name">MVP Launch</span>
+    </button>
+    <button class="tab" data-tab="growth">
+      <span class="tier">Phase 02</span>
+      <span class="name">~1,000 Users</span>
+    </button>
+    <button class="tab" data-tab="scale">
+      <span class="tier">Phase 03</span>
+      <span class="name">10,000+ Users</span>
+    </button>
+  </div>
+</div>
+
+<main>
+
+<!-- ================= MVP ================= -->
+<section class="panel active" id="mvp">
+  <div class="tier-header">
+    <div class="tier-card">
+      <h3>Phase 01 · MVP</h3>
+      <h2>Ship Fast, Stay Lean</h2>
+      <p>Minimal viable infrastructure to validate the product. Single-region, single-VM compute for AI workers, managed services for everything else. Focus on product-market fit, not ops.</p>
+    </div>
+    <div class="cost-card">
+      <div class="label">Estimated Monthly Cost</div>
+      <div class="amount">$120<span style="font-size:20px;opacity:0.6">–$200</span></div>
+      <div class="period">per month · single region</div>
+      <div class="cost-breakdown">
+        <div class="cost-item"><div class="k">Compute</div><div class="v">~$60</div></div>
+        <div class="cost-item"><div class="k">Database</div><div class="v">~$35</div></div>
+        <div class="cost-item"><div class="k">Storage</div><div class="v">~$15</div></div>
+        <div class="cost-item"><div class="k">Other</div><div class="v">~$30</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arch-section">
+    <div class="section-title"><span class="num">1</span>Architecture Diagram</div>
+    <div class="diagram">
+      <svg viewBox="0 0 1000 560" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#0078D4"/>
+            <stop offset="100%" stop-color="#7B61FF"/>
+          </linearGradient>
+          <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#50E6FF"/>
+            <stop offset="100%" stop-color="#0078D4"/>
+          </linearGradient>
+          <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="#50E6FF"/>
+          </marker>
+        </defs>
+
+        <!-- Clients -->
+        <text x="30" y="40" fill="#8A94A6" font-size="11" font-weight="700" letter-spacing="2">CLIENTS</text>
+        <g>
+          <rect x="30" y="55" width="140" height="50" rx="10" fill="rgba(0,120,212,0.12)" stroke="#0078D4" stroke-width="1.5"/>
+          <text x="100" y="78" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">📱 React Native</text>
+          <text x="100" y="94" text-anchor="middle" fill="#8A94A6" font-size="10">Mobile Apps</text>
+        </g>
+        <g>
+          <rect x="190" y="55" width="140" height="50" rx="10" fill="rgba(0,120,212,0.12)" stroke="#0078D4" stroke-width="1.5"/>
+          <text x="260" y="78" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">🌐 React Website</text>
+          <text x="260" y="94" text-anchor="middle" fill="#8A94A6" font-size="10">Static Web Apps</text>
+        </g>
+
+        <!-- Identity -->
+        <text x="30" y="155" fill="#8A94A6" font-size="11" font-weight="700" letter-spacing="2">IDENTITY</text>
+        <g>
+          <rect x="30" y="170" width="300" height="50" rx="10" fill="rgba(123,97,255,0.12)" stroke="#7B61FF" stroke-width="1.5"/>
+          <text x="180" y="193" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">🔐 Microsoft Entra External ID</text>
+          <text x="180" y="209" text-anchor="middle" fill="#8A94A6" font-size="10">Google SSO · Apple Sign In · Email/Password</text>
+        </g>
+
+        <!-- Edge -->
+        <text x="380" y="40" fill="#8A94A6" font-size="11" font-weight="700" letter-spacing="2">EDGE</text>
+        <g>
+          <rect x="380" y="55" width="140" height="50" rx="10" fill="rgba(80,230,255,0.12)" stroke="#50E6FF" stroke-width="1.5"/>
+          <text x="450" y="78" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">🌍 Azure DNS</text>
+          <text x="450" y="94" text-anchor="middle" fill="#8A94A6" font-size="10">Custom domains</text>
+        </g>
+        <g>
+          <rect x="540" y="55" width="140" height="50" rx="10" fill="rgba(80,230,255,0.12)" stroke="#50E6FF" stroke-width="1.5"/>
+          <text x="610" y="78" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">⚡ Static Web Apps</text>
+          <text x="610" y="94" text-anchor="middle" fill="#8A94A6" font-size="10">React frontend</text>
+        </g>
+
+        <!-- Application -->
+        <text x="380" y="155" fill="#8A94A6" font-size="11" font-weight="700" letter-spacing="2">APPLICATION</text>
+        <g>
+          <rect x="380" y="170" width="300" height="50" rx="10" fill="url(#g1)" opacity="0.9"/>
+          <text x="530" y="193" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">🚀 Azure Container Apps</text>
+          <text x="530" y="209" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="10">Go Backend API · REST + WebSocket</text>
+        </g>
+
+        <!-- Data -->
+        <text x="30" y="275" fill="#8A94A6" font-size="11" font-weight="700" letter-spacing="2">DATA</text>
+        <g>
+          <rect x="30" y="290" width="140" height="50" rx="10" fill="rgba(0,120,212,0.12)" stroke="#0078D4" stroke-width="1.5"/>
+          <text x="100" y="313" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">🐘 PostgreSQL</text>
+          <text x="100" y="329" text-anchor="middle" fill="#8A94A6" font-size="10">Flexible Server</text>
+        </g>
+        <g>
+          <rect x="190" y="290" width="140" height="50" rx="10" fill="rgba(0,120,212,0.12)" stroke="#0078D4" stroke-width="1.5"/>
+          <text x="260" y="313" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">📦 Blob Storage</text>
+          <text x="260" y="329" text-anchor="middle" fill="#8A94A6" font-size="10">Uploads · Audio</text>
+        </g>
+        <g>
+          <rect x="350" y="290" width="140" height="50" rx="10" fill="rgba(0,120,212,0.12)" stroke="#0078D4" stroke-width="1.5"/>
+          <text x="420" y="313" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">🔑 Key Vault</text>
+          <text x="420" y="329" text-anchor="middle" fill="#8A94A6" font-size="10">Secrets</text>
+        </g>
+
+        <!-- AI Workers -->
+        <text x="540" y="275" fill="#8A94A6" font-size="11" font-weight="700" letter-spacing="2">AI WORKERS</text>
+        <g>
+          <rect x="540" y="290" width="300" height="50" rx="10" fill="rgba(245,158,11,0.12)" stroke="#F59E0B" stroke-width="1.5"/>
+          <text x="690" y="313" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">🖥️ Single Ubuntu VM</text>
+          <text x="690" y="329" text-anchor="middle" fill="#8A94A6" font-size="10">Python Workers · Piper TTS · OCR</text>
+        </g>
+
+        <!-- Monitoring -->
+        <text x="30" y="395" fill="#8A94A6" font-size="11" font-weight="700" letter-spacing="2">OBSERVABILITY</text>
+        <g>
+          <rect x="30" y="410" width="140" height="50" rx="10" fill="rgba(34,197,94,0.12)" stroke="#22C55E" stroke-width="1.5"/>
+          <text x="100" y="433" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">📊 App Insights</text>
+          <text x="100" y="449" text-anchor="middle" fill="#8A94A6" font-size="10">APM + Logs</text>
+        </g>
+        <g>
+          <rect x="190" y="410" width="140" height="50" rx="10" fill="rgba(34,197,94,0.12)" stroke="#22C55E" stroke-width="1.5"/>
+          <text x="260" y="433" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">📈 Azure Monitor</text>
+          <text x="260" y="449" text-anchor="middle" fill="#8A94A6" font-size="10">Metrics</text>
+        </g>
+
+        <!-- DevOps -->
+        <text x="380" y="395" fill="#8A94A6" font-size="11" font-weight="700" letter-spacing="2">DEVOPS</text>
+        <g>
+          <rect x="380" y="410" width="140" height="50" rx="10" fill="rgba(123,97,255,0.12)" stroke="#7B61FF" stroke-width="1.5"/>
+          <text x="450" y="433" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">⚙️ GitHub Actions</text>
+          <text x="450" y="449" text-anchor="middle" fill="#8A94A6" font-size="10">CI/CD Pipelines</text>
+        </g>
+        <g>
+          <rect x="540" y="410" width="140" height="50" rx="10" fill="rgba(123,97,255,0.12)" stroke="#7B61FF" stroke-width="1.5"/>
+          <text x="610" y="433" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">📦 Container Registry</text>
+          <text x="610" y="449" text-anchor="middle" fill="#8A94A6" font-size="10">ACR</text>
+        </g>
+
+        <!-- Connections -->
+        <g stroke="#50E6FF" stroke-width="1.2" fill="none" opacity="0.5" stroke-dasharray="3,3">
+          <path d="M100,105 L100,170"/>
+          <path d="M260,105 L260,170"/>
+          <path d="M330,195 L380,195"/>
+          <path d="M530,220 L530,290"/>
+          <path d="M530,220 L260,290"/>
+          <path d="M530,220 L420,290"/>
+          <path d="M680,220 L690,290"/>
+          <path d="M450,410 L450,340"/>
+          <path d="M610,410 L610,340"/>
+        </g>
+
+        <!-- Legend -->
+        <g transform="translate(30,500)">
+          <rect width="940" height="40" rx="8" fill="rgba(0,0,0,0.3)" stroke="rgba(255,255,255,0.05)"/>
+          <text x="20" y="25" fill="#8A94A6" font-size="11">MVP · 11 Azure services · Single region · No VNet required · ~$150/mo</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <div class="arch-section">
+    <div class="section-title"><span class="num">2</span>Platform Layers</div>
+    <div class="layers">
+      <div class="layer">
+        <div class="lname"><span class="dot" style="background:#50E6FF"></span>Edge & CDN</div>
+        <div class="services-list">
+          <span class="chip">Azure DNS</span>
+          <span class="chip">Static Web Apps</span>
+        </div>
+        <div class="count">2</div>
+      </div>
+      <div class="layer">
+        <div class="lname"><span class="dot" style="background:#7B61FF"></span>Identity</div>
+        <div class="services-list">
+          <span class="chip">Entra External ID</span>
+          <span class="chip">Google OAuth</span>
+          <span class="chip">Apple Sign In</span>
+        </div>
+        <div class="count">3</div>
+      </div>
+      <div class="layer">
+        <div class="lname"><span class="dot" style="background:#0078D4"></span>Application</div>
+        <div class="services-list">
+          <span class="chip">Container Apps (Go)</span>
+          <span class="chip">WebSocket Hub</span>
+        </div>
+        <div class="count">2</div>
+      </div>
+      <div class="layer">
+        <div class="lname"><span class="dot" style="background:#F59E0B"></span>AI Workers</div>
+        <div class="services-list">
+          <span class="chip">Single Ubuntu VM</span>
+          <span class="chip">Python Workers</span>
+          <span class="chip">Piper TTS</span>
+        </div>
+        <div class="count">1</div>
+      </div>
+      <div class="layer">
+        <div class="lname"><span class="dot" style="background:#22C55E"></span>Data</div>
+        <div class="services-list">
+          <span class="chip">PostgreSQL Flexible</span>
+          <span class="chip">Blob Storage</span>
+          <span class="chip">Key Vault</span>
+        </div>
+        <div class="count">3</div>
+      </div>
+      <div class="layer">
+        <div class="lname"><span class="dot" style="background:#EF4444"></span>Observability</div>
+        <div class="services-list">
+          <span class="chip">Application Insights</span>
+          <span class="chip">Azure Monitor</span>
+        </div>
+        <div class="count">2</div>
+      </div>
+      <div class="layer">
+        <div class="lname"><span class="dot" style="background:#EC4899"></span>DevOps</div>
+        <div class="services-list">
+          <span class="chip">GitHub Actions</span>
+          <span class="chip">Azure Container Registry</span>
+        </div>
+        <div class="count">2</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arch-section">
+    <div class="section-title"><span class="num">3</span>Deployment Pipeline</div>
+    <div class="flow">
+      <div class="step">Git Push</div><span class="arrow">→</span>
+      <div class="step">GitHub Actions</div><span class="arrow">→</span>
+      <div class="step">Build Docker</div><span class="arrow">→</span>
+      <div class="step">Push to ACR</div><span class="arrow">→</span>
+      <div class="step">Deploy Container Apps</div><span class="arrow">→</span>
+      <div class="step">Health Check</div>
+    </div>
+  </div>
+
+  <div class="arch-section">
+    <div class="section-title"><span class="num">4</span>Core Capabilities</div>
+    <div class="features">
+      <div class="feature"><div class="check">✓</div><div><h5>Managed Authentication</h5><p>Entra External ID handles OAuth, MFA, password reset. Go only validates JWTs.</p></div></div>
+      <div class="feature"><div class="check">✓</div><div><h5>Auto-scaling API</h5><p>Container Apps scale to zero when idle, saving cost during off-peak hours.</p></div></div>
+      <div class="feature"><div class="check">✓</div><div><h5>Secure Secrets</h5><p>All API keys, DB passwords, OAuth secrets stored in Key Vault with RBAC.</p></div></div>
+      <div class="feature"><div class="check">✓</div><div><h5>Full Observability</h5><p>Application Insights tracks latency, exceptions, and SQL performance.</p></div></div>
+      <div class="feature"><div class="check">✓</div><div><h5>Automated CI/CD</h5><p>Three GitHub workflows: frontend, backend, Python workers.</p></div></div>
+      <div class="feature"><div class="check">✓</div><div><h5>Global CDN</h5><p>Static Web Apps serves the React website from edge locations worldwide.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= GROWTH ================= -->
+<section class="panel" id="growth">
+  <div class="tier-header">
+    <div class="tier-card">
+      <h3>Phase 02 · Growth</h3>
+      <h2>Production-Grade SaaS</h2>
+      <p>Add networking isolation, global CDN, push notifications, and independent AI worker scaling. This is where Raweego becomes a real, defensible platform.</p>
+    </div>
+    <div class="cost-card">
+      <div class="label">Estimated Monthly Cost</div>
+      <div class="amount">$550<span style="font-size:20px;opacity:0.6">–$850</span></div>
+      <div class="period">per month · single region · hardened</div>
+      <div class="cost-breakdown">
+        <div class="cost-item"><div class="k">Compute</div><div class="v">~$220</div></div>
+        <div class="cost-item"><div class="k">Network</div><div class="v">~$120</div></div>
+        <div class="cost-item"><div class="k">Database</div><div class="v">~$95</div></div>
+        <div class="cost-item"><div class="k">Services</div><div class="v">~$180</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arch-section">
+    <div class="section-title"><span class="num">1</span>Architecture Diagram</div>
+    <div class="diagram">
+      <svg viewBox="0 0 1000 680" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="gg1" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#0078D4"/>
+            <stop offset="100%" stop-color="#7B61FF"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Clients -->
+        <text x="30" y="35" fill="#8A94A6" font-size="11" font-weight="700" letter-spacing="2">CLIENTS</text>
+        <g>
+          <rect x="30" y="48" width="120" height="42" rx="8" fill="rgba(0,120,212,0.12)" stroke="#0078D4"/>
+          <text x="90" y="68" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">📱 Mobile</text>
+          <text x="90" y="82" text-anchor="middle" fill="#8A94A6" font-size="9">React Native</text>
+        </g>
+        <g>
+          <rect x="160" y="48" width="120" height="42" rx="8" fill="rgba(0,120,212,0.12)" stroke="#0078D4"/>
+          <text x="220" y="68" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">🌐 Website</text>
+          <text x="220" y="82" text-anchor="middle" fill="#8A94A6" font-size="9">React Router v8</text>
+        </g>
+        <g>
+          <rect x="290" y="48" width="120" height="42" rx="8" fill="rgba(0,120,212,0.12)" stroke="#0078D4"/>
+          <text x="350" y="68" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">🛠 Admin</text>
+          <text x="350" y="82" text-anchor="middle" fill="#8A94A6" font-size="9">Internal Portal</text>
+        </g>
+
+        <!-- Edge -->
+        <text x="460" y="35" fill="#8A94A6" font-size="11" font-weight="700" letter-spacing="2">EDGE · GLOBAL</text>
+        <g>
+          <rect x="460" y="48" width="140" height="42" rx="8" fill="rgba(80,230,255,0.12)" stroke="#50E6FF"/>
+          <text x="530" y="68" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">🌍 Azure DNS</text>
+          <text x="530" y="82" text-anchor="middle" fill="#8A94A6" font-size="9">Custom domains</text>
+        </g>
+        <g>
+          <rect x="610" y="48" width="180" height="42" rx="8" fill="url(#gg1)"/>
+          <text x="700" y="68" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">🛡 Front Door + WAF</text>
+          <text x="700" y="82" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="9">CDN · HTTPS · DDoS</text>
+        </g>
+        <g>
+          <rect x="800" y="48" width="170" height="42" rx="8" fill="rgba(80,230,255,0.12)" stroke="#50E6FF"/>
+          <text x="885" y="68" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">⚡ Static Web Apps</text>
+          <text x="885" y="82" text-anchor="middle" fill="#8A94A6" font-size="9">React frontend</text>
+        </g>
+
+        <!-- Identity -->
+        <text x="30" y="130" fill="#8A94A6" font-size="11" font-weight="700" letter-spacing="2">IDENTITY</text>
+        <g>
+          <rect x="30" y="143" width="420" height="42" rx="8" fill="rgba(123,97,255,0.12)" stroke="#7B61FF"/>
+          <text x="240" y="163" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">🔐 Microsoft Entra External ID · Google SSO · Apple Sign In · MFA · Password Reset</text>
+          <text x="240" y="177" text-anchor="middle" fill="#8A94A6" font-size="9">JWT issuance · Go validates only</text>
+        </g>
+
+        <!-- VNet -->
+        <text x="30" y="225" fill="#8A94A6" font-size="11" font-weight="700" letter-spacing="2">VIRTUAL NETWORK · ISOLATED</text>
+        <rect x="30" y="238" width="940" height="260" rx="12" fill="rgba(0,120,212,0.04)" stroke="rgba(0,120,212,0.3)" stroke-dasharray="4,4"/>
+        <text x="45" y="258" fill="#50E6FF" font-size="10" font-weight="700" letter-spacing="1">AZURE VNET · PRIVATE SUBNETS · NSG RULES</text>
+
+        <!-- Inside VNet -->
+        <g>
+          <rect x="50" y="275" width="220" height="50" rx="8" fill="rgba(0,120,212,0.15)" stroke="#0078D4"/>
+          <text x="160" y="297" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">🚀 Container Apps Env</text>
+          <text x="160" y="313" text-anchor="middle" fill="#8A94A6" font-size="9">Go API · WebSocket Hub</text>
+        </g>
+        <g>
+          <rect x="290" y="275" width="220" height="50" rx="8" fill="rgba(245,158,11,0.15)" stroke="#F59E0B"/>
+          <text x="400" y="297" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">🖥 VM Scale Set</text>
+          <text x="400" y="313" text-anchor="middle" fill="#8A94A6" font-size="9">Python · Piper TTS · OCR</text>
+        </g>
+        <g>
+          <rect x="530" y="275" width="140" height="50" rx="8" fill="rgba(0,120,212,0.15)" stroke="#0078D4"/>
+          <text x="600" y="297" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">🐘 PostgreSQL</text>
+          <text x="600" y="313" text-anchor="middle" fill="#8A94A6" font-size="9">Private Endpoint</text>
+        </g>
+        <g>
+          <rect x="690" y="275" width="130" height="50" rx="8" fill="rgba(0,120,212,0.15)" stroke="#0078D4"/>
+          <text x="755" y="297" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">📦 Blob</text>
+          <text x="755" y="313" text-anchor="middle" fill="#8A94A6" font-size="9">Private Endpoint</text>
+        </g>
+        <g>
+          <rect x="840" y="275" width="120" height="50" rx="8" fill="rgba(0,120,212,0.15)" stroke="#0078D4"/>
+          <text x="900" y="297" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">🔑 Key Vault</text>
+          <text x="900" y="313" text-anchor="middle" fill="#8A94A6" font-size="9">Private Endpoint</text>
+        </g>
+
+        <!-- Notifications -->
+        <g>
+          <rect x="50" y="350" width="220" height="50" rx="8" fill="rgba(236,72,153,0.15)" stroke="#EC4899"/>
+          <text x="160" y="372" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">🔔 Notification Hubs</text>
+          <text x="160" y="388" text-anchor="middle" fill="#8A94A6" font-size="9">FCM · APNs</text>
+        </g>
+        <g>
+          <rect x="290" y="350" width="220" height="50" rx="8" fill="rgba(236,72,153,0.15)" stroke="#EC4899"/>
+          <text x="400" y="372" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">📧 Communication Services</text>
+          <text x="400" y="388" text-anchor="middle" fill="#8A94A6" font-size="9">Email · Verification</text>
+        </g>
+
+        <!-- Observability -->
+        <g>
+          <rect x="530" y="350" width="140" height="50" rx="8" fill="rgba(34,197,94,0.15)" stroke="#22C55E"/>
+          <text x="600" y="372" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">📊 App Insights</text>
+          <text x="600" y="388" text-anchor="middle" fill="#8A94A6" font-size="9">APM + Traces</text>
+        </g>
+        <g>
+          <rect x="690" y="350" width="130" height="50" rx="8" fill="rgba(34,197,94,0.15)" stroke="#22C55E"/>
+          <text x="755" y="372" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">📈 Monitor</text>
+          <text x="755" y="388" text-anchor="middle" fill="#8A94A6" font-size="9">Alerts</text>
+        </g>
+        <g>
+          <rect x="840" y="350" width="120" height="50" rx="8" fill="rgba(34,197,94,0.15)" stroke="#22C55E"/>
+          <text x="900" y="372" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">📝 Log Analytics</text>
+          <text x="900" y="388" text-anchor="middle" fill="#8A94A6" font-size="9">Workspace</text>
+        </g>
+
+        <!-- DevOps -->
+        <text x="30" y="535" fill="#8A94A6" font-size="11" font-weight="700" letter-spacing="2">DEVOPS</text>
+        <g>
+          <rect x="30" y="548" width="220" height="42" rx="8" fill="rgba(123,97,255,0.12)" stroke="#7B61FF"/>
+          <text x="140" y="568" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">⚙️ GitHub Actions</text>
+          <text x="140" y="582" text-anchor="middle" fill="#8A94A6" font-size="9">Frontend · Backend · Python · Terraform</text>
+        </g>
+        <g>
+          <rect x="270" y="548" width="200" height="42" rx="8" fill="rgba(123,97,255,0.12)" stroke="#7B61FF"/>
+          <text x="370" y="568" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">📦 Azure Container Registry</text>
+          <text x="370" y="582" text-anchor="middle" fill="#8A94A6" font-size="9">Private image storage</text>
+        </g>
+
+        <!-- Connections -->
+        <g stroke="#50E6FF" stroke-width="1" fill="none" opacity="0.4" stroke-dasharray="2,3">
+          <path d="M90,90 L530,48"/>
+          <path d="M220,90 L700,48"/>
+          <path d="M350,90 L700,48"/>
+          <path d="M700,90 L885,90"/>
+          <path d="M700,90 L160,275"/>
+          <path d="M700,90 L400,275"/>
+          <path d="M160,325 L600,275"/>
+          <path d="M160,325 L755,275"/>
+          <path d="M160,325 L900,275"/>
+          <path d="M400,325 L600,275"/>
+          <path d="M400,325 L755,275"/>
+        </g>
+
+        <!-- Legend -->
+        <g transform="translate(30,620)">
+          <rect width="940" height="40" rx="8" fill="rgba(0,0,0,0.3)" stroke="rgba(255,255,255,0.05)"/>
+          <text x="20" y="25" fill="#8A94A6" font-size="11">Growth · 18 Azure services · VNet-isolated · Private Endpoints · WAF-protected · ~$700/mo</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <div class="arch-section">
+    <div class="section-title"><span class="num">2</span>New Capabilities Added</div>
+    <div class="features">
+      <div class="feature"><div class="check" style="background:rgba(80,230,255,0.15);color:var(--accent);border-color:rgba(80,230,255,0.25)">+</div><div><h5>Azure Front Door + WAF</h5><p>Global CDN with OWASP protection, HTTPS termination, and geo-load balancing.</p></div></div>
+      <div class="feature"><div class="check" style="background:rgba(80,230,255,0.15);color:var(--accent);border-color:rgba(80,230,255,0.25)">+</div><div><h5>Virtual Network</h5><p>Private subnet for all compute and data. No public endpoints except Front Door.</p></div></div>
+      <div class="feature"><div class="check" style="background:rgba(80,230,255,0.15);color:var(--accent);border-color:rgba(80,230,255,0.25)">+</div><div><h5>Private Endpoints</h5><p>PostgreSQL, Blob, and Key Vault accessed via private IP — no internet traversal.</p></div></div>
+      <div class="feature"><div class="check" style="background:rgba(80,230,255,0.15);color:var(--accent);border-color:rgba(80,230,255,0.25)">+</div><div><h5>VM Scale Set</h5><p>AI workers auto-scale independently from the API. Handle traffic spikes.</p></div></div>
+      <div class="feature"><div class="check" style="background:rgba(80,230,255,0.15);color:var(--accent);border-color:rgba(80,230,255,0.25)">+</div><div><h5>Push Notifications</h5><p>Notification Hubs delivers to FCM (Android) and APNs (iOS) reliably.</p></div></div>
+      <div class="feature"><div class="check" style="background:rgba(80,230,255,0.15);color:var(--accent);border-color:rgba(80,230,255,0.25)">+</div><div><h5>Email Delivery</h5><p>Communication Services handles verification, receipts, and marketing email.</p></div></div>
+      <div class="feature"><div class="check" style="background:rgba(80,230,255,0.15);color:var(--accent);border-color:rgba(80,230,255,0.25)">+</div><div><h5>Log Analytics</h5><p>Centralized log workspace with KQL queries and custom dashboards.</p></div></div>
+      <div class="feature"><div class="check" style="background:rgba(80,230,255,0.15);color:var(--accent);border-color:rgba(80,230,255,0.25)">+</div><div><h5>Terraform IaC</h5><p>Infrastructure as Code for reproducible, auditable deployments.</p></div></div>
+    </div>
+  </div>
+
+  <div class="arch-section">
+    <div class="section-title"><span class="num">3</span>Notification Flows</div>
+    <div class="flow">
+      <div class="step">Document Finished</div><span class="arrow">→</span>
+      <div class="step">Audio Ready</div><span class="arrow">→</span>
+      <div class="step">Subscription Expiring</div><span class="arrow">→</span>
+      <div class="step">Reading Reminder</div><span class="arrow">→</span>
+      <div class="step">Marketing</div>
+    </div>
+  </div>
+
+  <div class="arch-section">
+    <div class="section-title"><span class="num">4</span>Service Count by Layer</div>
+    <div class="layers">
+      <div class="layer">
+        <div class="lname"><span class="dot" style="background:#50E6FF"></span>Edge & CDN</div>
+        <div class="services-list">
+          <span class="chip">Azure DNS</span>
+          <span class="chip">Front Door</span>
+          <span class="chip">WAF</span>
+          <span class="chip">Static Web Apps</span>
+        </div>
+        <div class="count">4</div>
+      </div>
+      <div class="layer">
+        <div class="lname"><span class="dot" style="background:#7B61FF"></span>Identity</div>
+        <div class="services-list">
+          <span class="chip">Entra External ID</span>
+          <span class="chip">Google SSO</span>
+          <span class="chip">Apple Sign In</span>
+          <span class="chip">MFA</span>
+        </div>
+        <div class="count">4</div>
+      </div>
+      <div class="layer">
+        <div class="lname"><span class="dot" style="background:#0078D4"></span>Networking</div>
+        <div class="services-list">
+          <span class="chip">Virtual Network</span>
+          <span class="chip">Private Endpoints</span>
+          <span class="chip">NSG</span>
+        </div>
+        <div class="count">3</div>
+      </div>
+      <div class="layer">
+        <div class="lname"><span class="dot" style="background:#0078D4"></span>Application</div>
+        <div class="services-list">
+          <span class="chip">Container Apps (Go)</span>
+          <span class="chip">WebSocket Hub</span>
+        </div>
+        <div class="count">2</div>
+      </div>
+      <div class="layer">
+        <div class="lname"><span class="dot" style="background:#F59E0B"></span>AI Workers</div>
+        <div class="services-list">
+          <span class="chip">VM Scale Set</span>
+          <span class="chip">Python Workers</span>
+          <span class="chip">Piper TTS</span>
+          <span class="chip">OCR</span>
+        </div>
+        <div class="count">4</div>
+      </div>
+      <div class="layer">
+        <div class="lname"><span class="dot" style="background:#22C55E"></span>Data</div>
+        <div class="services-list">
+          <span class="chip">PostgreSQL</span>
+          <span class="chip">Blob Storage</span>
+          <span class="chip">Key Vault</span>
+        </div>
+        <div class="count">3</div>
+      </div>
+      <div class="layer">
+        <div class="lname"><span class="dot" style="background:#EC4899"></span>Notifications</div>
+        <div class="services-list">
+          <span class="chip">Notification Hubs</span>
+          <span class="chip">Communication Services</span>
+        </div>
+        <div class="count">2</div>
+      </div>
+      <div class="layer">
+        <div class="lname"><span class="dot" style="background:#EF4444"></span>Observability</div>
+        <div class="services-list">
+          <span class="chip">Application Insights</span>
+          <span class="chip">Azure Monitor</span>
+          <span class="chip">Log Analytics</span>
+        </div>
+        <div class="count">3</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SCALE ================= -->
+<section class="panel" id="scale">
+  <div class="tier-header">
+    <div class="tier-card">
+      <h3>Phase 03 · Scale</h3>
+      <h2>Enterprise-Grade Platform</h2>
+      <p>Multi-region, event-driven, API-first. Raweego becomes a platform — with message queues, caching, semantic search, and public API gateway ready for partners and integrations.</p>
+    </div>
+    <div class="cost-card">
+      <div class="label">Estimated Monthly Cost</div>
+      <div class="amount">$2,400<span style="font-size:20px;opacity:0.6">–$4,000</span></div>
+      <div class="period">per month · multi-region · enterprise</div>
+      <div class="cost-breakdown">
+        <div class="cost-item"><div class="k">Compute</div><div class="v">~$900</div></div>
+        <div class="cost-item"><div class="k">Network</div><div class="v">~$450</div></div>
+        <div class="cost-item"><div class="k">Data</div><div class="v">~$550</div></div>
+        <div class="cost-item"><div class="k">Services</div><div class="v">~$600</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arch-section">
+    <div class="section-title"><span class="num">1</span>Architecture Diagram</div>
+    <div class="diagram">
+      <svg viewBox="0 0 1000 780" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="gs1" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#0078D4"/>
+            <stop offset="100%" stop-color="#7B61FF"/>
+          </linearGradient>
+          <linearGradient id="gs2" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#EF4444"/>
+            <stop offset="100%" stop-color="#F59E0B"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Multi-region indicator -->
+        <text x="30" y="30" fill="#8A94A6" font-size="11" font-weight="700" letter-spacing="2">MULTI-REGION · PRIMARY + SECONDARY</text>
+        <rect x="30" y="40" width="940" height="30" rx="6" fill="rgba(239,68,68,0.08)" stroke="rgba(239,68,68,0.3)"/>
+        <text x="500" y="60" text-anchor="middle" fill="#EF4444" font-size="11" font-weight="600">🌐 Region A (Primary) · Region B (Failover) · Traffic Manager · Geo-redundant Storage</text>
+
+        <!-- Clients -->
+        <text x="30" y="100" fill="#8A94A6" font-size="11" font-weight="700" letter-spacing="2">CLIENTS</text>
+        <g>
+          <rect x="30" y="112" width="110" height="38" rx="8" fill="rgba(0,120,212,0.12)" stroke="#0078D4"/>
+          <text x="85" y="130" text-anchor="middle" fill="#fff" font-size="10" font-weight="600">📱 Mobile</text>
+          <text x="85" y="143" text-anchor="middle" fill="#8A94A6" font-size="8">iOS · Android</text>
+        </g>
+        <g>
+          <rect x="150" y="112" width="110" height="38" rx="8" fill="rgba(0,120,212,0.12)" stroke="#0078D4"/>
+          <text x="205" y="130" text-anchor="middle" fill="#fff" font-size="10" font-weight="600">🌐 Website</text>
+          <text x="205" y="143" text-anchor="middle" fill="#8A94A6" font-size="8">React</text>
+        </g>
+        <g>
+          <rect x="270" y="112" width="110" height="38" rx="8" fill="rgba(0,120,212,0.12)" stroke="#0078D4"/>
+          <text x="325" y="130" text-anchor="middle" fill="#fff" font-size="10" font-weight="600">🛠 Admin</text>
+          <text x="325" y="143" text-anchor="middle" fill="#8A94A6" font-size="8">Internal</text>
+        </g>
+        <g>
+          <rect x="390" y="112" width="110" height="38" rx="8" fill="rgba(239,68,68,0.12)" stroke="#EF4444"/>
+          <text x="445" y="130" text-anchor="middle" fill="#fff" font-size="10" font-weight="600">🔌 Public API</text>
+          <text x="445" y="143" text-anchor="middle" fill="#8A94A6" font-size="8">Partners</text>
+        </g>
+
+        <!-- Edge -->
+        <text x="530" y="100" fill="#8A94A6" font-size="11" font-weight="700" letter-spacing="2">EDGE · GLOBAL</text>
+        <g>
+          <rect x="530" y="112" width="110" height="38" rx="8" fill="rgba(80,230,255,0.12)" stroke="#50E6FF"/>
+          <text x="585" y="130" text-anchor="middle" fill="#fff" font-size="10" font-weight="600">🌍 DNS</text>
+          <text x="585" y="143" text-anchor="middle" fill="#8A94A6" font-size="8">Traffic Manager</text>
+        </g>
+        <g>
+          <rect x="650" y="112" width="160" height="38" rx="8" fill="url(#gs1)"/>
+          <text x="730" y="130" text-anchor="middle" fill="#fff" font-size="10" font-weight="700">🛡 Front Door + WAF</text>
+          <text x="730" y="143" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="8">Multi-region · Premium</text>
+        </g>
+        <g>
+          <rect x="820" y="112" width="150" height="38" rx="8" fill="url(#gs2)"/>
+          <text x="895" y="130" text-anchor="middle" fill="#fff" font-size="10" font-weight="700">🚪 API Management</text>
+          <text x="895" y="143" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="8">Rate limit · Versioning</text>
+        </g>
+
+        <!-- Identity -->
+        <text x="30" y="185" fill="#8A94A6" font-size="11" font-weight="700" letter-spacing="2">IDENTITY</text>
+        <g>
+          <rect x="30" y="197" width="460" height="38" rx="8" fill="rgba(123,97,255,0.12)" stroke="#7B61FF"/>
+          <text x="260" y="215" text-anchor="middle" fill="#fff" font-size="10" font-weight="600">🔐 Entra External ID · Google · Apple · MFA · Passwordless · B2B · Conditional Access</text>
+          <text x="260" y="228" text-anchor="middle" fill="#8A94A6" font-size="8">JWT · OAuth 2.1 · OIDC · SCIM provisioning</text>
+        </g>
+
+        <!-- VNet A -->
+        <text x="30" y="270" fill="#8A94A6" font-size="11" font-weight="700" letter-spacing="2">REGION A · PRIMARY VNET</text>
+        <rect x="30" y="282" width="940" height="200" rx="12" fill="rgba(0,120,212,0.04)" stroke="rgba(0,120,212,0.3)" stroke-dasharray="4,4"/>
+
+        <!-- AKS -->
+        <g>
+          <rect x="50" y="300" width="200" height="50" rx="8" fill="url(#gs1)"/>
+          <text x="150" y="322" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">☸ AKS Cluster</text>
+          <text x="150" y="338" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="9">Go API · WebSocket · Microservices</text>
+        </g>
+
+        <!-- VMSS -->
+        <g>
+          <rect x="270" y="300" width="180" height="50" rx="8" fill="rgba(245,158,11,0.2)" stroke="#F59E0B"/>
+          <text x="360" y="322" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">🖥 VM Scale Set</text>
+          <text x="360" y="338" text-anchor="middle" fill="#8A94A6" font-size="9">Python · Piper · Whisper</text>
+        </g>
+
+        <!-- Service Bus -->
+        <g>
+          <rect x="470" y="300" width="160" height="50" rx="8" fill="rgba(236,72,153,0.2)" stroke="#EC4899"/>
+          <text x="550" y="322" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">📨 Service Bus</text>
+          <text x="550" y="338" text-anchor="middle" fill="#8A94A6" font-size="9">Queues · Topics</text>
+        </g>
+
+        <!-- Redis -->
+        <g>
+          <rect x="650" y="300" width="140" height="50" rx="8" fill="rgba(239,68,68,0.2)" stroke="#EF4444"/>
+          <text x="720" y="322" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">⚡ Redis Cache</text>
+          <text x="720" y="338" text-anchor="middle" fill="#8A94A6" font-size="9">Sessions · Rate limit</text>
+        </g>
+
+        <!-- AI Search -->
+        <g>
+          <rect x="810" y="300" width="150" height="50" rx="8" fill="rgba(34,197,94,0.2)" stroke="#22C55E"/>
+          <text x="885" y="322" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">🔍 AI Search</text>
+          <text x="885" y="338" text-anchor="middle" fill="#8A94A6" font-size="9">Semantic · Vector</text>
+        </g>
+
+        <!-- Data row -->
+        <g>
+          <rect x="50" y="370" width="170" height="50" rx="8" fill="rgba(0,120,212,0.15)" stroke="#0078D4"/>
+          <text x="135" y="392" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">🐘 PostgreSQL</text>
+          <text x="135" y="408" text-anchor="middle" fill="#8A94A6" font-size="9">Hyperscale (Citus)</text>
+        </g>
+        <g>
+          <rect x="240" y="370" width="150" height="50" rx="8" fill="rgba(0,120,212,0.15)" stroke="#0078D4"/>
+          <text x="315" y="392" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">📦 Blob GRS</text>
+          <text x="315" y="408" text-anchor="middle" fill="#8A94A6" font-size="9">Geo-redundant</text>
+        </g>
+        <g>
+          <rect x="410" y="370" width="140" height="50" rx="8" fill="rgba(0,120,212,0.15)" stroke="#0078D4"/>
+          <text x="480" y="392" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">🔑 Key Vault</text>
+          <text x="480" y="408" text-anchor="middle" fill="#8A94A6" font-size="9">HSM-backed</text>
+        </g>
+        <g>
+          <rect x="570" y="370" width="140" height="50" rx="8" fill="rgba(236,72,153,0.15)" stroke="#EC4899"/>
+          <text x="640" y="392" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">🔔 Notification Hubs</text>
+          <text x="640" y="408" text-anchor="middle" fill="#8A94A6" font-size="9">Premium tier</text>
+        </g>
+        <g>
+          <rect x="730" y="370" width="120" height="50" rx="8" fill="rgba(236,72,153,0.15)" stroke="#EC4899"/>
+          <text x="790" y="392" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">📧 Comms Svc</text>
+          <text x="790" y="408" text-anchor="middle" fill="#8A94A6" font-size="9">Email · SMS</text>
+        </g>
+        <g>
+          <rect x="870" y="370" width="90" height="50" rx="8" fill="rgba(34,197,94,0.15)" stroke="#22C55E"/>
+          <text x="915" y="392" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">📊 APM</text>
+          <text x="915" y="408" text-anchor="middle" fill="#8A94A6" font-size="9">+ Monitor</text>
+        </g>
+
+        <!-- Security -->
+        <text x="30" y="515" fill="#8A94A6" font-size="11" font-weight="700" letter-spacing="2">SECURITY · COMPLIANCE</text>
+        <g>
+          <rect x="30" y="527" width="220" height="42" rx="8" fill="rgba(239,68,68,0.12)" stroke="#EF4444"/>
+          <text x="140" y="547" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">🛡 Defender for Cloud</text>
+          <text x="140" y="561" text-anchor="middle" fill="#8A94A6" font-size="9">CSPM · CWPM · Recommendations</text>
+        </g>
+        <g>
+          <rect x="270" y="527" width="220" height="42" rx="8" fill="rgba(239,68,68,0.12)" stroke="#EF4444"/>
+          <text x="380" y="547" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">🔒 DDoS Protection</text>
+          <text x="380" y="561" text-anchor="middle" fill="#8A94A6" font-size="9">Standard tier</text>
+        </g>
+        <g>
+          <rect x="510" y="527" width="220" height="42" rx="8" fill="rgba(239,68,68,0.12)" stroke="#EF4444"/>
+          <text x="620" y="547" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">💾 Backup / Recovery Vault</text>
+          <text x="620" y="561" text-anchor="middle" fill="#8A94A6" font-size="9">VM · DB · Blob backups</text>
+        </g>
+        <g>
+          <rect x="750" y="527" width="220" height="42" rx="8" fill="rgba(239,68,68,0.12)" stroke="#EF4444"/>
+          <text x="860" y="547" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">📋 Policy · Compliance</text>
+          <text x="860" y="561" text-anchor="middle" fill="#8A94A6" font-size="9">GDPR · SOC2 ready</text>
+        </g>
+
+        <!-- DevOps -->
+        <text x="30" y="605" fill="#8A94A6" font-size="11" font-weight="700" letter-spacing="2">DEVOPS · PLATFORM</text>
+        <g>
+          <rect x="30" y="617" width="220" height="42" rx="8" fill="rgba(123,97,255,0.12)" stroke="#7B61FF"/>
+          <text x="140" y="637" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">⚙️ GitHub Actions</text>
+          <text x="140" y="651" text-anchor="middle" fill="#8A94A6" font-size="9">Multi-env · Blue/green</text>
+        </g>
+        <g>
+          <rect x="270" y="617" width="220" height="42" rx="8" fill="rgba(123,97,255,0.12)" stroke="#7B61FF"/>
+          <text x="380" y="637" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">📦 ACR · Geo-replicated</text>
+          <text x="380" y="651" text-anchor="middle" fill="#8A94A6" font-size="9">Premium · Multi-region</text>
+        </g>
+        <g>
+          <rect x="510" y="617" width="220" height="42" rx="8" fill="rgba(123,97,255,0.12)" stroke="#7B61FF"/>
+          <text x="620" y="637" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">🏗 Terraform · Bicep</text>
+          <text x="620" y="651" text-anchor="middle" fill="#8A94A6" font-size="9">IaC · State in Blob</text>
+        </g>
+        <g>
+          <rect x="750" y="617" width="220" height="42" rx="8" fill="rgba(123,97,255,0.12)" stroke="#7B61FF"/>
+          <text x="860" y="637" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">🔐 Azure DevOps</text>
+          <text x="860" y="651" text-anchor="middle" fill="#8A94A6" font-size="9">Boards · Artifacts</text>
+        </g>
+
+        <!-- Legend -->
+        <g transform="translate(30,700)">
+          <rect width="940" height="55" rx="8" fill="rgba(0,0,0,0.3)" stroke="rgba(255,255,255,0.05)"/>
+          <text x="20" y="22" fill="#50E6FF" font-size="11" font-weight="700">SCALE · 30+ Azure services · Multi-region · Event-driven · API-first · Enterprise security</text>
+          <text x="20" y="42" fill="#8A94A6" font-size="10">AKS · Service Bus · Redis · AI Search · API Management · Defender · DDoS · Backup · Geo-redundant storage · ~$3,200/mo</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <div class="arch-section">
+    <div class="section-title"><span class="num">2</span>Enterprise Services Added</div>
+    <div class="features">
+      <div class="feature"><div class="check" style="background:rgba(239,68,68,0.15);color:#EF4444;border-color:rgba(239,68,68,0.25)">★</div><div><h5>Azure Kubernetes Service</h5><p>Full microservices orchestration with autoscaling, rolling deploys, and service mesh.</p></div></div>
+      <div class="feature"><div class="check" style="background:rgba(239,68,68,0.15);color:#EF4444;border-color:rgba(239,68,68,0.25)">★</div><div><h5>Service Bus</h5><p>Replace PostgreSQL job queue with reliable, ordered, dead-letter message processing.</p></div></div>
+      <div class="feature"><div class="check" style="background:rgba(239,68,68,0.15);color:#EF4444;border-color:rgba(239,68,68,0.25)">★</div><div><h5>Azure Cache for Redis</h5><p>Sub-millisecond sessions, rate limiting, and hot-data caching at scale.</p></div></div>
+      <div class="feature"><div class="check" style="background:rgba(239,68,68,0.15);color:#EF4444;border-color:rgba(239,68,68,0.25)">★</div><div><h5>Azure AI Search</h5><p>Semantic and vector search across documents, sentences, and audio transcripts.</p></div></div>
+      <div class="feature"><div class="check" style="background:rgba(239,68,68,0.15);color:#EF4444;border-color:rgba(239,68,68,0.25)">★</div><div><h5>API Management</h5><p>Public API gateway with rate limiting, versioning, OAuth, and developer portal.</p></div></div>
+      <div class="feature"><div class="check" style="background:rgba(239,68,68,0.15);color:#EF4444;border-color:rgba(239,68,68,0.25)">★</div><div><h5>Microsoft Defender</h5><p>Cloud security posture management, workload protection, and threat detection.</p></div></div>
+      <div class="feature"><div class="check" style="background:rgba(239,68,68,0.15);color:#EF4444;border-color:rgba(239,68,68,0.25)">★</div><div><h5>DDoS Protection Standard</h5><p>Always-on mitigation with real-time metrics and alerting for volumetric attacks.</p></div></div>
+      <div class="feature"><div class="check" style="background:rgba(239,68,68,0.15);color:#EF4444;border-color:rgba(239,68,68,0.25)">★</div><div><h5>Backup & Recovery Vault</h5><p>Point-in-time recovery for VMs, PostgreSQL, and Blob with immutable backups.</p></div></div>
+    </div>
+  </div>
+
+  <div class="arch-section">
+    <div class="section-title"><span class="num">3</span>Event-Driven Flow</div>
+    <div class="flow">
+      <div class="step">User Upload</div><span class="arrow">→</span>
+      <div class="step">API → Service Bus</div><span class="arrow">→</span>
+      <div class="step">Python Worker</div><span class="arrow">→</span>
+      <div class="step">Piper TTS</div><span class="arrow">→</span>
+      <div class="step">Blob Storage</div><span class="arrow">→</span>
+      <div class="step">AI Search Index</div><span class="arrow">→</span>
+      <div class="step">Push Notification</div>
+    </div>
+  </div>
+
+  <div class="arch-section">
+    <div class="section-title"><span class="num">4</span>Platform Comparison</div>
+    <div class="compare">
+      <table>
+        <thead>
+          <tr>
+            <th>Capability</th>
+            <th>MVP</th>
+            <th>Growth (1K)</th>
+            <th>Scale (10K+)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Multi-region</td><td class="no">✕</td><td class="no">✕</td><td class="yes">✓</td></tr>
+          <tr><td>WAF Protection</td><td class="no">✕</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Private Networking</td><td class="no">✕</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Push Notifications</td><td class="no">✕</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Message Queue</td><td class="no">PostgreSQL</td><td class="no">PostgreSQL</td><td class="yes">Service Bus</td></tr>
+          <tr><td>Distributed Cache</td><td class="no">✕</td><td class="no">✕</td><td class="yes">Redis</td></tr>
+          <tr><td>Semantic Search</td><td class="no">✕</td><td class="no">✕</td><td class="yes">AI Search</td></tr>
+          <tr><td>Public API Gateway</td><td class="no">✕</td><td class="no">✕</td><td class="yes">API Management</td></tr>
+          <tr><td>Container Orchestration</td><td class="no">Container Apps</td><td class="no">Container Apps</td><td class="yes">AKS</td></tr>
+          <tr><td>Threat Protection</td><td class="no">✕</td><td class="no">✕</td><td class="yes">Defender</td></tr>
+          <tr><td>Disaster Recovery</td><td class="no">Basic</td><td class="no">Basic</td><td class="yes">Recovery Vault</td></tr>
+          <tr><td>Estimated Cost</td><td>$120–$200</td><td>$550–$850</td><td>$2,400–$4,000</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="arch-section">
+    <div class="section-title"><span class="num">5</span>Total Service Count</div>
+    <div class="layers">
+      <div class="layer">
+        <div class="lname"><span class="dot" style="background:#50E6FF"></span>Edge & Gateway</div>
+        <div class="services-list">
+          <span class="chip">DNS + Traffic Manager</span>
+          <span class="chip">Front Door Premium</span>
+          <span class="chip">WAF</span>
+          <span class="chip">API Management</span>
+          <span class="chip">Static Web Apps</span>
+        </div>
+        <div class="count">5</div>
+      </div>
+      <div class="layer">
+        <div class="lname"><span class="dot" style="background:#7B61FF"></span>Identity & Access</div>
+        <div class="services-list">
+          <span class="chip">Entra External ID</span>
+          <span class="chip">Conditional Access</span>
+          <span class="chip">B2B</span>
+          <span class="chip">SCIM</span>
+        </div>
+        <div class="count">4</div>
+      </div>
+      <div class="layer">
+        <div class="lname"><span class="dot" style="background:#0078D4"></span>Compute</div>
+        <div class="services-list">
+          <span class="chip">AKS (Primary)</span>
+          <span class="chip">AKS (Failover)</span>
+          <span class="chip">VM Scale Set</span>
+          <span class="chip">Container Apps</span>
+        </div>
+        <div class="count">4</div>
+      </div>
+      <div class="layer">
+        <div class="lname"><span class="dot" style="background:#EC4899"></span>Messaging & Cache</div>
+        <div class="services-list">
+          <span class="chip">Service Bus</span>
+          <span class="chip">Redis Cache</span>
+          <span class="chip">Event Grid</span>
+        </div>
+        <div class="count">3</div>
+      </div>
+      <div class="layer">
+        <div class="lname"><span class="dot" style="background:#22C55E"></span>Data & AI</div>
+        <div class="services-list">
+          <span class="chip">PostgreSQL Hyperscale</span>
+          <span class="chip">Blob GRS</span>
+          <span class="chip">AI Search</span>
+          <span class="chip">Key Vault HSM</span>
+        </div>
+        <div class="count">4</div>
+      </div>
+      <div class="layer">
+        <div class="lname"><span class="dot" style="background:#F59E0B"></span>Notifications</div>
+        <div class="services-list">
+          <span class="chip">Notification Hubs</span>
+          <span class="chip">Communication Services</span>
+        </div>
+        <div class="count">2</div>
+      </div>
+      <div class="layer">
+        <div class="lname"><span class="dot" style="background:#EF4444"></span>Security</div>
+        <div class="services-list">
+          <span class="chip">Defender for Cloud</span>
+          <span class="chip">DDoS Standard</span>
+          <span class="chip">Backup Vault</span>
+          <span class="chip">Policy</span>
+        </div>
+        <div class="count">4</div>
+      </div>
+      <div class="layer">
+        <div class="lname"><span class="dot" style="background:#EC4899"></span>Observability</div>
+        <div class="services-list">
+          <span class="chip">Application Insights</span>
+          <span class="chip">Azure Monitor</span>
+          <span class="chip">Log Analytics</span>
+        </div>
+        <div class="count">3</div>
+      </div>
+      <div class="layer">
+        <div class="lname"><span class="dot" style="background:#7B61FF"></span>DevOps</div>
+        <div class="services-list">
+          <span class="chip">GitHub Actions</span>
+          <span class="chip">ACR Premium</span>
+          <span class="chip">Terraform</span>
+          <span class="chip">Azure DevOps</span>
+        </div>
+        <div class="count">4</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<script>
+  const tabs = document.querySelectorAll('.tab');
+  const panels = document.querySelectorAll('.panel');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const target = tab.dataset.tab;
+      tabs.forEach(t => t.classList.remove('active'));
+      panels.forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(target).classList.add('active');
+      window.scrollTo({top: 0, behavior: 'smooth'});
+    });
+  });
+</script>
+</body>
+</html>

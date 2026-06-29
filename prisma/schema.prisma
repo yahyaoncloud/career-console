@@ -31,6 +31,7 @@ model User {
   profile       Profile?
   companies     Company[]
   documents     Document[]
+  notifications Notification[]
 
   @@index([email])
   @@index([deletedAt])
@@ -164,6 +165,7 @@ model Profile {
   socialLinks     Json?
   theme           Json?
   customDomain    String?
+  resume          Json?
   analyticsEnabled Boolean  @default(true)
   guestbookEnabled Boolean @default(true)
   createdAt       DateTime @default(now())
@@ -261,4 +263,26 @@ enum LogStatus {
   WARNING
   ERROR
   INFO
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  title     String
+  message   String
+  type      NotificationType @default(INFO)
+  read      Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
 }

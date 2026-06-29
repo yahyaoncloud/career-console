@@ -2,6 +2,7 @@ import { type LoaderFunctionArgs, type ActionFunctionArgs } from 'react-router';
 import { useLoaderData, useFetcher } from 'react-router';
 import { requireUser } from '../../lib/auth.server';
 import { prisma } from '../../lib/db.server';
+import { useToast } from '../../providers/ToastProvider';
 import { User, Shield, Mail, Trash2, Check, X, ShieldAlert } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Heading } from '../../components/ui/Heading';
@@ -35,12 +36,14 @@ export async function action({ request }: ActionFunctionArgs) {
   const intent = formData.get('intent');
   const targetUid = formData.get('uid') as string;
 
-  if (!targetUid) {
-    return { success: false, message: 'Target user ID is required' };
-  }
+  if (intent !== 'announce') {
+    if (!targetUid) {
+      return { success: false, message: 'Target user ID is required' };
+    }
 
-  if (targetUid === admin.firebaseUid) {
-    return { success: false, message: 'You cannot perform this action on yourself' };
+    if (targetUid === admin.firebaseUid) {
+      return { success: false, message: 'You cannot perform this action on yourself' };
+    }
   }
 
   try {
@@ -66,6 +69,22 @@ export async function action({ request }: ActionFunctionArgs) {
       return { success: true, message: `User role updated to ${newRole}` };
     }
 
+    if (intent === 'announce') {
+      const message = formData.get('message') as string;
+      if (!message) return { success: false, message: 'Message is required' };
+      
+      const allUsers = await prisma.user.findMany({ where: { deletedAt: null } });
+      const notifications = allUsers.map(u => ({
+        userId: u.id,
+        title: 'Admin Announcement',
+        message,
+        type: 'INFO' as any
+      }));
+      
+      await prisma.notification.createMany({ data: notifications });
+      return { success: true, message: `Announcement sent to ${notifications.length} users` };
+    }
+
     return { success: false, message: 'Invalid intent' };
   } catch (error: any) {
     return { success: false, message: error.message };
@@ -75,14 +94,17 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function AuthorManagerRoute() {
   const { authors, currentUserUid } = useLoaderData<typeof loader>();
   const fetcher = useFetcher<typeof action>();
+  const { success, error } = useToast();
 
   useEffect(() => {
-    if (fetcher.data?.success && fetcher.state === 'idle') {
-      alert(fetcher.data.message);
-    } else if (fetcher.data?.message && !fetcher.data.success && fetcher.state === 'idle') {
-      alert('Error: ' + fetcher.data.message);
+    if (fetcher.state === 'idle' && fetcher.data) {
+      if (fetcher.data.success) {
+        success(fetcher.data.message);
+      } else {
+        error(fetcher.data.message);
+      }
     }
-  }, [fetcher.data, fetcher.state]);
+  }, [fetcher.data, fetcher.state, success, error]);
 
   const handleDeleteAuthor = (uid: string, name: string) => {
     if (confirm(`Are you sure you want to delete ${name}'s account? This action cannot be undone.`)) {
@@ -102,9 +124,39 @@ export default function AuthorManagerRoute() {
             <User size={20} className="text-muted-foreground" />
             Author Management
           </Heading>
-          <p className="text-muted-foreground text-sm font-mono mt-1">Manage user roles and access.</p>
+          <p className="text-muted-foreground text-sm font-mono mt-1">Manage user roles, access, and announcements.</p>
         </div>
       </div>
+
+      <Card className="p-8 border-border/50 shadow-sm bg-card/50 backdrop-blur-sm">
+        <div className="flex flex-col md:flex-row md:items-center gap-6">
+          <div className="bg-primary/10 p-3 rounded text-primary shrink-0 self-start md:self-center">
+            <Mail size={24} />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-bold font-sans text-lg tracking-tight text-foreground">Broadcast Announcement</h3>
+            <p className="text-[10px] font-mono text-muted-foreground mt-1 uppercase tracking-wider">
+              Send a push notification to all users (Admins and Authors) in their dashboard.
+            </p>
+            <fetcher.Form method="post" className="mt-6 flex flex-col sm:flex-row gap-4">
+              <input type="hidden" name="intent" value="announce" />
+              <input 
+                name="message" 
+                required 
+                placeholder="Type your announcement here..." 
+                className="flex-1 px-4 py-2.5 text-sm rounded bg-background/50 border border-border/50 focus:border-primary focus:ring-1 focus:ring-primary transition-all text-foreground"
+              />
+              <button 
+                type="submit" 
+                disabled={fetcher.state !== 'idle'}
+                className="px-6 py-2.5 bg-primary hover:opacity-90 text-primary-foreground font-mono font-bold text-xs uppercase tracking-widest rounded disabled:opacity-50 transition-opacity whitespace-nowrap flex items-center justify-center"
+              >
+                Send Broadcast
+              </button>
+            </fetcher.Form>
+          </div>
+        </div>
+      </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {authors.map((author) => {

@@ -1,0 +1,140 @@
+\documentclass[10pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.7in]{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{tabularx}
+\usepackage{hyperref}
+\usepackage{lmodern}
+
+% Custom Colors (Teal theme)
+\definecolor{teal}{RGB}{15, 118, 110}
+\definecolor{darkteal}{RGB}{0, 115, 79}
+\definecolor{textmain}{RGB}{51, 65, 85}
+\definecolor{textdark}{RGB}{15, 23, 42}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=teal,
+    urlcolor=teal,
+}
+
+\titleformat{\section}
+  {\normalfont\large\bfseries\color{darkteal}}
+  {}{0em}
+  {}[\color{black!20}\titlerule]
+\titlespacing*{\section}{0pt}{1.5ex plus 0.2ex minus .1ex}{0.8ex plus .1ex}
+
+\newcommand{\jobheading}[4]{
+  \vspace{1.5ex}\noindent
+  {\large\textbf{\color{darkteal}#1}} \hfill \textbf{\color{textmain}#2} \\[0.3ex]
+  \textbf{\color{textdark}#3} \hfill \textit{\color{textmain}#4} \vspace{0.8ex}
+}
+
+\begin{document}
+
+\pagestyle{empty}
+\color{textmain}
+
+\noindent
+\begin{minipage}[c]{0.75\textwidth}
+    {\Huge \textbf{\color{textdark} YAHYA}}\\[0.1ex]
+    \textbf{\color{teal} Associate Azure Cloud Engineer} | Azure Certified | 3+ Years Experience\\[0.1ex]
+    +971 50 858 9118 \quad|\quad 
+    \href{mailto:ykinwork1@gmail.com}{ykinwork1@gmail.com} \quad|\quad 
+    \href{https://linkedin.com/in/ykinwork1}{linkedin.com/in/ykinwork1} \quad|\quad 
+    Abu Dhabi, UAE
+\end{minipage}%
+\begin{minipage}[c]{0.25\textwidth}
+    \raggedleft
+    \includegraphics[width=3cm,height=3cm,keepaspectratio]{../../../../Assets/Yahya_profile.jpeg}
+\end{minipage}
+
+\vspace{2ex}
+\section*{PROFESSIONAL SUMMARY}
+Associate Azure Cloud Engineer with 1 year of hands-on cloud experience and 3+ years in enterprise IT infrastructure. Expert in deploying secure, governed environments using Azure Bicep and managing identity through Microsoft Entra ID. Proven success in hybrid-cloud integration and advanced monitoring using KQL and Azure Monitor. Specialized in cost optimization (15\% reduction) and disaster recovery (RTO < 2hrs). Committed to supporting the UAE’s digital transformation goals through secure and sovereign cloud solutions.
+
+\section*{TECHNICAL SKILLS}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{\textwidth}{@{}l X@{}}
+    \textbf{Cloud Platform:} & \textbf{Microsoft Azure} (Virtual Machines, App Service, AKS, VNet, Azure SQL, Cosmos DB) \\
+    \textbf{Infrastructure as Code:} & \textbf{Azure Bicep (Expert)}, Terraform, ARM Templates, PowerShell, Azure CLI \\
+    \textbf{Identity \& Governance:} & \textbf{Microsoft Entra ID} (RBAC, Conditional Access), \textbf{Azure Policy}, \textbf{Azure Arc} \\
+    \textbf{Network Security:} & Azure Firewall, \textbf{Azure Bastion}, NSGs, VPN Gateway, Azure Front Door \\
+    \textbf{Monitoring \& Logging:} & \textbf{Azure Monitor}, Log Analytics, \textbf{Kusto Query Language (KQL)} \\
+    \textbf{DevOps \& Recovery:} & Azure DevOps, GitHub Actions, Site Recovery (\textbf{ASR}), Azure Backup
+\end{tabularx}
+
+\section*{PROFESSIONAL EXPERIENCE}
+
+\jobheading{Associate Cloud Engineer}{Nov 2024 – Dec 2025}{Minute KSA}{Riyadh, Saudi Arabia}
+\begin{itemize}[label={\color{teal}\textbullet},leftmargin=*,itemsep=3pt,parsep=1pt,topsep=1pt]
+    \item Implemented \textbf{Azure Policy} initiatives across multiple subscriptions to mandate resource tagging and regional data residency, ensuring 100\% organizational compliance with sovereign cloud frameworks.
+    \item Developed reusable, parameter-driven \textbf{Terraform}, \textbf{Azure Bicep}, and ARM templates for automated deployment of VNets and compute resources, reducing infrastructure lead time by 73\%.
+    \item Created complex \textbf{KQL} queries within Log Analytics to monitor diagnostic logs and application health, reducing Mean Time to Detection (MTTD) by \textbf{25\%}.
+    \item Architected zero-trust perimeters using \textbf{Microsoft Entra ID}, implementing Conditional Access policies, MFA, and RBAC to secure the enterprise environment.
+    \item Optimized cloud costs by scheduling automated \textbf{PowerShell} runbooks for non-production environment shutdowns, reducing monthly expenditure by \textbf{15\%}.
+    \item Configured and validated \textbf{Azure Site Recovery (ASR)} and Azure Backup for mission-critical databases, achieving 99.9\% uptime and a verified RTO of under 2 hours.
+    \item Integrated on-premises data centers with Azure via \textbf{VPN Gateways} and \textbf{ExpressRoute} for secure, high-bandwidth hybrid connectivity.
+    \item Supported large-scale enterprise workload migrations from Mobily Cloud to \textbf{Azure}, configuring secure VNet networking and validating post-migration connectivity.
+    \item Led the implementation of \textbf{Azure DevOps} CI/CD pipelines to fully automate application deployments and infrastructure updates.
+    \item Developed comprehensive \textbf{Python} and \textbf{PowerShell} scripts for Linux service automation, log parsing, and API-based cloud resource validation.
+\end{itemize}
+
+\jobheading{Network Infrastructure Engineer}{Jun 2022 -- Sep 2024}{Fabee Technologies}{Hyderabad, India}
+\begin{itemize}[label={\color{teal}\textbullet},leftmargin=*,itemsep=3pt,parsep=1pt,topsep=1pt]
+    \item Managed \textbf{Cisco Catalyst} switching environments, implementing VLAN segmentation, STP optimization, and core routing (OSPF, BGP) for high-availability enterprise connectivity.
+    \item Administered \textbf{FortiGate} and \textbf{Palo Alto NGFWs}, deploying NAT, IPS/IDS policies, App-ID traffic control, and secure remote access via IPsec VPNs.
+    \item Optimized \textbf{Cisco ISE} for RADIUS-based authentication, managing policy sets and endpoint profiling to enforce identity-driven network access control.
+    \item Resolved L1/L2 network incidents via \textbf{ServiceNow}, utilizing SolarWinds and SNMP monitoring to identify bandwidth trends and meet strict SLA targets.
+    \item Assisted with enterprise-wide \textbf{Cisco Catalyst SD-WAN} deployments to improve multi-site connectivity and WAN redundancy.
+    \item Worked extensively on \textbf{Palo Alto NGFWs}, assisting with security policy design, App-ID traffic control, \textbf{SSL decryption}, and threat prevention.
+    \item Conducted regular firewall rule reviews and policy optimizations, ensuring strict adherence to the principle of least privilege.
+\end{itemize}
+
+\section*{PROJECTS \& LABS}
+\begin{itemize}[label={\color{teal}\textbullet},leftmargin=*,itemsep=3pt,parsep=1pt,topsep=1pt]
+    \item \textbf{RAG-Powered Enterprise Search via Azure OpenAI:} Engineered a production-ready Retrieval-Augmented Generation (RAG) pipeline utilizing \textbf{Azure OpenAI (GPT-4o)} and \textbf{Azure AI Search} to provide context-aware answers from enterprise documentation.
+    \begin{itemize}[label={--},leftmargin=*,itemsep=1pt,parsep=0pt,topsep=1pt]
+        \item Automated the ingestion and vectorization of technical guides into an \textbf{AI Search} index for efficient semantic and keyword-based retrieval.
+        \item Developed \textbf{Python-based Azure Functions} to orchestrate the retrieval of relevant document chunks and generate precise, grounded responses.
+        \item Provisioned the entire infrastructure (Managed Identity, Storage, AI Search, OpenAI) using \textbf{Terraform}, ensuring secure, zero-trust access.
+        \item Integrated an API-driven frontend via \textbf{Azure API Management}, enabling real-time query processing with sub-second latency.
+    \end{itemize}
+    \item \textbf{EVE-NG Hybrid Cloud \& Multi-Site Network Simulation Lab:} Architected a comprehensive, virtualized enterprise network environment within EVE-NG to simulate secure hybrid cloud connectivity and resilient multi-site routing architectures.
+    \begin{itemize}[label={--},leftmargin=*,itemsep=1pt,parsep=0pt,topsep=1pt]
+        \item \textbf{SD-WAN \& Routing:} Deployed multi-site connectivity utilizing complex \textbf{BGP} routing and \textbf{SD-WAN} overlays to ensure high-availability WAN links.
+        \item \textbf{Perimeter Security:} Configured virtualized \textbf{FortiGate firewalls} to simulate secure edge defenses, NAT, and encrypted tunneling to cloud gateways.
+        \item \textbf{Enterprise Identity:} Integrated virtual \textbf{Windows Server} environments to replicate active directory services and complex \textbf{LDAP} queries.
+        \item \textbf{Access Control:} Simulated centralized authentication and authorization workflows utilizing \textbf{AAA} frameworks for endpoint security.
+        \item \textbf{Infrastructure Monitoring:} Provisioned lightweight Linux distribution servers to actively monitor network health, simulated traffic flows, and system logs across the topology.
+    \end{itemize}
+\end{itemize}
+
+\section*{CERTIFICATIONS}
+\begin{tabularx}{\textwidth}{@{}X X@{}}
+    \textbullet~ \textbf{Microsoft} Certified: AZ-305 \& AZ-104 & \textbullet~ \textbf{Cisco} Certified (CCNP \& CCNA) \\
+    \textbullet~ \textbf{HashiCorp} Certified: Terraform Associate & \textbullet~ \textbf{Fortinet} NSE 4 \\
+\end{tabularx}
+
+\section*{EDUCATION}
+\jobheading{B.Tech -- CS Engineering}{2018 -- 2022}{Global Institute}{Hyderabad, India}
+
+\section*{LANGUAGES \& ADDITIONAL INFO}
+\begin{itemize}[label={\color{teal}\textbullet},leftmargin=*,itemsep=5pt,parsep=2pt,topsep=2pt]
+    \item \textbf{Visa Status}: Visit Visa / Employment Eligible -- \textbf{Availability}: Immediate Joining
+    \item \textbf{Languages}: English (Proficient), Arabic (Basic), Hindi (Native)
+\end{itemize}
+
+\section*{ADDITIONAL EXPERIENCE / LABS}
+\begin{itemize}[label={\color{teal}\textbullet},leftmargin=*,itemsep=5pt,parsep=2pt,topsep=2pt]
+    \item \textbf{SAP}: Familiar with SAP landscape architecture, secure communication (SAPRouter, SNC), and infrastructure/network security fundamentals.
+    \item \textbf{PAM}: Familiar with privileged access management concepts including credential vaulting, session management, and CyberArk architecture (Vault, CPM, PSM).
+    \item \textbf{Compliance}: Familiar with industry security standards and frameworks including ISO 27001, PCI-DSS, SOC 2, and CIS Controls for regulatory alignment.
+\end{itemize}
+
+\end{document}

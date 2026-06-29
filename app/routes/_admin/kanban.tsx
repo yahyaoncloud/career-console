@@ -2,6 +2,7 @@ import { type LoaderFunctionArgs, type ActionFunctionArgs } from 'react-router';
 import { useLoaderData, useFetcher } from 'react-router';
 import { requireUser } from '../../lib/auth.server';
 import { prisma } from '../../lib/db.server';
+import { useToast } from '../../providers/ToastProvider';
 import InteractiveKanban from '../../components/InteractiveKanban';
 import { JobApplication, ApplicationStatus } from '../../types/types';
 
@@ -53,6 +54,7 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function KanbanRoute() {
   const { applications } = useLoaderData<typeof loader>();
   const fetcher = useFetcher<typeof action>();
+  const { info } = useToast();
 
   const handleUpdateStatus = (id: string, newStatus: ApplicationStatus) => {
     // Optimistic UI update could go here, but fetcher will handle it automatically if we submit
@@ -71,12 +73,12 @@ export default function KanbanRoute() {
 
   const handleViewApplication = (app: JobApplication) => {
     // TODO: Open modal with application details
-    alert(`View application: ${app.company}`);
+    info(`View application: ${app.company}`);
   };
 
   const handleAddApplication = (status: ApplicationStatus) => {
     // TODO: Open modal to add application with pre-filled status
-    alert(`Add application with status: ${status}`);
+    info(`Add application with status: ${status}`);
   };
 
   // Convert Prisma Application to JobApplication type expected by component

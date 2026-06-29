@@ -104,8 +104,13 @@ export interface ResumeData {
     degree: string;
     period: string;
   }>;
-  certifications: string[];
-}
+  certifications: Array<{
+    name: string;
+    brand: string;
+    date?: string;
+    credlyLink?: string;
+    status?: string;
+  }>;
 
 export interface DocumentAsset {
   id: string;
@@ -124,4 +129,42 @@ export interface SystemLog {
   event: string;
   status: 'SUCCESS' | 'WARNING' | 'ERROR' | 'INFO';
   module: string;
+}
+
+export interface Profile {
+  id: string;
+  userId: string;
+  slug: string;
+  displayName?: string;
+  avatar?: string;
+  coverImage?: string;
+  bio?: string;
+  socialLinks?: Record<string, string>;
+  showImage: boolean;
+  createdAt: string;
+  updatedAt: string;
+  user?: User;
+}
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string | null;
+  profile?: Profile | null;
+}
+
+export interface ActionResult<T = any> {
+  success: boolean;
+  message?: string;
+  data?: T;
+  meta?: Record<string, any>;
+  error?: string;
+  code?: string;
+  details?: Record<string, string[]>;
+  requestId?: string;
 }

@@ -5,12 +5,21 @@ export default [
   route("api/auth/session", "routes/api.auth.session.ts"),
   route("api/auth/logout", "routes/api.auth.logout.ts"),
   route("api/s3/presign", "routes/api.s3.presign.ts"),
-  
+  route("api/portfolio", "routes/api.portfolio.ts"),
+  route("api/portfolio/:id", "routes/api.portfolio.$id.ts"),
+  route("api/guestbook", "routes/api.guestbook.ts"),
+  route("api/profile", "routes/api.profile.ts"),
+  route("api/blogs", "routes/api.blogs.ts"),
+  route("api/blogs/:slug", "routes/api.blogs.$slug.ts"),
+  route("api/notifications", "routes/api.notifications.ts"),
+  route("login", "routes/login.tsx"),
+
   layout("routes/_public/_layout.tsx", [
     index("routes/_public/home.tsx"),
     route("blog", "routes/_public/blog.tsx"),
     route("blog/:slug", "routes/_public/blog.$slug.tsx"),
-    route("projects", "routes/_public/projects.tsx"),
+    route("project/:id", "routes/_public/project.$id.tsx"),
+    route("author/:slug", "routes/_public/author.$slug.tsx"),
     route("guestbook", "routes/_public/guestbook.tsx"),
   ]),
 
@@ -23,11 +32,13 @@ export default [
     route("blog-manager", "routes/_admin/blog-manager.tsx"),
     route("companies", "routes/_admin/companies.tsx"),
     route("documents", "routes/_admin/documents.tsx"),
+    route("notifications", "routes/_admin/notifications.tsx"),
+    route("settings", "routes/_admin/settings.tsx"),
   ]),
 
   layout("routes/_author/_layout.tsx", [
-    route("author-blogs", "routes/_author/blogs.tsx"),
-    route("author-profile", "routes/_author/profile.tsx"),
-    route("settings", "routes/_author/settings.tsx"),
-  ])
+    route("author/:id/dashboard", "routes/_author/author-dashboard.tsx"),
+    route("author/:id/blogs", "routes/_author/blogs.tsx"),
+    route("author/:id/profile", "routes/_author/profile.tsx"),
+  ]),
 ] satisfies RouteConfig;

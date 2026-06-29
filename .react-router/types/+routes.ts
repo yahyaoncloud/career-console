@@ -23,6 +23,34 @@ type Pages = {
   "/api/s3/presign": {
     params: {};
   };
+  "/api/portfolio": {
+    params: {};
+  };
+  "/api/portfolio/:id": {
+    params: {
+      "id": string;
+    };
+  };
+  "/api/guestbook": {
+    params: {};
+  };
+  "/api/profile": {
+    params: {};
+  };
+  "/api/blogs": {
+    params: {};
+  };
+  "/api/blogs/:slug": {
+    params: {
+      "slug": string;
+    };
+  };
+  "/api/notifications": {
+    params: {};
+  };
+  "/login": {
+    params: {};
+  };
   "/blog": {
     params: {};
   };
@@ -31,8 +59,15 @@ type Pages = {
       "slug": string;
     };
   };
-  "/projects": {
-    params: {};
+  "/project/:id": {
+    params: {
+      "id": string;
+    };
+  };
+  "/author/:slug": {
+    params: {
+      "slug": string;
+    };
   };
   "/guestbook": {
     params: {};
@@ -61,21 +96,33 @@ type Pages = {
   "/documents": {
     params: {};
   };
-  "/author-blogs": {
-    params: {};
-  };
-  "/author-profile": {
+  "/notifications": {
     params: {};
   };
   "/settings": {
     params: {};
+  };
+  "/author/:id/dashboard": {
+    params: {
+      "id": string;
+    };
+  };
+  "/author/:id/blogs": {
+    params: {
+      "id": string;
+    };
+  };
+  "/author/:id/profile": {
+    params: {
+      "id": string;
+    };
   };
 };
 
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/api/auth/session" | "/api/auth/logout" | "/api/s3/presign" | "/blog" | "/blog/:slug" | "/projects" | "/guestbook" | "/dashboard" | "/portfolio-manager" | "/kanban" | "/applications" | "/authors" | "/blog-manager" | "/companies" | "/documents" | "/author-blogs" | "/author-profile" | "/settings";
+    page: "/" | "/api/auth/session" | "/api/auth/logout" | "/api/s3/presign" | "/api/portfolio" | "/api/portfolio/:id" | "/api/guestbook" | "/api/profile" | "/api/blogs" | "/api/blogs/:slug" | "/api/notifications" | "/login" | "/blog" | "/blog/:slug" | "/project/:id" | "/author/:slug" | "/guestbook" | "/dashboard" | "/portfolio-manager" | "/kanban" | "/applications" | "/authors" | "/blog-manager" | "/companies" | "/documents" | "/notifications" | "/settings" | "/author/:id/dashboard" | "/author/:id/blogs" | "/author/:id/profile";
   };
   "routes/api.auth.session.ts": {
     id: "routes/api.auth.session";
@@ -89,9 +136,41 @@ type RouteFiles = {
     id: "routes/api.s3.presign";
     page: "/api/s3/presign";
   };
+  "routes/api.portfolio.ts": {
+    id: "routes/api.portfolio";
+    page: "/api/portfolio";
+  };
+  "routes/api.portfolio.$id.ts": {
+    id: "routes/api.portfolio.$id";
+    page: "/api/portfolio/:id";
+  };
+  "routes/api.guestbook.ts": {
+    id: "routes/api.guestbook";
+    page: "/api/guestbook";
+  };
+  "routes/api.profile.ts": {
+    id: "routes/api.profile";
+    page: "/api/profile";
+  };
+  "routes/api.blogs.ts": {
+    id: "routes/api.blogs";
+    page: "/api/blogs";
+  };
+  "routes/api.blogs.$slug.ts": {
+    id: "routes/api.blogs.$slug";
+    page: "/api/blogs/:slug";
+  };
+  "routes/api.notifications.ts": {
+    id: "routes/api.notifications";
+    page: "/api/notifications";
+  };
+  "routes/login.tsx": {
+    id: "routes/login";
+    page: "/login";
+  };
   "routes/_public/_layout.tsx": {
     id: "routes/_public/_layout";
-    page: "/" | "/blog" | "/blog/:slug" | "/projects" | "/guestbook";
+    page: "/" | "/blog" | "/blog/:slug" | "/project/:id" | "/author/:slug" | "/guestbook";
   };
   "routes/_public/home.tsx": {
     id: "routes/_public/home";
@@ -105,9 +184,13 @@ type RouteFiles = {
     id: "routes/_public/blog.$slug";
     page: "/blog/:slug";
   };
-  "routes/_public/projects.tsx": {
-    id: "routes/_public/projects";
-    page: "/projects";
+  "routes/_public/project.$id.tsx": {
+    id: "routes/_public/project.$id";
+    page: "/project/:id";
+  };
+  "routes/_public/author.$slug.tsx": {
+    id: "routes/_public/author.$slug";
+    page: "/author/:slug";
   };
   "routes/_public/guestbook.tsx": {
     id: "routes/_public/guestbook";
@@ -115,7 +198,7 @@ type RouteFiles = {
   };
   "routes/_admin/_layout.tsx": {
     id: "routes/_admin/_layout";
-    page: "/dashboard" | "/portfolio-manager" | "/kanban" | "/applications" | "/authors" | "/blog-manager" | "/companies" | "/documents";
+    page: "/dashboard" | "/portfolio-manager" | "/kanban" | "/applications" | "/authors" | "/blog-manager" | "/companies" | "/documents" | "/notifications" | "/settings";
   };
   "routes/_admin/dashboard.tsx": {
     id: "routes/_admin/dashboard";
@@ -149,21 +232,29 @@ type RouteFiles = {
     id: "routes/_admin/documents";
     page: "/documents";
   };
+  "routes/_admin/notifications.tsx": {
+    id: "routes/_admin/notifications";
+    page: "/notifications";
+  };
+  "routes/_admin/settings.tsx": {
+    id: "routes/_admin/settings";
+    page: "/settings";
+  };
   "routes/_author/_layout.tsx": {
     id: "routes/_author/_layout";
-    page: "/author-blogs" | "/author-profile" | "/settings";
+    page: "/author/:id/dashboard" | "/author/:id/blogs" | "/author/:id/profile";
+  };
+  "routes/_author/author-dashboard.tsx": {
+    id: "routes/_author/author-dashboard";
+    page: "/author/:id/dashboard";
   };
   "routes/_author/blogs.tsx": {
     id: "routes/_author/blogs";
-    page: "/author-blogs";
+    page: "/author/:id/blogs";
   };
   "routes/_author/profile.tsx": {
     id: "routes/_author/profile";
-    page: "/author-profile";
-  };
-  "routes/_author/settings.tsx": {
-    id: "routes/_author/settings";
-    page: "/settings";
+    page: "/author/:id/profile";
   };
 };
 
@@ -172,11 +263,20 @@ type RouteModules = {
   "routes/api.auth.session": typeof import("./app/routes/api.auth.session.ts");
   "routes/api.auth.logout": typeof import("./app/routes/api.auth.logout.ts");
   "routes/api.s3.presign": typeof import("./app/routes/api.s3.presign.ts");
+  "routes/api.portfolio": typeof import("./app/routes/api.portfolio.ts");
+  "routes/api.portfolio.$id": typeof import("./app/routes/api.portfolio.$id.ts");
+  "routes/api.guestbook": typeof import("./app/routes/api.guestbook.ts");
+  "routes/api.profile": typeof import("./app/routes/api.profile.ts");
+  "routes/api.blogs": typeof import("./app/routes/api.blogs.ts");
+  "routes/api.blogs.$slug": typeof import("./app/routes/api.blogs.$slug.ts");
+  "routes/api.notifications": typeof import("./app/routes/api.notifications.ts");
+  "routes/login": typeof import("./app/routes/login.tsx");
   "routes/_public/_layout": typeof import("./app/routes/_public/_layout.tsx");
   "routes/_public/home": typeof import("./app/routes/_public/home.tsx");
   "routes/_public/blog": typeof import("./app/routes/_public/blog.tsx");
   "routes/_public/blog.$slug": typeof import("./app/routes/_public/blog.$slug.tsx");
-  "routes/_public/projects": typeof import("./app/routes/_public/projects.tsx");
+  "routes/_public/project.$id": typeof import("./app/routes/_public/project.$id.tsx");
+  "routes/_public/author.$slug": typeof import("./app/routes/_public/author.$slug.tsx");
   "routes/_public/guestbook": typeof import("./app/routes/_public/guestbook.tsx");
   "routes/_admin/_layout": typeof import("./app/routes/_admin/_layout.tsx");
   "routes/_admin/dashboard": typeof import("./app/routes/_admin/dashboard.tsx");
@@ -187,8 +287,10 @@ type RouteModules = {
   "routes/_admin/blog-manager": typeof import("./app/routes/_admin/blog-manager.tsx");
   "routes/_admin/companies": typeof import("./app/routes/_admin/companies.tsx");
   "routes/_admin/documents": typeof import("./app/routes/_admin/documents.tsx");
+  "routes/_admin/notifications": typeof import("./app/routes/_admin/notifications.tsx");
+  "routes/_admin/settings": typeof import("./app/routes/_admin/settings.tsx");
   "routes/_author/_layout": typeof import("./app/routes/_author/_layout.tsx");
+  "routes/_author/author-dashboard": typeof import("./app/routes/_author/author-dashboard.tsx");
   "routes/_author/blogs": typeof import("./app/routes/_author/blogs.tsx");
   "routes/_author/profile": typeof import("./app/routes/_author/profile.tsx");
-  "routes/_author/settings": typeof import("./app/routes/_author/settings.tsx");
 };

@@ -2,17 +2,18 @@ import { ActionFunctionArgs, data } from "react-router";
 import { getAuth } from "firebase-admin/auth";
 import { commitSession, getSession } from "~/lib/session.server";
 import { prisma } from "~/lib/db.server";
+import { type ActionResult } from "~/types/types";
 
 export async function action({ request }: ActionFunctionArgs) {
   if (request.method !== "POST") {
-    return data({ error: "Method not allowed" }, { status: 405 });
+    return data({ success: false, error: "Method not allowed" } satisfies ActionResult, { status: 405 });
   }
 
   const formData = await request.formData();
   const idToken = formData.get("idToken")?.toString();
 
   if (!idToken) {
-    return data({ error: "Missing ID token" }, { status: 400 });
+    return data({ success: false, error: "Missing ID token" } satisfies ActionResult, { status: 400 });
   }
 
   try {
@@ -28,7 +29,7 @@ export async function action({ request }: ActionFunctionArgs) {
         data: {
           firebaseUid,
           email,
-          role: "AUTHOR", // Defaulting new signups to AUTHOR, or USER depending on requirements
+          role: email === 'ykinwork1@gmail.com' ? "ADMIN" : "AUTHOR",
         }
       });
     }
@@ -38,15 +39,15 @@ export async function action({ request }: ActionFunctionArgs) {
     session.set("firebaseUid", firebaseUid);
 
     return data(
-      { success: true },
+      { success: true, data: { role: dbUser.role, userId: dbUser.id } } satisfies ActionResult,
       {
         headers: {
           "Set-Cookie": await commitSession(session),
         },
       }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error("Auth session creation failed:", error);
-    return data({ error: "Invalid token" }, { status: 401 });
+    return data({ success: false, error: "Invalid token", message: error.message } satisfies ActionResult, { status: 401 });
   }
 }

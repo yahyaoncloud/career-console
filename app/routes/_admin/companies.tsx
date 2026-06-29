@@ -2,6 +2,7 @@ import { type LoaderFunctionArgs, type ActionFunctionArgs } from 'react-router';
 import { useLoaderData, useFetcher } from 'react-router';
 import { requireUser } from '../../lib/auth.server';
 import { prisma } from '../../lib/db.server';
+import { useToast } from '../../providers/ToastProvider';
 import { z } from 'zod';
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Save, X, Building2, ExternalLink, Mail, Loader2, Link as LinkIcon } from 'lucide-react';
@@ -99,6 +100,7 @@ export default function CompaniesRoute() {
   const sortedCompanies = React.useMemo(() => companies, [companies]);
   
   const fetcher = useFetcher<typeof action>();
+  const { success, error } = useToast();
   
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
@@ -123,15 +125,17 @@ export default function CompaniesRoute() {
   const isSubmitting = fetcher.state !== 'idle';
 
   useEffect(() => {
-    if (fetcher.data?.success && fetcher.state === 'idle') {
-      alert(fetcher.data.message);
-      setEditingId(null);
-      setIsAddingNew(false);
-      reset();
-    } else if (fetcher.data?.message && !fetcher.data.success && fetcher.state === 'idle') {
-      alert('Error: ' + fetcher.data.message);
+    if (fetcher.state === 'idle' && fetcher.data) {
+      if (fetcher.data.success) {
+        success(fetcher.data.message);
+        setEditingId(null);
+        setIsAddingNew(false);
+        reset();
+      } else {
+        error(fetcher.data.message);
+      }
     }
-  }, [fetcher.data, fetcher.state, reset]);
+  }, [fetcher.data, fetcher.state, reset, success, error]);
 
   const startAdd = () => {
     setIsAddingNew(true);
@@ -217,52 +221,52 @@ export default function CompaniesRoute() {
       </div>
 
       {(isAddingNew || editingId) && (
-        <Card className="p-6 border-primary/20 bg-primary/5">
-          <div className="flex justify-between items-center mb-6">
-            <Heading variant="h3">{isAddingNew ? 'Add New Company' : 'Edit Company'}</Heading>
-            <button onClick={handleCancel} className="p-1 text-muted-foreground hover:bg-muted rounded transition-colors">
-              <X size={18} />
+        <Card className="p-8 border-border/50 shadow-sm bg-card/50 backdrop-blur-sm">
+          <div className="flex justify-between items-center mb-6 pb-4 border-b border-border/50">
+            <h3 className="text-lg font-bold font-sans tracking-tight text-foreground">{isAddingNew ? 'Add New Company' : 'Edit Company'}</h3>
+            <button onClick={handleCancel} className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded transition-colors">
+              <X size={16} />
             </button>
           </div>
 
           <fetcher.Form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {editingId && <input type="hidden" {...register('id')} value={editingId} />}
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="space-y-6">
                 <div>
-                  <label className="block text-xs font-mono text-muted-foreground mb-1">Company Name *</label>
+                  <label className="block text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground mb-2">Company Name *</label>
                   <input
                     {...register('name')}
-                    className={cn("w-full px-3 py-2 text-sm bg-background border rounded-lg focus:ring-2 focus:ring-primary/40", errors.name && "border-destructive")}
+                    className={cn("w-full px-4 py-2.5 text-sm bg-background/50 border border-border/50 rounded hover:border-border focus:border-primary focus:ring-1 focus:ring-primary transition-all text-foreground", errors.name && "border-destructive")}
                     placeholder="e.g. Google"
                   />
                   {errors.name && <p className="text-destructive text-xs mt-1">{errors.name.message}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-mono text-muted-foreground mb-1">Website URL</label>
+                  <label className="block text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground mb-2">Website URL</label>
                   <input
                     {...register('website')}
-                    className={cn("w-full px-3 py-2 text-sm bg-background border rounded-lg focus:ring-2 focus:ring-primary/40", errors.website && "border-destructive")}
+                    className={cn("w-full px-4 py-2.5 text-sm bg-background/50 border border-border/50 rounded hover:border-border focus:border-primary focus:ring-1 focus:ring-primary transition-all text-foreground", errors.website && "border-destructive")}
                     placeholder="https://google.com"
                   />
                   {errors.website && <p className="text-destructive text-xs mt-1">{errors.website.message}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-mono text-muted-foreground mb-1">LinkedIn URL</label>
+                  <label className="block text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground mb-2">LinkedIn URL</label>
                   <input
                     {...register('linkedinUrl')}
-                    className={cn("w-full px-3 py-2 text-sm bg-background border rounded-lg focus:ring-2 focus:ring-primary/40", errors.linkedinUrl && "border-destructive")}
+                    className={cn("w-full px-4 py-2.5 text-sm bg-background/50 border border-border/50 rounded hover:border-border focus:border-primary focus:ring-1 focus:ring-primary transition-all text-foreground", errors.linkedinUrl && "border-destructive")}
                   />
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div>
-                  <label className="block text-xs font-mono text-muted-foreground mb-1">Status</label>
+                  <label className="block text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground mb-2">Status</label>
                   <select
                     {...register('status')}
-                    className="w-full px-3 py-2 text-sm bg-background border rounded-lg focus:ring-2 focus:ring-primary/40"
+                    className="w-full px-4 py-2.5 text-sm bg-background/50 border border-border/50 rounded hover:border-border focus:border-primary focus:ring-1 focus:ring-primary transition-all text-foreground"
                   >
                     <option value="TRACKING">Tracking</option>
                     <option value="TARGET">Target</option>
@@ -273,52 +277,52 @@ export default function CompaniesRoute() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-mono text-muted-foreground mb-1">Industry</label>
+                    <label className="block text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground mb-2">Industry</label>
                     <input
                       {...register('industry')}
-                      className="w-full px-3 py-2 text-sm bg-background border rounded-lg focus:ring-2 focus:ring-primary/40"
+                      className="w-full px-4 py-2.5 text-sm bg-background/50 border border-border/50 rounded hover:border-border focus:border-primary focus:ring-1 focus:ring-primary transition-all text-foreground"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-mono text-muted-foreground mb-1">Size</label>
+                    <label className="block text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground mb-2">Size</label>
                     <input
                       {...register('size')}
-                      className="w-full px-3 py-2 text-sm bg-background border rounded-lg focus:ring-2 focus:ring-primary/40"
+                      className="w-full px-4 py-2.5 text-sm bg-background/50 border border-border/50 rounded hover:border-border focus:border-primary focus:ring-1 focus:ring-primary transition-all text-foreground"
                       placeholder="10k+"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-mono text-muted-foreground mb-1">Headquarters</label>
+                  <label className="block text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground mb-2">Headquarters</label>
                   <input
                     {...register('hq')}
-                    className="w-full px-3 py-2 text-sm bg-background border rounded-lg focus:ring-2 focus:ring-primary/40"
+                    className="w-full px-4 py-2.5 text-sm bg-background/50 border border-border/50 rounded hover:border-border focus:border-primary focus:ring-1 focus:ring-primary transition-all text-foreground"
                     placeholder="Mountain View, CA"
                   />
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div>
-                  <label className="block text-xs font-mono text-muted-foreground mb-1">Recruiter Name</label>
+                  <label className="block text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground mb-2">Recruiter Name</label>
                   <input
                     {...register('recruiter')}
-                    className="w-full px-3 py-2 text-sm bg-background border rounded-lg focus:ring-2 focus:ring-primary/40"
+                    className="w-full px-4 py-2.5 text-sm bg-background/50 border border-border/50 rounded hover:border-border focus:border-primary focus:ring-1 focus:ring-primary transition-all text-foreground"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-mono text-muted-foreground mb-1">Contact Email</label>
+                  <label className="block text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground mb-2">Contact Email</label>
                   <input
                     {...register('contactEmail')}
-                    className={cn("w-full px-3 py-2 text-sm bg-background border rounded-lg focus:ring-2 focus:ring-primary/40", errors.contactEmail && "border-destructive")}
+                    className={cn("w-full px-4 py-2.5 text-sm bg-background/50 border border-border/50 rounded hover:border-border focus:border-primary focus:ring-1 focus:ring-primary transition-all text-foreground", errors.contactEmail && "border-destructive")}
                   />
                   {errors.contactEmail && <p className="text-destructive text-xs mt-1">{errors.contactEmail.message}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-mono text-muted-foreground mb-1">Tags (comma separated)</label>
+                  <label className="block text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground mb-2">Tags (comma separated)</label>
                   <input
                     {...register('tags')}
-                    className="w-full px-3 py-2 text-sm bg-background border rounded-lg focus:ring-2 focus:ring-primary/40"
+                    className="w-full px-4 py-2.5 text-sm bg-background/50 border border-border/50 rounded hover:border-border focus:border-primary focus:ring-1 focus:ring-primary transition-all text-foreground"
                     placeholder="FAANG, AI, Remote"
                   />
                 </div>
@@ -326,21 +330,21 @@ export default function CompaniesRoute() {
             </div>
 
             <div>
-              <label className="block text-xs font-mono text-muted-foreground mb-1">Notes</label>
+              <label className="block text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground mb-2">Notes</label>
               <textarea
                 {...register('notes')}
                 rows={3}
-                className="w-full px-3 py-2 text-sm bg-background border rounded-lg focus:ring-2 focus:ring-primary/40 resize-none"
+                className="w-full px-4 py-2.5 text-sm bg-background/50 border border-border/50 rounded hover:border-border focus:border-primary focus:ring-1 focus:ring-primary transition-all resize-none text-foreground"
               />
             </div>
 
-            <div className="flex justify-end pt-4 border-t border-border">
+            <div className="flex justify-end pt-6 border-t border-border/50">
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex items-center gap-2 px-6 py-2 bg-primary text-primary-foreground font-mono font-bold text-sm rounded hover:opacity-90 disabled:opacity-50"
+                className="flex items-center gap-2 px-6 py-2 bg-primary text-primary-foreground font-mono font-bold text-xs uppercase tracking-widest rounded hover:opacity-90 disabled:opacity-50 transition-colors"
               >
-                {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
                 {isSubmitting ? 'Saving...' : 'Save Company'}
               </button>
             </div>

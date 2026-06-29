@@ -31,7 +31,7 @@ export function PublicNavbar({ resumeName, onEnterConsole, isAuthenticated, clas
         </h1>
         
         {/* Navigation Links */}
-        <nav className="flex space-x-6 pt-2">
+        <nav className="flex space-x-6 pt-2 overflow-x-auto whitespace-nowrap scrollbar-hide w-full max-w-full">
           {links.map((link) => {
             const isActive = path === link.path || (link.path !== '/' && path.startsWith(link.path));
             return (
@@ -39,13 +39,20 @@ export function PublicNavbar({ resumeName, onEnterConsole, isAuthenticated, clas
                 key={link.name}
                 to={link.path}
                 className={cn(
-                  "mono-text text-xs tracking-wider transition-colors border-b-2 pb-1",
+                  "group relative mono-text text-xs tracking-wider transition-colors pb-1",
                   isActive 
-                    ? "border-foreground text-foreground font-bold"
-                    : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+                    ? "text-foreground font-bold"
+                    : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                {link.name}
+                <span className={cn(
+                  "relative after:absolute after:-bottom-0.5 after:left-0 after:w-full after:h-[1.5px] after:bg-current",
+                  isActive 
+                    ? "" 
+                    : "after:origin-bottom-right after:scale-x-0 group-hover:after:origin-bottom-left group-hover:after:scale-x-100 after:transition-transform after:duration-300 after:ease-out"
+                )}>
+                  {link.name}
+                </span>
               </Link>
             );
           })}
@@ -58,7 +65,7 @@ export function PublicNavbar({ resumeName, onEnterConsole, isAuthenticated, clas
           onClick={onEnterConsole}
           className="mono-text text-xs bg-primary text-primary-foreground px-3.5 py-2 rounded border border-primary hover:bg-primary/90 transition-colors cursor-pointer font-semibold w-full sm:w-auto text-center tracking-wider shadow-sm"
         >
-          {isAuthenticated ? 'Dashboard →' : 'Sign In →'}
+          Publish?
         </button>
       </div>
     </header>

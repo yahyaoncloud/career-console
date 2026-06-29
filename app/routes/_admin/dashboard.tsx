@@ -20,11 +20,22 @@ export async function loader({ request }: LoaderFunctionArgs) {
     orderBy: { createdAt: 'desc' }
   });
 
-  // Server-side fetching of AI recommendation
-  // Returning disabled for now to save API tokens
-  const recommendation = {
-    disabled: true,
-    data: null
+  const geminiTopics = [
+    { topic: "Zero Trust Architecture in Multi-Cloud", description: "Implement identity-aware proxies and micro-segmentation for improved security posture across AWS and GCP environments.", action: "Review IAM policies and network boundaries." },
+    { topic: "Optimizing Kubernetes Resources", description: "Leverage Vertical Pod Autoscaler and right-sizing techniques to reduce cluster costs while maintaining application performance.", action: "Audit pod resource requests and limits." },
+    { topic: "Automating Incident Response", description: "Use Serverless functions (AWS Lambda/GCP Cloud Functions) to automatically remediate common alerts and reduce MTTR.", action: "Build a prototype runbook automation." },
+    { topic: "eBPF for Deep Network Observability", description: "Deploy eBPF-based tooling like Cilium to gain granular insights into network flows and application performance without sidecars.", action: "Evaluate Cilium for the next cluster upgrade." }
+  ];
+  
+  const randomTopic = geminiTopics[Math.floor(Math.random() * geminiTopics.length)];
+
+  const recommendation: { disabled: boolean; data: { topic: string; description: string; action: string } | null } = {
+    disabled: false,
+    data: {
+      topic: randomTopic.topic,
+      description: randomTopic.description,
+      action: randomTopic.action
+    }
   };
 
   return { applications, logs, recommendation };
@@ -81,83 +92,83 @@ export default function DashboardOverview() {
   }, []);
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="border-b border-border pb-2">
-        <Heading variant="h2" className="flex items-center gap-2">
-          <LayoutDashboard size={24} className="text-muted-foreground" />
+    <div className="space-y-8 animate-in fade-in duration-300">
+      <div className="border-b border-zinc-200 dark:border-zinc-800 pb-4">
+        <h1 className="font-serif text-3xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-3">
+          <LayoutDashboard size={28} className="text-zinc-400" />
           Dashboard Overview
-        </Heading>
-        <span className="mono-text text-xs text-muted-foreground block">
+        </h1>
+        <span className="font-mono text-sm text-zinc-500 block mt-2">
           Real-time telemetry and pipeline metrics
         </span>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="space-y-1 !p-4">
-          <span className="mono-text text-sm text-muted-foreground uppercase tracking-widest block">TELEMETRY_PIPELINE</span>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-white dark:bg-zinc-900 p-5 rounded border border-zinc-200 dark:border-zinc-800 space-y-2">
+          <span className="font-mono text-[11px] text-zinc-500 uppercase tracking-widest block">TELEMETRY_PIPELINE</span>
           <div className="flex justify-between items-baseline">
-            <Heading variant="h2" className="text-3xl md:text-4xl font-bold">{total}</Heading>
-            <span className="mono-text text-base text-muted-foreground">Total Apps</span>
+            <h2 className="font-serif text-3xl md:text-4xl font-semibold text-zinc-900 dark:text-zinc-100">{total}</h2>
+            <span className="font-mono text-sm text-zinc-500">Total Apps</span>
           </div>
-          <div className="w-full bg-muted h-1 rounded overflow-hidden">
-            <div className="bg-foreground h-full" style={{ width: '100%' }} />
+          <div className="w-full bg-zinc-100 dark:bg-zinc-800 h-[2px] rounded-sm overflow-hidden mt-2">
+            <div className="bg-zinc-900 dark:bg-zinc-100 h-full" style={{ width: '100%' }} />
           </div>
-        </Card>
+        </div>
 
-        <Card className="space-y-1 !p-4">
-          <span className="mono-text text-sm text-muted-foreground uppercase tracking-widest block">ACTIVE_PROCESSES</span>
+        <div className="bg-white dark:bg-zinc-900 p-5 rounded border border-zinc-200 dark:border-zinc-800 space-y-2">
+          <span className="font-mono text-[11px] text-zinc-500 uppercase tracking-widest block">ACTIVE_PROCESSES</span>
           <div className="flex justify-between items-baseline">
-            <Heading variant="h2" className="text-3xl md:text-4xl font-bold">{pending}</Heading>
-            <span className="mono-text text-base text-muted-foreground">In Progress</span>
+            <h2 className="font-serif text-3xl md:text-4xl font-semibold text-zinc-900 dark:text-zinc-100">{pending}</h2>
+            <span className="font-mono text-sm text-zinc-500">In Progress</span>
           </div>
-          <div className="w-full bg-muted h-1 rounded overflow-hidden">
-            <div className="bg-primary h-full" style={{ width: `${total > 0 ? (pending / total) * 100 : 0}%` }} />
+          <div className="w-full bg-zinc-100 dark:bg-zinc-800 h-[2px] rounded-sm overflow-hidden mt-2">
+            <div className="bg-indigo-500 dark:bg-indigo-400 h-full transition-all" style={{ width: `${total > 0 ? (pending / total) * 100 : 0}%` }} />
           </div>
-        </Card>
+        </div>
 
-        <Card className="space-y-1 !p-4">
-          <span className="mono-text text-sm text-muted-foreground uppercase tracking-widest block">SUCCESS_TERMINATION</span>
+        <div className="bg-white dark:bg-zinc-900 p-5 rounded border border-zinc-200 dark:border-zinc-800 space-y-2">
+          <span className="font-mono text-[11px] text-zinc-500 uppercase tracking-widest block">SUCCESS_TERMINATION</span>
           <div className="flex justify-between items-baseline">
-            <Heading variant="h2" className="text-3xl md:text-4xl font-bold text-emerald-500">{offers}</Heading>
-            <span className="mono-text text-base text-emerald-600">Offers Recvd</span>
+            <h2 className="font-serif text-3xl md:text-4xl font-semibold text-emerald-600 dark:text-emerald-500">{offers}</h2>
+            <span className="font-mono text-sm text-emerald-700 dark:text-emerald-600">Offers Recvd</span>
           </div>
-          <div className="w-full bg-muted h-1 rounded overflow-hidden">
-            <div className="bg-emerald-500 h-full" style={{ width: `${total > 0 ? (offers / total) * 100 : 0}%` }} />
+          <div className="w-full bg-zinc-100 dark:bg-zinc-800 h-[2px] rounded-sm overflow-hidden mt-2">
+            <div className="bg-emerald-500 h-full transition-all" style={{ width: `${total > 0 ? (offers / total) * 100 : 0}%` }} />
           </div>
-        </Card>
+        </div>
 
-        <Card className="space-y-1 !p-4">
-          <span className="mono-text text-sm text-muted-foreground uppercase tracking-widest block">OFFER_CONVERSION</span>
+        <div className="bg-white dark:bg-zinc-900 p-5 rounded border border-zinc-200 dark:border-zinc-800 space-y-2">
+          <span className="font-mono text-[11px] text-zinc-500 uppercase tracking-widest block">OFFER_CONVERSION</span>
           <div className="flex justify-between items-baseline">
-            <Heading variant="h2" className="text-3xl md:text-4xl font-bold">{offerRate}%</Heading>
-            <span className="mono-text text-base text-muted-foreground">Offer Rate</span>
+            <h2 className="font-serif text-3xl md:text-4xl font-semibold text-zinc-900 dark:text-zinc-100">{offerRate}%</h2>
+            <span className="font-mono text-sm text-zinc-500">Offer Rate</span>
           </div>
-          <div className="w-full bg-muted h-1 rounded overflow-hidden">
-            <div className="bg-foreground h-full" style={{ width: `${offerRate}%` }} />
+          <div className="w-full bg-zinc-100 dark:bg-zinc-800 h-[2px] rounded-sm overflow-hidden mt-2">
+            <div className="bg-zinc-900 dark:bg-zinc-100 h-full transition-all" style={{ width: `${offerRate}%` }} />
           </div>
-        </Card>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <Card className="space-y-4">
-            <div className="flex justify-between items-center border-b border-border pb-2">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
+          <div className="bg-white dark:bg-zinc-900 p-6 rounded border border-zinc-200 dark:border-zinc-800 space-y-6">
+            <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-800/50 pb-4">
               <div>
-                <span className="mono-text text-sm text-muted-foreground uppercase tracking-widest block">PIPELINE_LOAD</span>
-                <Heading variant="h3">Application Distribution</Heading>
+                <span className="font-mono text-[11px] text-zinc-500 uppercase tracking-widest block mb-1">PIPELINE_LOAD</span>
+                <h3 className="font-serif text-lg font-semibold text-zinc-900 dark:text-zinc-100">Application Distribution</h3>
               </div>
             </div>
 
             <div className="pt-2">
-              <svg viewBox="0 0 500 180" className="w-full h-auto text-foreground">
-                <line x1="40" y1="20" x2="480" y2="20" stroke="currentColor" strokeWidth="0.5" strokeDasharray="2" opacity="0.15" />
-                <line x1="40" y1="70" x2="480" y2="70" stroke="currentColor" strokeWidth="0.5" strokeDasharray="2" opacity="0.15" />
-                <line x1="40" y1="120" x2="480" y2="120" stroke="currentColor" strokeWidth="0.5" strokeDasharray="2" opacity="0.15" />
-                <line x1="40" y1="150" x2="480" y2="150" stroke="currentColor" strokeWidth="1" opacity="0.5" />
+              <svg viewBox="0 0 500 180" className="w-full h-auto text-zinc-900 dark:text-zinc-100">
+                <line x1="40" y1="20" x2="480" y2="20" stroke="currentColor" strokeWidth="1" strokeDasharray="2" opacity="0.1" />
+                <line x1="40" y1="70" x2="480" y2="70" stroke="currentColor" strokeWidth="1" strokeDasharray="2" opacity="0.1" />
+                <line x1="40" y1="120" x2="480" y2="120" stroke="currentColor" strokeWidth="1" strokeDasharray="2" opacity="0.1" />
+                <line x1="40" y1="150" x2="480" y2="150" stroke="currentColor" strokeWidth="1" opacity="0.2" />
 
-                <text x="30" y="24" className="mono-text text-[8px] fill-muted-foreground text-right">{chartMax}</text>
-                <text x="30" y="74" className="mono-text text-[8px] fill-muted-foreground text-right">{Math.round(chartMax / 2)}</text>
-                <text x="30" y="154" className="mono-text text-[8px] fill-muted-foreground text-right">0</text>
+                <text x="30" y="24" className="font-mono text-[9px] fill-zinc-500 text-right">{chartMax}</text>
+                <text x="30" y="74" className="font-mono text-[9px] fill-zinc-500 text-right">{Math.round(chartMax / 2)}</text>
+                <text x="30" y="154" className="font-mono text-[9px] fill-zinc-500 text-right">0</text>
 
                 {Object.entries(statusCounts).map(([label, count], idx) => {
                   const barWidth = 40;
@@ -173,22 +184,21 @@ export default function DashboardOverview() {
                         y={y}
                         width={barWidth}
                         height={barHeight}
-                        fill="currentColor"
-                        className="text-primary hover:text-primary/80 transition-colors"
+                        className="fill-zinc-300 dark:fill-zinc-700 hover:fill-indigo-500 dark:hover:fill-indigo-400 transition-colors"
                       />
                       <text
                         x={x + barWidth / 2}
-                        y={y - 5}
+                        y={y - 6}
                         textAnchor="middle"
-                        className="mono-text text-[9px] fill-foreground font-bold"
+                        className="font-mono text-[10px] fill-zinc-900 dark:fill-zinc-100 font-bold"
                       >
                         {count}
                       </text>
                       <text
                         x={x + barWidth / 2}
-                        y="165"
+                        y="168"
                         textAnchor="middle"
-                        className="mono-text text-[8px] fill-muted-foreground uppercase tracking-tight"
+                        className="font-mono text-[9px] fill-zinc-500 uppercase tracking-tight"
                       >
                         {label}
                       </text>
@@ -197,46 +207,46 @@ export default function DashboardOverview() {
                 })}
               </svg>
             </div>
-          </Card>
+          </div>
 
-          <Card className="space-y-4">
-            <div className="flex justify-between items-center border-b border-border pb-2">
+          <div className="bg-white dark:bg-zinc-900 p-6 rounded border border-zinc-200 dark:border-zinc-800 space-y-6">
+            <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-800/50 pb-4">
               <div>
-                <span className="mono-text text-sm text-muted-foreground uppercase tracking-widest block">SCHEDULED_EVENTS</span>
-                <Heading variant="h4">Upcoming Interviews</Heading>
+                <span className="font-mono text-[11px] text-zinc-500 uppercase tracking-widest block mb-1">SCHEDULED_EVENTS</span>
+                <h4 className="font-serif text-lg font-semibold text-zinc-900 dark:text-zinc-100">Upcoming Interviews</h4>
               </div>
-              <Calendar size={16} className="text-muted-foreground" />
+              <Calendar size={18} className="text-zinc-400" />
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               {upcomingInterviews.length === 0 ? (
-                <div className="p-6 text-center border border-dashed border-border rounded">
-                  <p className="mono-text text-sm text-muted-foreground">No interviews scheduled yet</p>
+                <div className="p-8 text-center border border-dashed border-zinc-200 dark:border-zinc-800 rounded bg-zinc-50 dark:bg-zinc-950/50">
+                  <p className="font-mono text-sm text-zinc-500">No interviews scheduled yet</p>
                 </div>
               ) : (
                 upcomingInterviews.map((app) => (
                   <div
                     key={app.id}
-                    className="flex justify-between items-center p-3 bg-muted/50 rounded border border-border hover:border-primary/50 transition-colors"
+                    className="flex justify-between items-center p-4 bg-zinc-50 dark:bg-zinc-950/50 rounded border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors"
                   >
-                    <div className="space-y-1">
-                      <div className="flex items-center space-x-2">
-                        <span className="serif-header font-bold text-base">{app.company}</span>
-                        <span className="mono-text text-xs bg-card border border-border px-1.5 py-0.5 rounded text-muted-foreground uppercase">
+                    <div className="space-y-1.5">
+                      <div className="flex items-center space-x-3">
+                        <span className="font-serif font-bold text-base text-zinc-900 dark:text-zinc-100">{app.company}</span>
+                        <span className="font-mono text-[10px] bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 px-2 py-0.5 rounded-sm text-zinc-600 dark:text-zinc-400 uppercase font-semibold tracking-wider">
                           {app.status}
                         </span>
                       </div>
-                      <p className="mono-text text-sm text-muted-foreground">{app.position}</p>
+                      <p className="font-mono text-sm text-zinc-600 dark:text-zinc-400">{app.position}</p>
                     </div>
 
-                    <div className="text-right space-y-0.5">
-                      <span className="mono-text text-sm font-bold">
+                    <div className="text-right space-y-1">
+                      <span className="font-mono text-sm font-bold text-zinc-900 dark:text-zinc-100">
                         {new Date(app.interviewDate!).toLocaleDateString(undefined, {
                           month: 'short',
                           day: 'numeric',
                         })}
                       </span>
-                      <span className="mono-text text-xs text-muted-foreground block">
+                      <span className="font-mono text-[11px] text-zinc-500 block">
                         {new Date(app.interviewDate!).toLocaleTimeString(undefined, {
                           hour: '2-digit',
                           minute: '2-digit',
@@ -247,94 +257,89 @@ export default function DashboardOverview() {
                 ))
               )}
             </div>
-          </Card>
+          </div>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-8">
           {!recommendation.disabled && recommendation.data && (
-            <div className="bg-primary/5 p-5 rounded border border-primary/20 space-y-4 shadow-sm relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-10">
-                <Sparkles size={64} className="text-primary" />
-              </div>
-              <div className="flex justify-between items-center border-b border-primary/20 pb-2 relative z-10">
+            <div className="bg-indigo-50 dark:bg-indigo-950/20 p-6 rounded border border-indigo-200 dark:border-indigo-900/50 space-y-4">
+              <div className="flex justify-between items-center border-b border-indigo-100 dark:border-indigo-900/50 pb-3">
                 <div>
-                  <span className="mono-text text-sm text-primary uppercase tracking-widest block font-bold flex items-center gap-1">
+                  <span className="font-mono text-[10px] text-indigo-600 dark:text-indigo-400 uppercase tracking-widest block font-bold flex items-center gap-1.5 mb-1">
                     <Sparkles size={12} /> AI_MENTOR_SYNC
                   </span>
-                  <Heading variant="h4" className="text-lg">What to Learn Today</Heading>
+                  <h4 className="font-serif text-lg font-semibold text-zinc-900 dark:text-zinc-100">What to Learn Today</h4>
                 </div>
                 <div className="flex items-center gap-2" title={`Expires in ${timeRemainingStr}`}>
-                  <span className="mono-text text-[9px] text-muted-foreground">{timeRemainingStr}</span>
+                  <span className="font-mono text-[10px] text-zinc-500">{timeRemainingStr}</span>
                 </div>
               </div>
 
-              <div className="space-y-3 relative z-10">
-                <div className="space-y-3">
-                  <div>
-                    <h5 className="font-bold flex items-center gap-1.5 text-base">
-                      <BookOpen size={16} className="text-primary" />
-                      {recommendation.data.topic}
-                    </h5>
-                    <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                      {recommendation.data.description}
-                    </p>
-                  </div>
-                  <div className="bg-card p-3 rounded border border-border">
-                    <span className="mono-text text-xs text-primary font-bold block mb-1">ACTION_ITEM</span>
-                    <p className="text-sm font-medium">
-                      {recommendation.data.action}
-                    </p>
-                  </div>
+              <div className="space-y-4">
+                <div>
+                  <h5 className="font-bold flex items-center gap-2 text-zinc-900 dark:text-zinc-100 font-sans">
+                    <BookOpen size={16} className="text-indigo-500" />
+                    {recommendation.data.topic}
+                  </h5>
+                  <p className="text-sm text-zinc-700 dark:text-zinc-400 mt-2 leading-relaxed">
+                    {recommendation.data.description}
+                  </p>
+                </div>
+                <div className="bg-white dark:bg-black p-4 rounded border border-indigo-100 dark:border-indigo-900/30">
+                  <span className="font-mono text-[11px] text-indigo-600 dark:text-indigo-400 font-bold block mb-2 uppercase tracking-wider">ACTION_ITEM</span>
+                  <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                    {recommendation.data.action}
+                  </p>
                 </div>
               </div>
             </div>
           )}
 
-          <Card className="space-y-4">
-            <div className="flex justify-between items-center border-b border-border pb-2">
+          <div className="bg-white dark:bg-zinc-900 p-6 rounded border border-zinc-200 dark:border-zinc-800 space-y-4">
+            <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-800/50 pb-3">
               <div>
-                <span className="mono-text text-xs text-muted-foreground uppercase block">ALERT_QUEUE</span>
-                <Heading variant="h4">Looming Deadlines</Heading>
+                <span className="font-mono text-[11px] text-zinc-500 uppercase tracking-widest block mb-1">ALERT_QUEUE</span>
+                <h4 className="font-serif text-lg font-semibold text-zinc-900 dark:text-zinc-100">Looming Deadlines</h4>
               </div>
-              <AlertCircle size={14} className="text-destructive" />
+              <AlertCircle size={16} className="text-red-500" />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-3 pt-1">
               {upcomingDeadlines.length === 0 ? (
-                <p className="mono-text text-sm text-muted-foreground text-center py-4">No critical deadlines pending</p>
+                <p className="font-mono text-[13px] text-zinc-500 text-center py-6 border border-dashed border-zinc-200 dark:border-zinc-800 rounded bg-zinc-50 dark:bg-zinc-950/50">No critical deadlines pending</p>
               ) : (
                 upcomingDeadlines.map((app) => (
-                  <div key={app.id} className="p-2.5 bg-destructive/10 border border-destructive/30 rounded text-sm space-y-1">
-                    <div className="flex justify-between font-bold">
-                      <Heading as="span" variant="h4" className="text-base">{app.company}</Heading>
-                      <span className="mono-text text-destructive">
-                        {new Date(app.deadline!).toLocaleDateString()}
+                  <div key={app.id} className="p-3 bg-red-50 dark:bg-red-950/10 border border-red-200 dark:border-red-900/30 rounded space-y-1.5">
+                    <div className="flex justify-between items-center">
+                      <span className="font-bold text-sm text-zinc-900 dark:text-zinc-100">{app.company}</span>
+                      <span className="font-mono text-xs font-bold text-red-600 dark:text-red-400">
+                        {new Date(app.deadline!).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                       </span>
                     </div>
-                    <p className="mono-text text-xs text-muted-foreground truncate">{app.position}</p>
+                    <p className="font-mono text-[11px] text-zinc-600 dark:text-zinc-400 truncate uppercase tracking-wide">{app.position}</p>
                   </div>
                 ))
               )}
             </div>
-          </Card>
+          </div>
 
-          <div className="bg-card p-4 rounded border border-border space-y-3 overflow-hidden">
-            <div className="flex justify-between items-center border-b border-border pb-1.5">
-              <span className="mono-text text-xs text-muted-foreground uppercase font-bold">System Audit Logs</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <div className="bg-white dark:bg-zinc-900 p-5 rounded border border-zinc-200 dark:border-zinc-800 space-y-4 overflow-hidden">
+            <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-800/50 pb-3">
+              <span className="font-mono text-[11px] text-zinc-500 uppercase font-bold tracking-widest">System Audit Logs</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             </div>
 
-            <div className="font-mono text-xs space-y-2 max-h-[220px] overflow-y-auto">
+            <div className="font-mono text-[11px] space-y-2.5 max-h-[220px] overflow-y-auto pt-1 pb-1">
               {logs.map((log: any, index: number) => (
-                <div key={index} className="space-y-0.5 leading-normal">
-                  <div className="flex justify-between text-muted-foreground">
+                <div key={index} className="space-y-1 leading-normal border-l-2 border-zinc-200 dark:border-zinc-800 pl-3 py-0.5">
+                  <div className="flex justify-between text-zinc-500">
                     <span>[{new Date(log.createdAt).toISOString().split('T')[1].substring(0, 8)}]</span>
-                    <span className={log.status === 'SUCCESS' ? 'text-emerald-500' : log.status === 'WARNING' ? 'text-amber-500' : 'text-muted-foreground'}>
+                    <span className={log.status === 'SUCCESS' ? 'text-emerald-600 dark:text-emerald-500' : log.status === 'WARNING' ? 'text-amber-600 dark:text-amber-500' : 'text-zinc-500'}>
                       {log.status}
                     </span>
                   </div>
-                  <p className="text-foreground pr-2 block truncate">
-                    <span className="text-muted-foreground">{log.module} //</span> {log.event}
+                  <p className="text-zinc-800 dark:text-zinc-300 pr-2 truncate">
+                    <span className="text-zinc-400 dark:text-zinc-600">{log.module} //</span> {log.event}
                   </p>
                 </div>
               ))}

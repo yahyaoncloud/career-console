@@ -2,6 +2,7 @@ import { type LoaderFunctionArgs, type ActionFunctionArgs } from 'react-router';
 import { useLoaderData, useFetcher } from 'react-router';
 import { requireUser } from '../../lib/auth.server';
 import { prisma } from '../../lib/db.server';
+import { useToast } from '../../providers/ToastProvider';
 import { z } from 'zod';
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Save, X, FileText, Download, Loader2 } from 'lucide-react';
@@ -10,6 +11,7 @@ import { Heading } from '../../components/ui/Heading';
 import { cn } from '../../lib/utils';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { uploadFile } from '../../lib/supabase';
 
 const DocumentSchema = z.object({
   id: z.string().optional(),
@@ -27,7 +29,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     where: { userId: user.id, deletedAt: null },
     orderBy: { createdAt: 'desc' }
   });
-  return { documents };
+  return { documents, user };
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -83,13 +85,15 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function DocumentsRoute() {
-  const { documents } = useLoaderData<typeof loader>();
+  const { documents, user } = useLoaderData<typeof loader>();
   const fetcher = useFetcher<typeof action>();
+  const { success, error } = useToast();
   
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm({
+  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm({
     resolver: zodResolver(DocumentSchema),
     defaultValues: {
       name: '',
@@ -102,15 +106,17 @@ export default function DocumentsRoute() {
   const isSubmitting = fetcher.state !== 'idle';
 
   useEffect(() => {
-    if (fetcher.data?.success && fetcher.state === 'idle') {
-      alert(fetcher.data.message);
-      setEditingId(null);
-      setIsAddingNew(false);
-      reset();
-    } else if (fetcher.data?.message && !fetcher.data.success && fetcher.state === 'idle') {
-      alert('Error: ' + fetcher.data.message);
+    if (fetcher.state === 'idle' && fetcher.data) {
+      if (fetcher.data.success) {
+        success(fetcher.data.message);
+        setEditingId(null);
+        setIsAddingNew(false);
+        reset();
+      } else {
+        error(fetcher.data.message);
+      }
     }
-  }, [fetcher.data, fetcher.state, reset]);
+  }, [fetcher.data, fetcher.state, reset, success, error]);
 
   const startAdd = () => {
     setIsAddingNew(true);
@@ -153,6 +159,22 @@ export default function DocumentsRoute() {
     }
   };
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setIsUploading(true);
+    try {
+      // Use 'documents' bucket, store in a folder named after the user to avoid collisions
+      const { url } = await uploadFile(file, `user_${user.id}`, 'documents');
+      setValue('url', url, { shouldValidate: true, shouldDirty: true });
+    } catch (err: any) {
+      error(`Upload failed: ${err.message}`);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const TYPE_COLORS: Record<string, string> = {
     'RESUME': 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400',
     'COVER_LETTER': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
@@ -182,46 +204,52 @@ export default function DocumentsRoute() {
       </div>
 
       {(isAddingNew || editingId) && (
-        <Card className="p-6 border-primary/20 bg-primary/5">
-          <div className="flex justify-between items-center mb-6">
-            <Heading variant="h3">{isAddingNew ? 'Add Document' : 'Edit Document'}</Heading>
-            <button onClick={handleCancel} className="p-1 text-muted-foreground hover:bg-muted rounded transition-colors">
-              <X size={18} />
+        <Card className="p-8 border-border/50 shadow-sm bg-card/50 backdrop-blur-sm">
+          <div className="flex justify-between items-center mb-6 pb-4 border-b border-border/50">
+            <h3 className="text-lg font-bold font-sans tracking-tight text-foreground">{isAddingNew ? 'Add Document' : 'Edit Document'}</h3>
+            <button onClick={handleCancel} className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded transition-colors">
+              <X size={16} />
             </button>
           </div>
 
           <fetcher.Form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {editingId && <input type="hidden" {...register('id')} value={editingId} />}
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-6">
                 <div>
-                  <label className="block text-xs font-mono text-muted-foreground mb-1">Document Name *</label>
+                  <label className="block text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground mb-2">Document Name *</label>
                   <input
                     {...register('name')}
-                    className={cn("w-full px-3 py-2 text-sm bg-background border rounded-lg focus:ring-2 focus:ring-primary/40", errors.name && "border-destructive")}
+                    className={cn("w-full px-4 py-2.5 text-sm bg-background/50 border border-border/50 rounded hover:border-border focus:border-primary focus:ring-1 focus:ring-primary transition-all text-foreground", errors.name && "border-destructive")}
                     placeholder="e.g. Frontend Resume V2"
                   />
                   {errors.name && <p className="text-destructive text-xs mt-1">{errors.name.message}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-mono text-muted-foreground mb-1">Document URL *</label>
-                  <input
-                    {...register('url')}
-                    className={cn("w-full px-3 py-2 text-sm bg-background border rounded-lg focus:ring-2 focus:ring-primary/40", errors.url && "border-destructive")}
-                    placeholder="https://..."
-                  />
-                  <p className="text-[10px] text-muted-foreground mt-1">Provide a direct link to the file (S3, Dropbox, etc).</p>
+                  <label className="block text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground mb-2">Document URL *</label>
+                  <div className="flex gap-2">
+                    <input
+                      {...register('url')}
+                      className={cn("flex-1 px-4 py-2.5 text-sm bg-background/50 border border-border/50 rounded hover:border-border focus:border-primary focus:ring-1 focus:ring-primary transition-all text-foreground", errors.url && "border-destructive")}
+                      placeholder="https://..."
+                    />
+                    <label className="flex items-center justify-center px-4 py-2 bg-muted/50 border border-border/50 rounded cursor-pointer hover:bg-muted transition-colors text-[10px] font-mono font-bold uppercase tracking-wider whitespace-nowrap">
+                      {isUploading ? <Loader2 size={14} className="animate-spin" /> : 'Upload File'}
+                      <input type="file" className="hidden" onChange={handleFileUpload} disabled={isUploading} />
+                    </label>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-1.5">Provide a direct link or upload a file directly to your secure vault.</p>
                   {errors.url && <p className="text-destructive text-xs mt-1">{errors.url.message}</p>}
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div>
-                  <label className="block text-xs font-mono text-muted-foreground mb-1">Type</label>
+                  <label className="block text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground mb-2">Type</label>
                   <select
                     {...register('type')}
-                    className="w-full px-3 py-2 text-sm bg-background border rounded-lg focus:ring-2 focus:ring-primary/40"
+                    className="w-full px-4 py-2.5 text-sm bg-background/50 border border-border/50 rounded hover:border-border focus:border-primary focus:ring-1 focus:ring-primary transition-all text-foreground"
                   >
                     <option value="RESUME">Resume</option>
                     <option value="COVER_LETTER">Cover Letter</option>
@@ -231,23 +259,23 @@ export default function DocumentsRoute() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-mono text-muted-foreground mb-1">Version</label>
+                  <label className="block text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground mb-2">Version</label>
                   <input
                     {...register('version')}
-                    className="w-full px-3 py-2 text-sm bg-background border rounded-lg focus:ring-2 focus:ring-primary/40"
+                    className="w-full px-4 py-2.5 text-sm bg-background/50 border border-border/50 rounded hover:border-border focus:border-primary focus:ring-1 focus:ring-primary transition-all text-foreground"
                     placeholder="e.g. v2.1"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="flex justify-end pt-4 border-t border-border">
+            <div className="flex justify-end pt-6 border-t border-border/50">
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex items-center gap-2 px-6 py-2 bg-primary text-primary-foreground font-mono font-bold text-sm rounded hover:opacity-90 disabled:opacity-50"
+                className="flex items-center gap-2 px-6 py-2 bg-primary text-primary-foreground font-mono font-bold text-xs uppercase tracking-widest rounded hover:opacity-90 disabled:opacity-50 transition-colors"
               >
-                {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
                 {isSubmitting ? 'Saving...' : 'Save Document'}
               </button>
             </div>

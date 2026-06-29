@@ -11,14 +11,17 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window !== 'undefined') {
-      return (localStorage.getItem('theme') as Theme) || 'dark'; // default to dark
-    }
-    return 'dark'; // Server default
-  });
-
+  // Always initialize to the server default to prevent hydration mismatches
+  const [theme, setTheme] = useState<Theme>('dark');
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('dark');
+
+  // After mount, hydrate the theme from localStorage
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') as Theme | null;
+    if (savedTheme && ['light', 'dark', 'system'].includes(savedTheme)) {
+      setTheme(savedTheme);
+    }
+  }, []);
 
   useEffect(() => {
     const root = window.document.documentElement;

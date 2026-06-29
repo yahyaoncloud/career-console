@@ -1,0 +1,136 @@
+
+> react-example@0.0.0 typecheck
+> react-router typegen && tsc
+
+.react-router/types/+routes.ts(171,25): error TS2307: Cannot find module './app/root.tsx' or its corresponding type declarations.
+.react-router/types/+routes.ts(172,44): error TS2307: Cannot find module './app/routes/api.auth.session.ts' or its corresponding type declarations.
+.react-router/types/+routes.ts(173,43): error TS2307: Cannot find module './app/routes/api.auth.logout.ts' or its corresponding type declarations.
+.react-router/types/+routes.ts(174,42): error TS2307: Cannot find module './app/routes/api.s3.presign.ts' or its corresponding type declarations.
+.react-router/types/+routes.ts(175,43): error TS2307: Cannot find module './app/routes/_public/_layout.tsx' or its corresponding type declarations.
+.react-router/types/+routes.ts(176,40): error TS2307: Cannot find module './app/routes/_public/home.tsx' or its corresponding type declarations.
+.react-router/types/+routes.ts(177,40): error TS2307: Cannot find module './app/routes/_public/blog.tsx' or its corresponding type declarations.
+.react-router/types/+routes.ts(178,46): error TS2307: Cannot find module './app/routes/_public/blog.$slug.tsx' or its corresponding type declarations.
+.react-router/types/+routes.ts(179,44): error TS2307: Cannot find module './app/routes/_public/projects.tsx' or its corresponding type declarations.
+.react-router/types/+routes.ts(180,45): error TS2307: Cannot find module './app/routes/_public/guestbook.tsx' or its corresponding type declarations.
+.react-router/types/+routes.ts(181,42): error TS2307: Cannot find module './app/routes/_admin/_layout.tsx' or its corresponding type declarations.
+.react-router/types/+routes.ts(182,44): error TS2307: Cannot find module './app/routes/_admin/dashboard.tsx' or its corresponding type declarations.
+.react-router/types/+routes.ts(183,52): error TS2307: Cannot find module './app/routes/_admin/portfolio-manager.tsx' or its corresponding type declarations.
+.react-router/types/+routes.ts(184,41): error TS2307: Cannot find module './app/routes/_admin/kanban.tsx' or its corresponding type declarations.
+.react-router/types/+routes.ts(185,47): error TS2307: Cannot find module './app/routes/_admin/applications.tsx' or its corresponding type declarations.
+.react-router/types/+routes.ts(186,42): error TS2307: Cannot find module './app/routes/_admin/authors.tsx' or its corresponding type declarations.
+.react-router/types/+routes.ts(187,47): error TS2307: Cannot find module './app/routes/_admin/blog-manager.tsx' or its corresponding type declarations.
+.react-router/types/+routes.ts(188,44): error TS2307: Cannot find module './app/routes/_admin/companies.tsx' or its corresponding type declarations.
+.react-router/types/+routes.ts(189,44): error TS2307: Cannot find module './app/routes/_admin/documents.tsx' or its corresponding type declarations.
+.react-router/types/+routes.ts(190,43): error TS2307: Cannot find module './app/routes/_author/_layout.tsx' or its corresponding type declarations.
+.react-router/types/+routes.ts(191,41): error TS2307: Cannot find module './app/routes/_author/blogs.tsx' or its corresponding type declarations.
+.react-router/types/+routes.ts(192,43): error TS2307: Cannot find module './app/routes/_author/profile.tsx' or its corresponding type declarations.
+.react-router/types/+routes.ts(193,44): error TS2307: Cannot find module './app/routes/_author/settings.tsx' or its corresponding type declarations.
+.react-router/types/app/+types/root.ts(5,29): error TS2307: Cannot find module '../root.js' or its corresponding type declarations.
+.react-router/types/app/+types/root.ts(14,25): error TS2307: Cannot find module '../root.js' or its corresponding type declarations.
+.react-router/types/app/routes/+types/api.auth.logout.ts(5,29): error TS2307: Cannot find module '../api.auth.logout.js' or its corresponding type declarations.
+.react-router/types/app/routes/+types/api.auth.logout.ts(14,25): error TS2307: Cannot find module '../../root.js' or its corresponding type declarations.
+.react-router/types/app/routes/+types/api.auth.logout.ts(17,25): error TS2307: Cannot find module '../api.auth.logout.js' or its corresponding type declarations.
+.react-router/types/app/routes/+types/api.auth.session.ts(5,29): error TS2307: Cannot find module '../api.auth.session.js' or its corresponding type declarations.
+.react-router/types/app/routes/+types/api.auth.session.ts(14,25): error TS2307: Cannot find module '../../root.js' or its corresponding type declarations.
+.react-router/types/app/routes/+types/api.auth.session.ts(17,25): error TS2307: Cannot find module '../api.auth.session.js' or its corresponding type declarations.
+.react-router/types/app/routes/+types/api.s3.presign.ts(5,29): error TS2307: Cannot find module '../api.s3.presign.js' or its corresponding type declarations.
+.react-router/types/app/routes/+types/api.s3.presign.ts(14,25): error TS2307: Cannot find module '../../root.js' or its corresponding type declarations.
+.react-router/types/app/routes/+types/api.s3.presign.ts(17,25): error TS2307: Cannot find module '../api.s3.presign.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/_layout.ts(5,29): error TS2307: Cannot find module '../_layout.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/_layout.ts(14,25): error TS2307: Cannot find module '../../../root.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/_layout.ts(17,25): error TS2307: Cannot find module '../_layout.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/applications.ts(5,29): error TS2307: Cannot find module '../applications.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/applications.ts(14,25): error TS2307: Cannot find module '../../../root.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/applications.ts(17,25): error TS2307: Cannot find module '../_layout.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/applications.ts(20,25): error TS2307: Cannot find module '../applications.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/authors.ts(5,29): error TS2307: Cannot find module '../authors.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/authors.ts(14,25): error TS2307: Cannot find module '../../../root.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/authors.ts(17,25): error TS2307: Cannot find module '../_layout.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/authors.ts(20,25): error TS2307: Cannot find module '../authors.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/blog-manager.ts(5,29): error TS2307: Cannot find module '../blog-manager.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/blog-manager.ts(14,25): error TS2307: Cannot find module '../../../root.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/blog-manager.ts(17,25): error TS2307: Cannot find module '../_layout.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/blog-manager.ts(20,25): error TS2307: Cannot find module '../blog-manager.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/companies.ts(5,29): error TS2307: Cannot find module '../companies.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/companies.ts(14,25): error TS2307: Cannot find module '../../../root.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/companies.ts(17,25): error TS2307: Cannot find module '../_layout.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/companies.ts(20,25): error TS2307: Cannot find module '../companies.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/dashboard.ts(5,29): error TS2307: Cannot find module '../dashboard.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/dashboard.ts(14,25): error TS2307: Cannot find module '../../../root.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/dashboard.ts(17,25): error TS2307: Cannot find module '../_layout.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/dashboard.ts(20,25): error TS2307: Cannot find module '../dashboard.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/documents.ts(5,29): error TS2307: Cannot find module '../documents.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/documents.ts(14,25): error TS2307: Cannot find module '../../../root.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/documents.ts(17,25): error TS2307: Cannot find module '../_layout.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/documents.ts(20,25): error TS2307: Cannot find module '../documents.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/kanban.ts(5,29): error TS2307: Cannot find module '../kanban.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/kanban.ts(14,25): error TS2307: Cannot find module '../../../root.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/kanban.ts(17,25): error TS2307: Cannot find module '../_layout.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/kanban.ts(20,25): error TS2307: Cannot find module '../kanban.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/portfolio-manager.ts(5,29): error TS2307: Cannot find module '../portfolio-manager.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/portfolio-manager.ts(14,25): error TS2307: Cannot find module '../../../root.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/portfolio-manager.ts(17,25): error TS2307: Cannot find module '../_layout.js' or its corresponding type declarations.
+.react-router/types/app/routes/_admin/+types/portfolio-manager.ts(20,25): error TS2307: Cannot find module '../portfolio-manager.js' or its corresponding type declarations.
+.react-router/types/app/routes/_author/+types/_layout.ts(5,29): error TS2307: Cannot find module '../_layout.js' or its corresponding type declarations.
+.react-router/types/app/routes/_author/+types/_layout.ts(14,25): error TS2307: Cannot find module '../../../root.js' or its corresponding type declarations.
+.react-router/types/app/routes/_author/+types/_layout.ts(17,25): error TS2307: Cannot find module '../_layout.js' or its corresponding type declarations.
+.react-router/types/app/routes/_author/+types/blogs.ts(5,29): error TS2307: Cannot find module '../blogs.js' or its corresponding type declarations.
+.react-router/types/app/routes/_author/+types/blogs.ts(14,25): error TS2307: Cannot find module '../../../root.js' or its corresponding type declarations.
+.react-router/types/app/routes/_author/+types/blogs.ts(17,25): error TS2307: Cannot find module '../_layout.js' or its corresponding type declarations.
+.react-router/types/app/routes/_author/+types/blogs.ts(20,25): error TS2307: Cannot find module '../blogs.js' or its corresponding type declarations.
+.react-router/types/app/routes/_author/+types/profile.ts(5,29): error TS2307: Cannot find module '../profile.js' or its corresponding type declarations.
+.react-router/types/app/routes/_author/+types/profile.ts(14,25): error TS2307: Cannot find module '../../../root.js' or its corresponding type declarations.
+.react-router/types/app/routes/_author/+types/profile.ts(17,25): error TS2307: Cannot find module '../_layout.js' or its corresponding type declarations.
+.react-router/types/app/routes/_author/+types/profile.ts(20,25): error TS2307: Cannot find module '../profile.js' or its corresponding type declarations.
+.react-router/types/app/routes/_author/+types/settings.ts(5,29): error TS2307: Cannot find module '../settings.js' or its corresponding type declarations.
+.react-router/types/app/routes/_author/+types/settings.ts(14,25): error TS2307: Cannot find module '../../../root.js' or its corresponding type declarations.
+.react-router/types/app/routes/_author/+types/settings.ts(17,25): error TS2307: Cannot find module '../_layout.js' or its corresponding type declarations.
+.react-router/types/app/routes/_author/+types/settings.ts(20,25): error TS2307: Cannot find module '../settings.js' or its corresponding type declarations.
+.react-router/types/app/routes/_public/+types/_layout.ts(5,29): error TS2307: Cannot find module '../_layout.js' or its corresponding type declarations.
+.react-router/types/app/routes/_public/+types/_layout.ts(14,25): error TS2307: Cannot find module '../../../root.js' or its corresponding type declarations.
+.react-router/types/app/routes/_public/+types/_layout.ts(17,25): error TS2307: Cannot find module '../_layout.js' or its corresponding type declarations.
+.react-router/types/app/routes/_public/+types/blog.$slug.ts(5,29): error TS2307: Cannot find module '../blog.$slug.js' or its corresponding type declarations.
+.react-router/types/app/routes/_public/+types/blog.$slug.ts(14,25): error TS2307: Cannot find module '../../../root.js' or its corresponding type declarations.
+.react-router/types/app/routes/_public/+types/blog.$slug.ts(17,25): error TS2307: Cannot find module '../_layout.js' or its corresponding type declarations.
+.react-router/types/app/routes/_public/+types/blog.$slug.ts(20,25): error TS2307: Cannot find module '../blog.$slug.js' or its corresponding type declarations.
+.react-router/types/app/routes/_public/+types/blog.ts(5,29): error TS2307: Cannot find module '../blog.js' or its corresponding type declarations.
+.react-router/types/app/routes/_public/+types/blog.ts(14,25): error TS2307: Cannot find module '../../../root.js' or its corresponding type declarations.
+.react-router/types/app/routes/_public/+types/blog.ts(17,25): error TS2307: Cannot find module '../_layout.js' or its corresponding type declarations.
+.react-router/types/app/routes/_public/+types/blog.ts(20,25): error TS2307: Cannot find module '../blog.js' or its corresponding type declarations.
+.react-router/types/app/routes/_public/+types/guestbook.ts(5,29): error TS2307: Cannot find module '../guestbook.js' or its corresponding type declarations.
+.react-router/types/app/routes/_public/+types/guestbook.ts(14,25): error TS2307: Cannot find module '../../../root.js' or its corresponding type declarations.
+.react-router/types/app/routes/_public/+types/guestbook.ts(17,25): error TS2307: Cannot find module '../_layout.js' or its corresponding type declarations.
+.react-router/types/app/routes/_public/+types/guestbook.ts(20,25): error TS2307: Cannot find module '../guestbook.js' or its corresponding type declarations.
+.react-router/types/app/routes/_public/+types/home.ts(5,29): error TS2307: Cannot find module '../home.js' or its corresponding type declarations.
+.react-router/types/app/routes/_public/+types/home.ts(14,25): error TS2307: Cannot find module '../../../root.js' or its corresponding type declarations.
+.react-router/types/app/routes/_public/+types/home.ts(17,25): error TS2307: Cannot find module '../_layout.js' or its corresponding type declarations.
+.react-router/types/app/routes/_public/+types/home.ts(20,25): error TS2307: Cannot find module '../home.js' or its corresponding type declarations.
+.react-router/types/app/routes/_public/+types/projects.ts(5,29): error TS2307: Cannot find module '../projects.js' or its corresponding type declarations.
+.react-router/types/app/routes/_public/+types/projects.ts(14,25): error TS2307: Cannot find module '../../../root.js' or its corresponding type declarations.
+.react-router/types/app/routes/_public/+types/projects.ts(17,25): error TS2307: Cannot find module '../_layout.js' or its corresponding type declarations.
+.react-router/types/app/routes/_public/+types/projects.ts(20,25): error TS2307: Cannot find module '../projects.js' or its corresponding type declarations.
+api/index.ts(16,39): error TS2307: Cannot find module '../server.js' or its corresponding type declarations.
+app/entry.client.tsx(2,29): error TS7016: Could not find a declaration file for module 'react-dom/client'. '/home/yahya/Documents/portfolio/career-console/node_modules/react-dom/client.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/react-dom` if it exists or add a new declaration (.d.ts) file containing `declare module 'react-dom/client';`
+app/entry.server.tsx(7,40): error TS7016: Could not find a declaration file for module 'react-dom/server'. '/home/yahya/Documents/portfolio/career-console/node_modules/react-dom/server.node.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/react-dom` if it exists or add a new declaration (.d.ts) file containing `declare module 'react-dom/server';`
+app/entry.server.tsx(43,9): error TS2322: Type '{ context: EntryContext; url: string; abortDelay: number; }' is not assignable to type 'IntrinsicAttributes & ServerRouterProps'.
+  Property 'abortDelay' does not exist on type 'IntrinsicAttributes & ServerRouterProps'.
+app/lib/config.ts(8,28): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+app/lib/firebase.ts(18,34): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+app/lib/firebase.ts(19,34): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+app/lib/firebase.ts(20,34): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+app/lib/firebase.ts(21,34): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+app/lib/firebase.ts(22,34): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+app/lib/firebase.ts(23,34): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+app/lib/firebase.ts(24,34): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+app/lib/routingValidation.ts(38,17): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+app/lib/supabase.ts(4,34): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+app/lib/supabase.ts(5,34): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+app/root.tsx(9,28): error TS2307: Cannot find module './+types/root' or its corresponding type declarations.
+app/routes/_admin/dashboard.tsx(276,44): error TS2339: Property 'topic' does not exist on type 'never'.
+app/routes/_admin/dashboard.tsx(279,44): error TS2339: Property 'description' does not exist on type 'never'.
+app/routes/_admin/dashboard.tsx(285,44): error TS2339: Property 'action' does not exist on type 'never'.
+app/routes/_author/profile.tsx(28,32): error TS2339: Property 'authorProfile' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+app/routes/_author/profile.tsx(54,39): error TS2339: Property 'authorProfile' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+app/routes/_author/profile.tsx(62,41): error TS2339: Property 'authorProfile' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.

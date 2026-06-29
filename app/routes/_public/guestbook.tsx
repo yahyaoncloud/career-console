@@ -16,40 +16,45 @@ const GuestbookSchema = z.object({
 
 type GuestbookFormData = z.infer<typeof GuestbookSchema>;
 
-export async function loader() {
-  const entries = await prisma.guestbook.findMany({
-    orderBy: { createdAt: 'desc' },
-    take: 50
-  });
-  return { entries };
+import { loader as guestbookApiLoader } from '../api.guestbook';
+
+export async function loader(args: LoaderFunctionArgs) {
+  try {
+    const res = await guestbookApiLoader(args);
+    const result = await res.json();
+    return { entries: result.success ? result.data : [] };
+  } catch (error) {
+    return { entries: [] };
+  }
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  // Rate Limiting (Phase 11)
-  const ip = request.headers.get('x-forwarded-for') || 'unknown';
-  const { allowed, remaining } = await checkRateLimit(ip, 5); // 5 requests per minute
-  
-  if (!allowed) {
-    return { success: false, message: 'Too many requests. Please try again later.' };
-  }
-
+  const origin = new URL(request.url).origin.replace('localhost', '127.0.0.1');
   const formData = await request.formData();
   const data = Object.fromEntries(formData);
-  const result = GuestbookSchema.safeParse(data);
-
-  if (!result.success) {
-    return { success: false, errors: result.error.flatten().fieldErrors };
-  }
-
-  // Sanitization (Phase 11)
-  const entry = await prisma.guestbook.create({
-    data: {
-      name: sanitizeString(result.data.name),
-      message: sanitizeString(result.data.message)
+  
+  try {
+    // Pass along the forwarded-for header for rate limiting
+    const ip = request.headers.get('x-forwarded-for') || 'unknown';
+    
+    const res = await fetch(`${origin}/api/guestbook`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-forwarded-for': ip,
+      },
+      body: JSON.stringify(data),
+    });
+    
+    const result = await res.json();
+    if (!result.success && result.errors) {
+       return { success: false, errors: result.errors };
     }
-  });
-
-  return { success: true, entry };
+    
+    return result; // return the API response directly
+  } catch (error: any) {
+    return { success: false, message: 'Failed to connect to API' };
+  }
 }
 
 export default function GuestbookRoute() {
@@ -73,72 +78,83 @@ export default function GuestbookRoute() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-12 space-y-16 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-12">
       <section className="space-y-8">
-        <div className="space-y-2">
-          <h2 className="mono-text text-xs uppercase tracking-wider text-muted-foreground flex items-center">
-            <MessageSquare size={14} className="mr-2" /> Digital Guestbook
-          </h2>
-          <p className="font-serif text-2xl text-foreground leading-relaxed font-light max-w-2xl">
-            Drop a message, say hello, or let me know what brought you here.
+        <div className="space-y-2 mb-8">
+          <h1 className="text-2xl font-sans font-bold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-3">
+            <MessageSquare size={20} className="text-zinc-400 dark:text-zinc-500" />
+            Sign the Guestbook
+          </h1>
+          <p className="text-sm font-mono text-zinc-500 dark:text-zinc-400">
+            Leave a trace. Share your thoughts, say hello, or let me know what brought you here.
           </p>
         </div>
 
-        <div className="bg-card p-6 rounded border border-border shadow-sm">
-          <fetcher.Form ref={formRef} onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div>
-              <label className="block text-[10px] font-mono text-muted-foreground mb-1 uppercase tracking-wider">Your Name</label>
-              <input
-                {...register('name')}
-                disabled={isSubmitting}
-                className="w-full px-3 py-2 bg-background border border-border rounded font-sans text-sm focus:outline-none focus:border-primary text-foreground"
-                placeholder="John Doe"
-              />
-              {errors.name && <p className="text-xs text-destructive mt-1">{errors.name.message}</p>}
-            </div>
-            <div>
-              <label className="block text-[10px] font-mono text-muted-foreground mb-1 uppercase tracking-wider">Message</label>
-              <textarea
-                {...register('message')}
-                disabled={isSubmitting}
-                rows={3}
-                className="w-full px-3 py-2 bg-background border border-border rounded font-sans text-sm focus:outline-none focus:border-primary text-foreground"
-                placeholder="Hello there!"
-              />
-              {errors.message && <p className="text-xs text-destructive mt-1">{errors.message.message}</p>}
-            </div>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="flex items-center px-4 py-2 bg-foreground text-background text-xs font-mono rounded hover:opacity-90 disabled:opacity-50 transition-opacity cursor-pointer"
-            >
-              <Send size={14} className="mr-2" />
-              {isSubmitting ? 'Signing...' : 'Sign Guestbook'}
-            </button>
-            {fetcher.data?.success === false && fetcher.data?.message && (
-              <p className="text-sm text-destructive mt-2">{fetcher.data.message}</p>
-            )}
-          </fetcher.Form>
-        </div>
-
-        <div className="space-y-6 pt-8">
-          {entries.length === 0 ? (
-            <p className="text-xs text-muted-foreground font-mono italic">No entries yet. Be the first!</p>
-          ) : (
-            entries.map((entry) => (
-              <div key={entry.id} className="border-l-2 border-border pl-4 py-1 space-y-1">
-                <div className="flex items-center space-x-2">
-                  <span className="font-serif text-lg font-bold text-foreground">{entry.name}</span>
-                  <span className="text-[10px] font-mono text-muted-foreground">
-                    {new Date(entry.createdAt).toLocaleDateString()}
-                  </span>
-                </div>
-                <p className="text-sm text-foreground font-sans leading-relaxed opacity-80">
-                  {entry.message}
-                </p>
+        <div className="max-w-2xl pt-4 space-y-16">
+          <div className="relative">
+            <fetcher.Form ref={formRef} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              <div>
+                <label className="block text-[10px] font-mono text-zinc-500 mb-2 uppercase tracking-widest font-bold">Your Name</label>
+                <input
+                  {...register('name')}
+                  disabled={isSubmitting}
+                  className="w-full bg-transparent border-b border-zinc-200 dark:border-zinc-800 pb-2 font-sans text-sm focus:outline-none focus:border-indigo-500 text-zinc-900 dark:text-zinc-100 transition-colors placeholder:text-zinc-400 disabled:opacity-50"
+                  placeholder="Jane Doe"
+                />
+                {errors.name && <p className="text-[10px] text-red-500 mt-2 font-mono">{errors.name.message}</p>}
               </div>
-            ))
-          )}
+              <div>
+                <label className="block text-[10px] font-mono text-zinc-500 mb-2 uppercase tracking-widest font-bold">Message</label>
+                <textarea
+                  {...register('message')}
+                  disabled={isSubmitting}
+                  rows={3}
+                  className="w-full bg-transparent border-b border-zinc-200 dark:border-zinc-800 pb-2 font-sans text-sm focus:outline-none focus:border-indigo-500 text-zinc-900 dark:text-zinc-100 transition-colors placeholder:text-zinc-400 resize-none disabled:opacity-50"
+                  placeholder="Leave a message..."
+                />
+                {errors.message && <p className="text-[10px] text-red-500 mt-2 font-mono">{errors.message.message}</p>}
+              </div>
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="inline-flex items-center justify-center gap-2 px-5 py-2 bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 text-[11px] font-mono uppercase tracking-widest font-bold rounded-sm disabled:opacity-50 transition-colors"
+                >
+                  {isSubmitting ? 'Signing...' : 'Sign Guestbook'}
+                </button>
+              </div>
+              {fetcher.data?.success === false && fetcher.data?.message && (
+                <p className="text-[10px] font-mono text-red-500 mt-2 text-right">{fetcher.data.message}</p>
+              )}
+            </fetcher.Form>
+          </div>
+
+          <div className="space-y-10">
+            <h3 className="text-[11px] font-mono text-zinc-500 uppercase tracking-widest font-bold mb-8">
+              Signatures ({entries.length})
+            </h3>
+            
+            {entries.length === 0 ? (
+              <p className="text-zinc-500 font-mono text-[11px] italic">No signatures yet. Be the first.</p>
+            ) : (
+              <div className="space-y-10">
+                {entries.map((entry) => (
+                  <div key={entry.id} className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <span className="font-bold text-sm font-sans text-zinc-900 dark:text-zinc-100">{entry.name}</span>
+                      <span className="w-1 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700"></span>
+                      <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
+                        {new Date(entry.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </span>
+                    </div>
+                    <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed font-sans">
+                      {entry.message}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </section>
     </div>

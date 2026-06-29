@@ -1,0 +1,130 @@
+\documentclass[10pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.45in]{geometry}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{tabularx}
+\usepackage{hyperref}
+\usepackage{lmodern}
+\usepackage{graphicx}
+
+% Custom Colors (Teal theme)
+\definecolor{teal}{RGB}{15, 118, 110}
+\definecolor{darkteal}{RGB}{0, 115, 79}
+\definecolor{textmain}{RGB}{51, 65, 85}
+\definecolor{textdark}{RGB}{15, 23, 42}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=teal,
+    urlcolor=teal,
+}
+
+\titleformat{\section}
+  {\normalfont\large\bfseries\color{darkteal}}
+  {}{0em}
+  {}[\color{black!20}\titlerule]
+\titlespacing*{\section}{0pt}{1.2ex plus 0.2ex minus .1ex}{0.5ex plus .1ex}
+
+\newcommand{\jobheading}[4]{
+  \vspace{0.2ex}\noindent
+  \textbf{#1} \hfill #2 \\
+  \textit{#3} \hfill \textit{#4} \vspace{0.2ex}
+}
+
+\begin{document}
+
+\pagestyle{empty}
+\color{textmain}
+
+\noindent
+\begin{minipage}[c]{0.75\textwidth}
+    {\Huge \textbf{\color{textdark} YAHYA}}\\[0.1ex]
+    \textbf{\color{teal} Cloud Engineer} | AWS \& Azure Certified | 3+ Years Experience\\[0.1ex]
+    +971 50 858 9118 \quad|\quad 
+    \href{mailto:ykinwork1@gmail.com}{ykinwork1@gmail.com} \quad|\quad 
+    \href{https://linkedin.com/in/ykinwork1}{linkedin.com/in/ykinwork1} \quad|\quad 
+    Abu Dhabi, UAE
+\end{minipage}%
+\hfill
+\begin{minipage}[c]{0.2\textwidth}
+    \raggedleft
+    % Uncomment the line below to add your actual image (make sure profile.jpg exists)
+    % \includegraphics[width=35mm, height=45mm]{profile.jpg}
+    \fbox{\begin{minipage}[t][45mm]{35mm}\vfill\centering Photo\\(35x45mm)\vfill\end{minipage}}
+\end{minipage}
+
+\vspace{-2ex}
+\section*{PROFESSIONAL SUMMARY}
+\textbf{Cloud \& Network Security Engineer} with 3+ years of experience in hybrid cloud infrastructure and network security across AWS and Azure. Experienced in VPC/VNet segmentation, firewall enforcement (FortiGate, Palo Alto), and secure connectivity using IPsec VPN and ExpressRoute. Hands-on with Terraform and basic CI/CD workflows, with scripting using Python and Bash for automation. Familiar with IAM (RBAC), WAF, log monitoring, and SIEM concepts, with exposure to backup and disaster recovery strategies. Strong focus on secure, highly available, and well-monitored cloud environments.
+
+\section*{TECHNICAL SKILLS}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{\textwidth}{@{}l X@{}}
+    \textbf{Cloud Ecosystem:} & \textbf{AWS} (VPC, EC2, ECS, ALB, Route 53, CloudFront, CloudWatch), \textbf{Azure} (VNet, NSGs, VPN Gateway, ExpressRoute) \\
+    \textbf{Security \& Identity:} & \textbf{AWS WAF}, IAM (RBAC, least privilege), Security Groups, Entra ID, TLS/SSL encryption \\
+    \textbf{Network Security:} & \textbf{FortiGate}, \textbf{Palo Alto NGFW}, NAT, IPS/IDS, SSL VPN, IPsec VPN, Cisco ISE, network segmentation \\
+    \textbf{Automation \& IaC:} & \textbf{Terraform} (modules, remote state exposure), \textbf{Python} (basic automation, API usage), Bash \\
+    \textbf{CI/CD \& DevOps:} & \textbf{AWS CodePipeline}, CodeBuild, GitHub Actions (basic workflows), Git \\
+    \textbf{Monitoring \& Operations:} & \textbf{CloudWatch}, log monitoring, SIEM (exposure), ServiceNow, ITIL concepts \\
+    \textbf{Resilience (Exposure):} & Backup and disaster recovery concepts (snapshots, multi-AZ, basic restore workflows)
+\end{tabularx}
+
+\section*{PROFESSIONAL EXPERIENCE}
+
+\jobheading{Associate Cloud Engineer}{Nov 2024 – Dec 2025}{Minute KSA}{Riyadh, Saudi Arabia}
+\begin{itemize}[leftmargin=*,itemsep=1pt,parsep=0pt]
+\item Designed and maintained \textbf{AWS VPC} architecture for \textbf{DEV/PROD environments}, utilizing public/private subnets, \textbf{Route 53}, and Security Groups to enforce network segmentation.
+\item Implemented IAM-based access control using roles and policies to enforce least privilege, enabling controlled administrative access to cloud resources with audit visibility.
+\item Supported migration of workloads from Mobily Cloud to \textbf{AWS}, enabling secure connectivity across environments by preparing source virtual networks and configuring \textbf{AWS VPC} networking (subnets, routing, and security controls), while validating data replication, cutover, and post-migration application connectivity.
+\item Implemented \textbf{AWS WAF} rules and NACL policies to filter L7 traffic and restrict unauthorized access to internet-facing applications.
+\item Managed \textbf{ECS production workloads} and \textbf{EC2 Linux workloads}, ensuring reliable inter-service communication, with exposure to \textbf{Docker} and \textbf{Kubernetes}.
+\item Led the implementation of \textbf{AWS CodePipeline} and \textbf{CodeBuild} CI/CD pipelines to automate application deployments and infrastructure updates.
+\item Provisioned infrastructure using \textbf{Terraform scripting} and modules with remote state, enabling consistent and version-controlled environment deployments.
+\item Developed \textbf{Python} and \textbf{Bash scripting} for running \textbf{Linux services}, log parsing, and API-based validation of cloud resources.
+\item Configured \textbf{CloudWatch}, \textbf{CloudTrail}, and \textbf{GuardDuty} to collect network, application, and database logs, establishing centralized visibility for future \textbf{SIEM} support.
+\item Managed \textbf{RDS Multi-AZ setups} for high availability, and implemented backup strategies using \textbf{S3} snapshots and AWS backup services.
+\item Provided comprehensive security on \textbf{VPCs}, \textbf{RDS}, \textbf{KMS}, and \textbf{IAM}, enforcing least privilege access and network segmentation controls.
+\end{itemize}
+
+\jobheading{Network Infrastructure Engineer}{Jun 2022 -- Sep 2024}{Fabee Technologies}{Hyderabad, India}
+\begin{itemize}[leftmargin=*,itemsep=1pt,parsep=0pt]
+    \item Performed L1/L2 network troubleshooting using \textbf{ServiceNow}, tracking issues and maintaining SLA targets.
+    \item Managed switching environments with \textbf{Cisco Catalyst}, implementing VLAN network segmentation and STP optimization.
+    \item Supported routing and WAN technologies (OSPF, BGP) and assisted with \textbf{Cisco Catalyst SD-WAN} deployments.
+    \item Configured \textbf{FortiGate NGFWs (60F/100F/200F)}, implementing firewall policies, NAT, IPS/IDS, and VPNs.
+    \item Worked on \textbf{Palo Alto NGFWs}, assisting with security policies, App-ID traffic control, \textbf{SSL decryption}, and threat prevention.
+    \item Performed firewall rule reviews and policy optimization to enforce least privilege and improve security posture.
+    \item Supported \textbf{Azure} hybrid networking using Virtual WAN, \textbf{ExpressRoute}, and VPN Gateways for secure connectivity.
+    \item Implemented \textbf{Azure VNet} networking using subnets, \textbf{NSGs}, and routing controls to enable secure workload communication.
+    \item Implemented monitoring with SNMP, Syslog, and SolarWinds, increasing network visibility.
+    \item Administered \textbf{Cisco ISE} for \textbf{RADIUS-based authentication and authorization}, managing policy sets, dynamic VLAN assignment, and endpoint profiling to enforce identity-driven network access control.
+\end{itemize}
+
+\section*{CERTIFICATIONS}
+\begin{tabularx}{\textwidth}{@{}X X@{}}
+    \textbullet~ \textbf{AWS} Solutions Architect Associate & \textbullet~ \textbf{Cisco} Certified (CCNP \& CCNA) \\
+    \textbullet~ \textbf{Azure} Solutions Architect (AZ-305) & \textbullet~ \textbf{Azure} Administrator (AZ-104) \\
+\end{tabularx}
+
+\vspace{-1.5ex}
+\section*{EDUCATION}
+\jobheading{B.Tech -- CS Engineering}{2018 -- 2022}{Global Institute}{Hyderabad, India}
+
+\section*{LANGUAGES \& ADDITIONAL INFO}
+\begin{itemize}[leftmargin=*,itemsep=0pt,parsep=0pt]
+    \item \textbf{Visa Status}: Visit Visa / Employment Eligible -- \textbf{Availability}: Immediate Joining
+    \item \textbf{Languages}: English (Proficient), Arabic (Basic), Hindi (Native)
+\end{itemize}
+
+\section*{ADDITIONAL EXPERIENCE / LABS}
+\begin{itemize}[leftmargin=*,itemsep=1pt,parsep=0pt]
+    \item \textbf{SAP}: Familiar with SAP landscape architecture, secure communication (SAPRouter, SNC), and infrastructure/network security fundamentals.
+    \item \textbf{PAM}: Familiar with privileged access management concepts including credential vaulting, session management, and CyberArk architecture (Vault, CPM, PSM).
+    \item \textbf{Compliance}: Familiar with industry security standards and frameworks including ISO 27001, PCI-DSS, SOC 2, and CIS Controls for regulatory alignment.
+\end{itemize}
+
+\end{document}

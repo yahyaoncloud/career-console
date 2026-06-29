@@ -12,7 +12,7 @@ export const supabase = createClient(supabaseUrl || '', supabaseAnon || '');
 
 /** Default Bucket name in Supabase Storage */
 export const STORAGE_BUCKET = 'career-assets';
-export const BUCKETS = ['career-assets'];
+export const BUCKETS = ['career-assets', 'documents', 'authors'];
 
 /**
  * Upload a file to Supabase Storage.
@@ -56,12 +56,22 @@ export async function uploadFile(file: File, folder = 'documents', bucket = STOR
   return { url: data.publicUrl, path, size };
 }
 
-/**
- * Delete a file from Supabase Storage by its storage path.
- */
 export async function deleteFile(storagePath: string, bucket = STORAGE_BUCKET): Promise<void> {
   const { error } = await supabase.storage.from(bucket).remove([storagePath]);
   if (error) throw new Error(`Delete failed: ${error.message}`);
+}
+
+/**
+ * Get the public URL for a file stored in Supabase Storage.
+ * If the path is already a full URL, it returns it directly.
+ */
+export function getPublicUrl(path: string, bucket = STORAGE_BUCKET): string {
+  if (!path) return '';
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+  const url = supabaseUrl || 'https://olxnluwjpkboskbjsmlj.supabase.co';
+  return `${url}/storage/v1/object/public/${bucket}/${path}`;
 }
 
 /**

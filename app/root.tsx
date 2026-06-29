@@ -8,6 +8,8 @@ import {
 
 import type { Route } from "./+types/root";
 import "./styles/index.css";
+import { ThemeProvider } from "./providers/ThemeProvider";
+import { ToastProvider } from "./providers/ToastProvider";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -24,6 +26,26 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                let theme = localStorage.getItem('theme') || 'dark';
+                if (theme === 'system') {
+                  if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.documentElement.classList.add('dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                  }
+                } else if (theme === 'dark') {
+                  document.documentElement.classList.add('dark');
+                } else {
+                  document.documentElement.classList.remove('dark');
+                }
+              } catch (_) {}
+            `,
+          }}
+        />
       </head>
       <body>
         {children}
@@ -34,12 +56,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-import { ThemeProvider } from "./providers/ThemeProvider";
-
 export default function App() {
   return (
     <ThemeProvider>
-      <Outlet />
+      <ToastProvider>
+        <Outlet />
+      </ToastProvider>
     </ThemeProvider>
   );
 }

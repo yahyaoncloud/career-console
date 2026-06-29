@@ -1,6 +1,8 @@
 import { type LoaderFunctionArgs, type ActionFunctionArgs } from 'react-router';
 import { useLoaderData, useFetcher } from 'react-router';
 import { requireUser } from '../../lib/auth.server';
+import { useToast } from '../../providers/ToastProvider';
+import { prisma } from '../../lib/db.server';
 import fs from 'fs';
 import path from 'path';
 import { z } from 'zod';
@@ -12,12 +14,13 @@ import { cn } from '../../lib/utils';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-const BLOGS_DIR = path.join(process.cwd(), 'content', 'blogs');
-
-// Ensure blogs directory exists
-if (!fs.existsSync(BLOGS_DIR)) {
-  fs.mkdirSync(BLOGS_DIR, { recursive: true });
-}
+const getBlogsDir = () => {
+  const dir = path.join(process.cwd(), 'content', 'blogs');
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+  return dir;
+};
 
 interface BlogPostMeta {
   slug: string;
@@ -28,10 +31,13 @@ interface BlogPostMeta {
   authorName?: string;
   authorLinkedin?: string;
   authorId?: string;
+  status?: string;
 }
 
 const isSafeBlogSlug = (slug: string) => /^[\w -]+$/.test(slug);
-const getBlogPath = (slug: string) => path.join(BLOGS_DIR, `${slug}.md`);
+const getBlogPath = (slug: string) => {
+  return path.join(getBlogsDir(), `${slug}.md`);
+};
 
 const parseFrontmatter = (markdown: string): Omit<BlogPostMeta, 'slug'> & { content: string } => {
   const match = markdown.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
@@ -55,6 +61,7 @@ const parseFrontmatter = (markdown: string): Omit<BlogPostMeta, 'slug'> & { cont
     authorName: fields.authorName || '',
     authorLinkedin: fields.authorLinkedin || '',
     authorId: fields.authorId || '',
+    status: fields.status || 'DRAFT',
     content
   };
 };
@@ -76,14 +83,15 @@ type BlogFormData = z.infer<typeof BlogSchema>;
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await requireUser(request);
   
-  const files = await fs.promises.readdir(BLOGS_DIR);
+  const dir = getBlogsDir();
+  const files = await fs.promises.readdir(dir);
   const blogs: BlogPostMeta[] = [];
   const fullBlogs: Record<string, string> = {};
 
   for (const file of files) {
     if (file.endsWith('.md')) {
       const slug = file.replace('.md', '');
-      const markdown = await fs.promises.readFile(path.join(BLOGS_DIR, file), 'utf8');
+      const markdown = await fs.promises.readFile(path.join(dir, file), 'utf8');
       const { content, ...meta } = parseFrontmatter(markdown);
       
       // Authors only see their own blogs
@@ -130,6 +138,14 @@ export async function action({ request }: ActionFunctionArgs) {
     
     if (!isSafeBlogSlug(slug)) throw new Error('Invalid slug format');
 
+    // Preserve existing status if updating, else default to PENDING
+    let currentStatus = 'PENDING';
+    if (originalSlug && fs.existsSync(getBlogPath(originalSlug))) {
+      const existing = await fs.promises.readFile(getBlogPath(originalSlug), 'utf8');
+      const meta = parseFrontmatter(existing);
+      if (meta.status) currentStatus = meta.status;
+    }
+
     // Create frontmatter string
     const frontmatter = [
       '---',
@@ -140,6 +156,7 @@ export async function action({ request }: ActionFunctionArgs) {
       `authorName: ${authorName || ''}`,
       `authorLinkedin: ${authorLinkedin || ''}`,
       `authorId: ${user.firebaseUid}`, // Always lock to current user unless admin is editing (simplification)
+      `status: ${currentStatus}`,
       '---',
       '',
       content
@@ -154,6 +171,22 @@ export async function action({ request }: ActionFunctionArgs) {
 
     await fs.promises.writeFile(getBlogPath(slug), frontmatter, 'utf8');
 
+    // Notify Admins
+    const admins = await prisma.user.findMany({ where: { role: 'ADMIN' } });
+    const profile = await prisma.profile.findUnique({ where: { userId: user.id } });
+    
+    for (const admin of admins) {
+      await prisma.notification.create({
+        data: {
+          userId: admin.id,
+          title: `Blog Post Review Requested`,
+          message: `${profile?.displayName || user.name || 'An author'} submitted "${title}" for review.`,
+          type: 'INFO',
+          link: '/blog-manager'
+        }
+      });
+    }
+
     return Response.json({ success: true, message: `Blog post ${originalSlug ? 'updated' : 'created'}` });
   } catch (error: any) {
     return Response.json({ success: false, message: error.message }, { status: 500 });
@@ -163,6 +196,7 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function AuthorBlogManagerRoute() {
   const { blogs, fullBlogs, currentUser } = useLoaderData<typeof loader>();
   const fetcher = useFetcher<typeof action>();
+  const { success, error } = useToast();
   
   const [editingSlug, setEditingSlug] = useState<string | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
@@ -185,15 +219,17 @@ export default function AuthorBlogManagerRoute() {
   const isSubmitting = fetcher.state !== 'idle';
 
   useEffect(() => {
-    if (fetcher.data?.success && fetcher.state === 'idle') {
-      alert(fetcher.data.message);
-      setEditingSlug(null);
-      setIsAddingNew(false);
-      reset();
-    } else if (fetcher.data?.message && !fetcher.data.success && fetcher.state === 'idle') {
-      alert('Error: ' + fetcher.data.message);
+    if (fetcher.data && fetcher.state === 'idle') {
+      if (fetcher.data.success) {
+        success(fetcher.data.message);
+        setEditingSlug(null);
+        setIsAddingNew(false);
+        reset();
+      } else {
+        error(fetcher.data.message);
+      }
     }
-  }, [fetcher.data, fetcher.state, reset]);
+  }, [fetcher.data, fetcher.state, reset, success, error]);
 
   const startAdd = () => {
     setIsAddingNew(true);
@@ -266,21 +302,21 @@ export default function AuthorBlogManagerRoute() {
       </div>
 
       {(isAddingNew || editingSlug) && (
-        <Card className="p-6 border-primary/20 bg-primary/5">
-          <div className="flex justify-between items-center mb-6">
-            <Heading variant="h3">{isAddingNew ? 'Write New Post' : 'Edit Post'}</Heading>
-            <button onClick={handleCancel} className="p-1 text-muted-foreground hover:bg-muted rounded transition-colors">
-              <X size={18} />
+        <Card className="p-8 border-border/50 shadow-sm bg-card/50 backdrop-blur-sm">
+          <div className="flex justify-between items-center mb-6 pb-4 border-b border-border/50">
+            <h3 className="text-lg font-bold font-sans tracking-tight">{isAddingNew ? 'Write New Post' : 'Edit Post'}</h3>
+            <button onClick={handleCancel} className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded transition-colors">
+              <X size={16} />
             </button>
           </div>
 
-          <fetcher.Form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <fetcher.Form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
             <input type="hidden" {...register('originalSlug')} />
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-6">
                 <div>
-                  <label className="block text-xs font-mono text-muted-foreground mb-1">Title *</label>
+                  <label className="block text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground mb-2">Title *</label>
                   <input
                     {...register('title')}
                     onChange={(e) => {
@@ -289,55 +325,55 @@ export default function AuthorBlogManagerRoute() {
                         setValue('slug', e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''));
                       }
                     }}
-                    className={cn("w-full px-3 py-2 text-sm bg-background border rounded-lg focus:ring-2 focus:ring-primary/40", errors.title && "border-destructive")}
+                    className={cn("w-full px-4 py-2.5 text-sm bg-background/50 border border-border/50 rounded hover:border-border focus:border-primary focus:ring-1 focus:ring-primary transition-all", errors.title && "border-destructive")}
                     placeholder="Post Title"
                   />
                   {errors.title && <p className="text-destructive text-xs mt-1">{errors.title.message}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-mono text-muted-foreground mb-1">URL Slug *</label>
+                  <label className="block text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground mb-2">URL Slug *</label>
                   <input
                     {...register('slug')}
-                    className={cn("w-full px-3 py-2 text-sm bg-background border rounded-lg focus:ring-2 focus:ring-primary/40 font-mono", errors.slug && "border-destructive")}
+                    className={cn("w-full px-4 py-2.5 text-sm bg-background/50 border border-border/50 rounded hover:border-border focus:border-primary focus:ring-1 focus:ring-primary transition-all font-mono", errors.slug && "border-destructive")}
                     placeholder="post-title-slug"
                   />
                   {errors.slug && <p className="text-destructive text-xs mt-1">{errors.slug.message}</p>}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-mono text-muted-foreground mb-1">Author Name</label>
+                    <label className="block text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground mb-2">Author Name</label>
                     <input
                       {...register('authorName')}
-                      className="w-full px-3 py-2 text-sm bg-background border rounded-lg focus:ring-2 focus:ring-primary/40"
+                      className="w-full px-4 py-2.5 text-sm bg-background/50 border border-border/50 rounded hover:border-border focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-mono text-muted-foreground mb-1">Publish Date *</label>
+                    <label className="block text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground mb-2">Publish Date *</label>
                     <input
                       type="date"
                       {...register('date')}
-                      className="w-full px-3 py-2 text-sm bg-background border rounded-lg focus:ring-2 focus:ring-primary/40"
+                      className="w-full px-4 py-2.5 text-sm bg-background/50 border border-border/50 rounded hover:border-border focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                     />
                   </div>
                 </div>
               </div>
               
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div>
-                  <label className="block text-xs font-mono text-muted-foreground mb-1">Excerpt *</label>
+                  <label className="block text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground mb-2">Excerpt *</label>
                   <textarea
                     {...register('excerpt')}
                     rows={3}
-                    className={cn("w-full px-3 py-2 text-sm bg-background border rounded-lg focus:ring-2 focus:ring-primary/40 resize-none", errors.excerpt && "border-destructive")}
+                    className={cn("w-full px-4 py-2.5 text-sm bg-background/50 border border-border/50 rounded hover:border-border focus:border-primary focus:ring-1 focus:ring-primary transition-all resize-none", errors.excerpt && "border-destructive")}
                     placeholder="Brief description for blog listing..."
                   />
                   {errors.excerpt && <p className="text-destructive text-xs mt-1">{errors.excerpt.message}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-mono text-muted-foreground mb-1">Tags (comma separated)</label>
+                  <label className="block text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground mb-2">Tags (comma separated)</label>
                   <input
                     {...register('tags')}
-                    className="w-full px-3 py-2 text-sm bg-background border rounded-lg focus:ring-2 focus:ring-primary/40"
+                    className="w-full px-4 py-2.5 text-sm bg-background/50 border border-border/50 rounded hover:border-border focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                     placeholder="React, TypeScript, Guide"
                   />
                 </div>
@@ -345,11 +381,11 @@ export default function AuthorBlogManagerRoute() {
             </div>
 
             <div>
-              <label className="block text-xs font-mono text-muted-foreground mb-1">Markdown Content *</label>
+              <label className="block text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground mb-2">Markdown Content *</label>
               <textarea
                 {...register('content')}
                 rows={15}
-                className={cn("w-full px-3 py-2 text-sm bg-background border rounded-lg focus:ring-2 focus:ring-primary/40 font-mono", errors.content && "border-destructive")}
+                className={cn("w-full px-4 py-2.5 text-sm bg-background/50 border border-border/50 rounded hover:border-border focus:border-primary focus:ring-1 focus:ring-primary transition-all font-mono", errors.content && "border-destructive")}
                 placeholder="# Write your blog post here..."
               />
               {errors.content && <p className="text-destructive text-xs mt-1">{errors.content.message}</p>}
@@ -388,8 +424,17 @@ export default function AuthorBlogManagerRoute() {
             </div>
             
             <div className="px-5 py-3 border-t border-border/50 bg-muted/20 flex items-center justify-between">
-              <div className="text-xs text-muted-foreground font-mono">
-                {new Date(post.date).toLocaleDateString()}
+              <div className="flex items-center gap-3">
+                <div className="text-xs text-muted-foreground font-mono">
+                  {new Date(post.date).toLocaleDateString()}
+                </div>
+                <div className={cn("text-[9px] font-mono font-bold uppercase tracking-widest px-1.5 py-0.5 rounded",
+                  post.status === 'PUBLISHED' ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20" :
+                  post.status === 'PENDING' ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20" :
+                  "bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border border-zinc-500/20"
+                )}>
+                  {post.status || 'DRAFT'}
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <button

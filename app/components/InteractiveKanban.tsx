@@ -49,12 +49,12 @@ export default function InteractiveKanban({
 
   return (
     <div className="space-y-4" id="kanban-board-module">
-      <div className="border-b border-zinc-200 dark:border-zinc-800 pb-2">
-        <h3 className="serif-header text-lg font-bold text-zinc-900 dark:text-zinc-50 flex items-center">
-          <Briefcase size={16} className="mr-2 text-zinc-500" />
+      <div className="border-b border-border/50 pb-2">
+        <h3 className="font-bold font-sans text-lg tracking-tight text-foreground flex items-center">
+          <Briefcase size={16} className="mr-2 text-muted-foreground" />
           Interactive Kanban Board
         </h3>
-        <span className="mono-text text-[10px] text-zinc-500 block">
+        <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground block">
           Visual Tracking Pipeline and Stage Controls
         </span>
       </div>
@@ -68,23 +68,23 @@ export default function InteractiveKanban({
             return (
               <div
                 key={col.status}
-                className="w-64 bg-zinc-100/50 dark:bg-zinc-900/40 p-4 rounded border border-zinc-200 dark:border-zinc-800 flex flex-col space-y-3"
+                className="w-64 bg-muted/30 p-4 rounded border border-border/50 flex flex-col space-y-3"
                 id={`kanban-col-${col.status}`}
               >
                 {/* Column Header */}
-                <div className="flex justify-between items-center border-b border-zinc-200 dark:border-zinc-800 pb-2">
-                  <span className="mono-text text-xs font-semibold text-zinc-800 dark:text-zinc-200">
-                    {col.label.toUpperCase()}
+                <div className="flex justify-between items-center border-b border-border/50 pb-2">
+                  <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-foreground">
+                    {col.label}
                   </span>
                   <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => onAddApplication(col.status)}
-                      className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+                      className="p-1 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors"
                       title="Add Application"
                     >
                       <Plus size={12} />
                     </button>
-                    <span className="mono-text text-[10px] bg-zinc-200 dark:bg-zinc-800 px-2 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
+                    <span className="font-mono text-[10px] bg-muted px-2 py-0.5 rounded text-muted-foreground">
                       {columnApps.length}
                     </span>
                   </div>
@@ -93,8 +93,8 @@ export default function InteractiveKanban({
                 {/* Column Cards */}
                 <div className="flex-1 space-y-3 min-h-[350px]">
                   {columnApps.length === 0 ? (
-                    <div className="h-full flex items-center justify-center border border-dashed border-zinc-200 dark:border-zinc-800 rounded p-4 text-center">
-                      <span className="mono-text text-[10px] text-zinc-400">Stage is empty</span>
+                    <div className="h-full flex items-center justify-center border border-dashed border-border/50 rounded p-4 text-center">
+                      <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/50">Stage is empty</span>
                     </div>
                   ) : (
                     columnApps.map((app) => {
@@ -104,45 +104,45 @@ export default function InteractiveKanban({
                       return (
                         <div
                           key={app.id}
-                          className="bg-white dark:bg-zinc-950 p-3.5 rounded border border-zinc-200 dark:border-zinc-850 hover:border-zinc-400 dark:hover:border-zinc-700 transition-colors shadow-2xs space-y-3 flex flex-col justify-between"
+                          className="bg-card/50 backdrop-blur-sm p-3.5 rounded border border-border/50 hover:border-border transition-colors shadow-sm space-y-3 flex flex-col justify-between"
                         >
                           <div className="space-y-1">
-                            <div className="flex justify-between items-start">
-                              <h4 className="serif-header text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate w-36">
+                            <div className="flex justify-between items-start gap-2">
+                              <h4 className="font-bold font-sans text-sm text-foreground truncate flex-1">
                                 {app.company}
                               </h4>
                               <span
-                                className={`mono-text text-[8px] font-bold uppercase px-1.5 py-0.5 rounded ${
+                                className={`font-mono text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded shrink-0 ${
                                   app.priority === 'High'
-                                    ? 'bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-400'
+                                    ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400'
                                     : app.priority === 'Medium'
-                                    ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400'
-                                    : 'bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-400'
+                                    ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400'
+                                    : 'bg-muted text-muted-foreground'
                                 }`}
                               >
                                 {app.priority}
                               </span>
                             </div>
-                            <p className="mono-text text-xs text-zinc-500 dark:text-zinc-400 truncate">
+                            <p className="font-mono text-[10px] text-muted-foreground truncate">
                               {app.position}
                             </p>
                           </div>
 
                           {app.interviewDate && (
-                            <div className="bg-zinc-100 dark:bg-zinc-900 p-1.5 rounded border border-zinc-200 dark:border-zinc-800/80">
-                              <span className="mono-text text-[8px] text-zinc-400 uppercase block">INT_DATE:</span>
-                              <span className="mono-text text-[9px] text-zinc-700 dark:text-zinc-300 font-medium">
+                            <div className="bg-muted/50 p-1.5 rounded border border-border/50 flex justify-between items-center">
+                              <span className="font-mono text-[8px] text-muted-foreground uppercase tracking-widest">INT_DATE:</span>
+                              <span className="font-mono text-[9px] text-foreground font-bold">
                                 {new Date(app.interviewDate).toLocaleDateString()}
                               </span>
                             </div>
                           )}
 
                           {/* Action Bar */}
-                          <div className="flex justify-between items-center pt-2 border-t border-zinc-100 dark:border-zinc-900">
+                          <div className="flex justify-between items-center pt-2 border-t border-border/50">
                             <div className="flex space-x-1">
                               <button
                                 onClick={() => onViewApplication(app)}
-                                className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400 transition-colors"
+                                className="p-1 rounded hover:bg-muted text-muted-foreground transition-colors"
                                 title="Inspect Application Details"
                               >
                                 <Eye size={12} />
@@ -156,7 +156,7 @@ export default function InteractiveKanban({
                                     onConfirm: () => onDeleteApplication(app.id),
                                   });
                                 }}
-                                className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-red-500 transition-colors"
+                                className="p-1 rounded hover:bg-muted text-destructive transition-colors"
                                 title="Delete"
                               >
                                 <Trash2 size={12} />
@@ -167,7 +167,7 @@ export default function InteractiveKanban({
                               {prev && (
                                 <button
                                   onClick={() => onUpdateStatus(app.id, prev)}
-                                  className="p-1 rounded border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400"
+                                  className="p-1 rounded border border-border/50 hover:bg-muted text-muted-foreground"
                                   title={`Move to ${prev}`}
                                 >
                                   <ArrowLeft size={10} />
@@ -176,7 +176,7 @@ export default function InteractiveKanban({
                               {next && (
                                 <button
                                   onClick={() => onUpdateStatus(app.id, next)}
-                                  className="p-1 rounded border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400"
+                                  className="p-1 rounded border border-border/50 hover:bg-muted text-muted-foreground"
                                   title={`Move to ${next}`}
                                 >
                                   <ArrowRight size={10} />

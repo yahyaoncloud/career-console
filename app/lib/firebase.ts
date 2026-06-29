@@ -5,6 +5,7 @@ import {
   User,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  updateProfile,
   Auth,
 } from 'firebase/auth';
 import { getAnalytics, Analytics } from 'firebase/analytics';
@@ -76,10 +77,14 @@ export const loginWithEmail = async (
 
 export const registerWithEmail = async (
   email: string,
-  password: string
+  password: string,
+  name?: string
 ): Promise<{ user: User }> => {
   if (!auth) throw new Error('Firebase auth not initialized.');
   const result = await createUserWithEmailAndPassword(auth, email, password);
+  if (name && result.user) {
+    await updateProfile(result.user, { displayName: name });
+  }
   return { user: result.user };
 };
 
