@@ -1,18 +1,18 @@
 import { type LoaderFunctionArgs, type ActionFunctionArgs } from 'react-router';
 import { useLoaderData, useFetcher } from 'react-router';
 import { requireUser } from '../../lib/auth.server';
-import { useToast } from '../../providers/ToastProvider';
 import { prisma } from '../../lib/db.server';
 import fs from 'fs';
 import path from 'path';
 import { z } from 'zod';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { FileText, Plus, Trash2, Edit2, Save, X, Loader2 } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Heading } from '../../components/ui/Heading';
 import { cn } from '../../lib/utils';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { ROLES, BLOG_STATUS } from '../../constants';
 
 const getBlogsDir = () => {
   const dir = path.join(process.cwd(), 'content', 'blogs');
@@ -61,7 +61,7 @@ const parseFrontmatter = (markdown: string): Omit<BlogPostMeta, 'slug'> & { cont
     authorName: fields.authorName || '',
     authorLinkedin: fields.authorLinkedin || '',
     authorId: fields.authorId || '',
-    status: fields.status || 'DRAFT',
+    status: fields.status || BLOG_STATUS.DRAFT,
     content
   };
 };
@@ -139,7 +139,7 @@ export async function action({ request }: ActionFunctionArgs) {
     if (!isSafeBlogSlug(slug)) throw new Error('Invalid slug format');
 
     // Preserve existing status if updating, else default to PENDING
-    let currentStatus = 'PENDING';
+    let currentStatus = BLOG_STATUS.PENDING as string;
     if (originalSlug && fs.existsSync(getBlogPath(originalSlug))) {
       const existing = await fs.promises.readFile(getBlogPath(originalSlug), 'utf8');
       const meta = parseFrontmatter(existing);
@@ -172,7 +172,7 @@ export async function action({ request }: ActionFunctionArgs) {
     await fs.promises.writeFile(getBlogPath(slug), frontmatter, 'utf8');
 
     // Notify Admins
-    const admins = await prisma.user.findMany({ where: { role: 'ADMIN' } });
+    const admins = await prisma.user.findMany({ where: { role: ROLES.ADMIN } });
     const profile = await prisma.profile.findUnique({ where: { userId: user.id } });
     
     for (const admin of admins) {
@@ -196,7 +196,6 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function AuthorBlogManagerRoute() {
   const { blogs, fullBlogs, currentUser } = useLoaderData<typeof loader>();
   const fetcher = useFetcher<typeof action>();
-  const { success, error } = useToast();
   
   const [editingSlug, setEditingSlug] = useState<string | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
@@ -218,18 +217,7 @@ export default function AuthorBlogManagerRoute() {
 
   const isSubmitting = fetcher.state !== 'idle';
 
-  useEffect(() => {
-    if (fetcher.data && fetcher.state === 'idle') {
-      if (fetcher.data.success) {
-        success(fetcher.data.message);
-        setEditingSlug(null);
-        setIsAddingNew(false);
-        reset();
-      } else {
-        error(fetcher.data.message);
-      }
-    }
-  }, [fetcher.data, fetcher.state, reset, success, error]);
+
 
   const startAdd = () => {
     setIsAddingNew(true);
@@ -429,11 +417,11 @@ export default function AuthorBlogManagerRoute() {
                   {new Date(post.date).toLocaleDateString()}
                 </div>
                 <div className={cn("text-[9px] font-mono font-bold uppercase tracking-widest px-1.5 py-0.5 rounded",
-                  post.status === 'PUBLISHED' ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20" :
-                  post.status === 'PENDING' ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20" :
+                  post.status === BLOG_STATUS.PUBLISHED ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20" :
+                  post.status === BLOG_STATUS.PENDING ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20" :
                   "bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border border-zinc-500/20"
                 )}>
-                  {post.status || 'DRAFT'}
+                  {post.status || BLOG_STATUS.DRAFT}
                 </div>
               </div>
               <div className="flex items-center gap-2">

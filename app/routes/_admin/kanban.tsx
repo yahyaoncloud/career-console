@@ -1,13 +1,14 @@
 import { type LoaderFunctionArgs, type ActionFunctionArgs } from 'react-router';
 import { useLoaderData, useFetcher } from 'react-router';
-import { requireUser } from '../../lib/auth.server';
+import { requireAdmin } from '../../lib/auth.server';
 import { prisma } from '../../lib/db.server';
+import React, { useState } from 'react';
 import { useToast } from '../../providers/ToastProvider';
 import InteractiveKanban from '../../components/InteractiveKanban';
 import { JobApplication, ApplicationStatus } from '../../types/types';
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const user = await requireUser(request);
+  const user = await requireAdmin(request);
   const applications = await prisma.application.findMany({
     where: { userId: user.id, deletedAt: null },
     orderBy: { appliedDate: 'desc' }
@@ -17,7 +18,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const user = await requireUser(request);
+  const user = await requireAdmin(request);
   const formData = await request.formData();
   const intent = formData.get('intent');
 
@@ -55,9 +56,9 @@ export default function KanbanRoute() {
   const { applications } = useLoaderData<typeof loader>();
   const fetcher = useFetcher<typeof action>();
   const { info } = useToast();
+  const [localApps] = useState(applications);
 
   const handleUpdateStatus = (id: string, newStatus: ApplicationStatus) => {
-    // Optimistic UI update could go here, but fetcher will handle it automatically if we submit
     fetcher.submit(
       { intent: 'updateStatus', id, status: newStatus },
       { method: 'post' }

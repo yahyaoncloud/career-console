@@ -31,9 +31,6 @@ type Pages = {
       "id": string;
     };
   };
-  "/api/guestbook": {
-    params: {};
-  };
   "/api/profile": {
     params: {};
   };
@@ -122,7 +119,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/api/auth/session" | "/api/auth/logout" | "/api/s3/presign" | "/api/portfolio" | "/api/portfolio/:id" | "/api/guestbook" | "/api/profile" | "/api/blogs" | "/api/blogs/:slug" | "/api/notifications" | "/login" | "/blog" | "/blog/:slug" | "/project/:id" | "/author/:slug" | "/guestbook" | "/dashboard" | "/portfolio-manager" | "/kanban" | "/applications" | "/authors" | "/blog-manager" | "/companies" | "/documents" | "/notifications" | "/settings" | "/author/:id/dashboard" | "/author/:id/blogs" | "/author/:id/profile";
+    page: "/" | "/api/auth/session" | "/api/auth/logout" | "/api/s3/presign" | "/api/portfolio" | "/api/portfolio/:id" | "/api/profile" | "/api/blogs" | "/api/blogs/:slug" | "/api/notifications" | "/login" | "/blog" | "/blog/:slug" | "/project/:id" | "/author/:slug" | "/guestbook" | "/dashboard" | "/portfolio-manager" | "/kanban" | "/applications" | "/authors" | "/blog-manager" | "/companies" | "/documents" | "/notifications" | "/settings" | "/author/:id/dashboard" | "/author/:id/blogs" | "/author/:id/profile";
   };
   "routes/api.auth.session.ts": {
     id: "routes/api.auth.session";
@@ -143,10 +140,6 @@ type RouteFiles = {
   "routes/api.portfolio.$id.ts": {
     id: "routes/api.portfolio.$id";
     page: "/api/portfolio/:id";
-  };
-  "routes/api.guestbook.ts": {
-    id: "routes/api.guestbook";
-    page: "/api/guestbook";
   };
   "routes/api.profile.ts": {
     id: "routes/api.profile";
@@ -265,7 +258,6 @@ type RouteModules = {
   "routes/api.s3.presign": typeof import("./app/routes/api.s3.presign.ts");
   "routes/api.portfolio": typeof import("./app/routes/api.portfolio.ts");
   "routes/api.portfolio.$id": typeof import("./app/routes/api.portfolio.$id.ts");
-  "routes/api.guestbook": typeof import("./app/routes/api.guestbook.ts");
   "routes/api.profile": typeof import("./app/routes/api.profile.ts");
   "routes/api.blogs": typeof import("./app/routes/api.blogs.ts");
   "routes/api.blogs.$slug": typeof import("./app/routes/api.blogs.$slug.ts");

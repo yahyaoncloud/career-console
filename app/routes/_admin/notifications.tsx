@@ -1,18 +1,18 @@
 import { type LoaderFunctionArgs, type ActionFunctionArgs } from 'react-router';
 import { useLoaderData, useFetcher } from 'react-router';
-import { requireUser } from '../../lib/auth.server';
+import { useEffect } from 'react';
+import { requireAdmin } from '../../lib/auth.server';
 import { prisma } from '../../lib/db.server';
 import { Bell, Check, X, Info, AlertTriangle, AlertCircle, CheckCircle2, Trash2 } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Heading } from '../../components/ui/Heading';
 import { cn } from '../../lib/utils';
-import { useEffect } from 'react';
-import { useToast } from '../../providers/ToastProvider';
+import { ROLES } from '../../constants';
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const user = await requireUser(request);
+  const user = await requireAdmin(request);
   
-  if (user.role !== 'ADMIN') {
+  if (user.role !== ROLES.ADMIN) {
     throw new Response('Unauthorized', { status: 403 });
   }
 
@@ -28,10 +28,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return { notifications, unreadCount };
 }
 
-export default function NotificationsAdminRoute() {
+export default function NotificationsRoute() {
   const { notifications, unreadCount } = useLoaderData<typeof loader>();
   const fetcher = useFetcher();
-  const { success } = useToast();
 
   const handleMarkAsRead = (id: string) => {
     fetcher.submit({ intent: 'markRead', id }, { method: 'post', action: '/api/notifications' });

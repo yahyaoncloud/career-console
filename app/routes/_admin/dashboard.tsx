@@ -1,17 +1,17 @@
 import { type LoaderFunctionArgs } from 'react-router';
-import { useLoaderData } from 'react-router';
+import { useLoaderData, useFetcher } from 'react-router';
 import { LayoutDashboard, Calendar, AlertCircle, Sparkles, BookOpen } from 'lucide-react';
-import { requireUser } from '../../lib/auth.server';
+import { requireAdmin } from '../../lib/auth.server';
 import { prisma } from '../../lib/db.server';
-import { Card } from '../../components/ui/Card';
 import { Heading } from '../../components/ui/Heading';
-import { useState, useEffect } from 'react';
+import { StatCard } from '../../components/shared/StatCard';
+import { APPLICATION_STATUS } from '../../constants';
+import React, { useState, useEffect } from 'react';
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const user = await requireUser(request);
+  await requireAdmin(request);
 
   const applications = await prisma.application.findMany({
-    where: { userId: user.firebaseUid },
     orderBy: { updatedAt: 'desc' }
   });
 
@@ -47,9 +47,9 @@ export default function DashboardOverview() {
   const [timeRemainingStr, setTimeRemainingStr] = useState('');
 
   const total = applications.length;
-  const pending = applications.filter((a) => !['OFFER', 'REJECTED'].includes(a.status)).length;
-  const offers = applications.filter((a) => a.status === 'OFFER').length;
-  const rejected = applications.filter((a) => a.status === 'REJECTED').length;
+  const pending = applications.filter((a) => ![APPLICATION_STATUS.OFFER, APPLICATION_STATUS.REJECTED].includes(a.status as any)).length;
+  const offers = applications.filter((a) => a.status === APPLICATION_STATUS.OFFER).length;
+  const rejected = applications.filter((a) => a.status === APPLICATION_STATUS.REJECTED).length;
 
   const offerRate = total > 0 ? Math.round((offers / total) * 100) : 0;
   const conversionRate = total > 0 ? Math.round(((total - pending - rejected) / total) * 100) : 0;
@@ -64,10 +64,10 @@ export default function DashboardOverview() {
     .slice(0, 3);
 
   const statusCounts = {
-    Wishlist: applications.filter((a) => a.status === 'WISHLIST').length,
-    Applied: applications.filter((a) => a.status === 'APPLIED').length,
-    Screening: applications.filter((a) => a.status === 'HR_SCREENING').length,
-    Technical: applications.filter((a) => a.status === 'TECHNICAL').length,
+    Wishlist: applications.filter((a) => a.status === APPLICATION_STATUS.WISHLIST).length,
+    Applied: applications.filter((a) => a.status === APPLICATION_STATUS.APPLIED).length,
+    Screening: applications.filter((a) => a.status === APPLICATION_STATUS.HR_SCREENING).length,
+    Technical: applications.filter((a) => a.status === APPLICATION_STATUS.TECHNICAL).length,
     Offer: offers,
     Rejected: rejected,
   };
@@ -94,59 +94,48 @@ export default function DashboardOverview() {
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       <div className="border-b border-zinc-200 dark:border-zinc-800 pb-4">
-        <h1 className="font-serif text-3xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-3">
+        <Heading variant="h1" className="flex items-center gap-3">
           <LayoutDashboard size={28} className="text-zinc-400" />
           Dashboard Overview
-        </h1>
+        </Heading>
         <span className="font-mono text-sm text-zinc-500 block mt-2">
           Real-time telemetry and pipeline metrics
         </span>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white dark:bg-zinc-900 p-5 rounded border border-zinc-200 dark:border-zinc-800 space-y-2">
-          <span className="font-mono text-[11px] text-zinc-500 uppercase tracking-widest block">TELEMETRY_PIPELINE</span>
-          <div className="flex justify-between items-baseline">
-            <h2 className="font-serif text-3xl md:text-4xl font-semibold text-zinc-900 dark:text-zinc-100">{total}</h2>
-            <span className="font-mono text-sm text-zinc-500">Total Apps</span>
-          </div>
-          <div className="w-full bg-zinc-100 dark:bg-zinc-800 h-[2px] rounded-sm overflow-hidden mt-2">
-            <div className="bg-zinc-900 dark:bg-zinc-100 h-full" style={{ width: '100%' }} />
-          </div>
-        </div>
+        <StatCard
+          title="TELEMETRY_PIPELINE"
+          value={total}
+          subtitle="Total Apps"
+          progress={100}
+          progressColor="bg-zinc-900 dark:bg-zinc-100"
+        />
 
-        <div className="bg-white dark:bg-zinc-900 p-5 rounded border border-zinc-200 dark:border-zinc-800 space-y-2">
-          <span className="font-mono text-[11px] text-zinc-500 uppercase tracking-widest block">ACTIVE_PROCESSES</span>
-          <div className="flex justify-between items-baseline">
-            <h2 className="font-serif text-3xl md:text-4xl font-semibold text-zinc-900 dark:text-zinc-100">{pending}</h2>
-            <span className="font-mono text-sm text-zinc-500">In Progress</span>
-          </div>
-          <div className="w-full bg-zinc-100 dark:bg-zinc-800 h-[2px] rounded-sm overflow-hidden mt-2">
-            <div className="bg-indigo-500 dark:bg-indigo-400 h-full transition-all" style={{ width: `${total > 0 ? (pending / total) * 100 : 0}%` }} />
-          </div>
-        </div>
+        <StatCard
+          title="ACTIVE_PROCESSES"
+          value={pending}
+          subtitle="In Progress"
+          progress={total > 0 ? (pending / total) * 100 : 0}
+          progressColor="bg-indigo-500 dark:bg-indigo-400"
+        />
 
-        <div className="bg-white dark:bg-zinc-900 p-5 rounded border border-zinc-200 dark:border-zinc-800 space-y-2">
-          <span className="font-mono text-[11px] text-zinc-500 uppercase tracking-widest block">SUCCESS_TERMINATION</span>
-          <div className="flex justify-between items-baseline">
-            <h2 className="font-serif text-3xl md:text-4xl font-semibold text-emerald-600 dark:text-emerald-500">{offers}</h2>
-            <span className="font-mono text-sm text-emerald-700 dark:text-emerald-600">Offers Recvd</span>
-          </div>
-          <div className="w-full bg-zinc-100 dark:bg-zinc-800 h-[2px] rounded-sm overflow-hidden mt-2">
-            <div className="bg-emerald-500 h-full transition-all" style={{ width: `${total > 0 ? (offers / total) * 100 : 0}%` }} />
-          </div>
-        </div>
+        <StatCard
+          title="SUCCESS_TERMINATION"
+          value={offers}
+          subtitle="Offers Recvd"
+          valueColorClass="text-emerald-600 dark:text-emerald-500"
+          progress={total > 0 ? (offers / total) * 100 : 0}
+          progressColor="bg-emerald-500"
+        />
 
-        <div className="bg-white dark:bg-zinc-900 p-5 rounded border border-zinc-200 dark:border-zinc-800 space-y-2">
-          <span className="font-mono text-[11px] text-zinc-500 uppercase tracking-widest block">OFFER_CONVERSION</span>
-          <div className="flex justify-between items-baseline">
-            <h2 className="font-serif text-3xl md:text-4xl font-semibold text-zinc-900 dark:text-zinc-100">{offerRate}%</h2>
-            <span className="font-mono text-sm text-zinc-500">Offer Rate</span>
-          </div>
-          <div className="w-full bg-zinc-100 dark:bg-zinc-800 h-[2px] rounded-sm overflow-hidden mt-2">
-            <div className="bg-zinc-900 dark:bg-zinc-100 h-full transition-all" style={{ width: `${offerRate}%` }} />
-          </div>
-        </div>
+        <StatCard
+          title="OFFER_CONVERSION"
+          value={`${offerRate}%`}
+          subtitle="Offer Rate"
+          progress={offerRate}
+          progressColor="bg-zinc-900 dark:bg-zinc-100"
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -155,7 +144,7 @@ export default function DashboardOverview() {
             <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-800/50 pb-4">
               <div>
                 <span className="font-mono text-[11px] text-zinc-500 uppercase tracking-widest block mb-1">PIPELINE_LOAD</span>
-                <h3 className="font-serif text-lg font-semibold text-zinc-900 dark:text-zinc-100">Application Distribution</h3>
+                <Heading variant="h4">Application Distribution</Heading>
               </div>
             </div>
 
@@ -213,7 +202,7 @@ export default function DashboardOverview() {
             <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-800/50 pb-4">
               <div>
                 <span className="font-mono text-[11px] text-zinc-500 uppercase tracking-widest block mb-1">SCHEDULED_EVENTS</span>
-                <h4 className="font-serif text-lg font-semibold text-zinc-900 dark:text-zinc-100">Upcoming Interviews</h4>
+                <Heading variant="h4">Upcoming Interviews</Heading>
               </div>
               <Calendar size={18} className="text-zinc-400" />
             </div>
@@ -268,7 +257,7 @@ export default function DashboardOverview() {
                   <span className="font-mono text-[10px] text-indigo-600 dark:text-indigo-400 uppercase tracking-widest block font-bold flex items-center gap-1.5 mb-1">
                     <Sparkles size={12} /> AI_MENTOR_SYNC
                   </span>
-                  <h4 className="font-serif text-lg font-semibold text-zinc-900 dark:text-zinc-100">What to Learn Today</h4>
+                  <Heading variant="h4">What to Learn Today</Heading>
                 </div>
                 <div className="flex items-center gap-2" title={`Expires in ${timeRemainingStr}`}>
                   <span className="font-mono text-[10px] text-zinc-500">{timeRemainingStr}</span>
@@ -299,7 +288,7 @@ export default function DashboardOverview() {
             <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-800/50 pb-3">
               <div>
                 <span className="font-mono text-[11px] text-zinc-500 uppercase tracking-widest block mb-1">ALERT_QUEUE</span>
-                <h4 className="font-serif text-lg font-semibold text-zinc-900 dark:text-zinc-100">Looming Deadlines</h4>
+                <Heading variant="h4">Looming Deadlines</Heading>
               </div>
               <AlertCircle size={16} className="text-red-500" />
             </div>

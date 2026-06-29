@@ -1,6 +1,6 @@
 import { JobApplication, ApplicationStatus } from '../types/types';
 import { ArrowLeft, ArrowRight, Eye, Briefcase, Trash2, Plus } from 'lucide-react';
-import { useToast } from './ui/Toast';
+import { useToast } from '../providers/ToastProvider';
 
 interface InteractiveKanbanProps {
   applications: JobApplication[];

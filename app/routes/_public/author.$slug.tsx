@@ -1,6 +1,7 @@
 import { type LoaderFunctionArgs } from 'react-router';
 import { useLoaderData, Link } from 'react-router';
 import { prisma } from '../../lib/db.server';
+import { BLOG_STATUS } from '../../constants';
 import { UserCircle, Globe, BookOpen } from 'lucide-react';
 import { loader as blogsApiLoader } from './api.blogs'; // actually we can fetch blogs directly or use the api
 import { requireUser } from '../../lib/auth.server';
@@ -39,7 +40,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           }
         });
 
-        if (fields.authorId === profile.userId && fields.status === 'PUBLISHED') {
+        if (fields.authorId === profile.userId && fields.status === BLOG_STATUS.PUBLISHED) {
            blogs.push({
              slug,
              title: fields.title || 'Untitled',

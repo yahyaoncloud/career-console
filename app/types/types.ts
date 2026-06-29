@@ -111,6 +111,7 @@ export interface ResumeData {
     credlyLink?: string;
     status?: string;
   }>;
+}
 
 export interface DocumentAsset {
   id: string;

@@ -1,20 +1,15 @@
 import { type LoaderFunctionArgs, type ActionFunctionArgs } from 'react-router';
 import { useLoaderData, useFetcher } from 'react-router';
-import { requireUser } from '../../lib/auth.server';
+import { requireUser, requireAdmin } from '../../lib/auth.server';
 import { prisma } from '../../lib/db.server';
-import { useToast } from '../../providers/ToastProvider';
-import { User, Shield, Mail, Trash2, Check, X, ShieldAlert } from 'lucide-react';
+import { CheckCircle2, Shield, ShieldAlert, Trash2, Mail, ExternalLink, User } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Heading } from '../../components/ui/Heading';
+import { ROLES } from '../../constants';
 import { cn } from '../../lib/utils';
-import { useEffect } from 'react';
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const user = await requireUser(request);
-  
-  if (user.role !== 'ADMIN') {
-    throw new Response('Unauthorized', { status: 403 });
-  }
+  const user = await requireAdmin(request);
 
   const authors = await prisma.user.findMany({
     where: { deletedAt: null },
@@ -26,11 +21,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const admin = await requireUser(request);
-  
-  if (admin.role !== 'ADMIN') {
-    return { success: false, message: 'Unauthorized' };
-  }
+  const admin = await requireAdmin(request);
 
   const formData = await request.formData();
   const intent = formData.get('intent');
@@ -59,7 +50,7 @@ export async function action({ request }: ActionFunctionArgs) {
       const user = await prisma.user.findUnique({ where: { firebaseUid: targetUid } });
       if (!user) return { success: false, message: 'User not found' };
       
-      const newRole = user.role === 'ADMIN' ? 'AUTHOR' : 'ADMIN';
+      const newRole = user.role === ROLES.ADMIN ? ROLES.AUTHOR : ROLES.ADMIN;
       
       await prisma.user.update({
         where: { firebaseUid: targetUid },
@@ -94,26 +85,11 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function AuthorManagerRoute() {
   const { authors, currentUserUid } = useLoaderData<typeof loader>();
   const fetcher = useFetcher<typeof action>();
-  const { success, error } = useToast();
-
-  useEffect(() => {
-    if (fetcher.state === 'idle' && fetcher.data) {
-      if (fetcher.data.success) {
-        success(fetcher.data.message);
-      } else {
-        error(fetcher.data.message);
-      }
-    }
-  }, [fetcher.data, fetcher.state, success, error]);
 
   const handleDeleteAuthor = (uid: string, name: string) => {
     if (confirm(`Are you sure you want to delete ${name}'s account? This action cannot be undone.`)) {
       fetcher.submit({ intent: 'delete', uid }, { method: 'post' });
     }
-  };
-
-  const handleToggleRole = (uid: string) => {
-    fetcher.submit({ intent: 'toggleRole', uid }, { method: 'post' });
   };
 
   return (
@@ -195,12 +171,12 @@ export default function AuthorManagerRoute() {
                 
                 <div className="pt-2 flex items-center justify-between">
                   <span className={cn(
-                    "px-2 py-0.5 rounded text-[10px] font-mono font-bold flex items-center gap-1",
-                    author.role === 'ADMIN' 
-                      ? "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400" 
-                      : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                    "text-[10px] font-mono font-bold uppercase tracking-widest px-1.5 py-0.5 rounded flex items-center gap-1",
+                    author.role === ROLES.ADMIN 
+                      ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20" 
+                      : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
                   )}>
-                    {author.role === 'ADMIN' ? <ShieldAlert size={10} /> : <Shield size={10} />}
+                    {author.role === ROLES.ADMIN ? <ShieldAlert size={10} /> : <Shield size={10} />}
                     {author.role}
                   </span>
                   
@@ -218,14 +194,17 @@ export default function AuthorManagerRoute() {
                 </div>
                 {!isSelf && (
                   <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handleToggleRole(author.firebaseUid)}
-                      disabled={fetcher.state !== 'idle'}
-                      className="p-1.5 bg-muted text-foreground rounded hover:bg-primary hover:text-primary-foreground transition-colors disabled:opacity-50"
-                      title={author.role === 'ADMIN' ? "Demote to Author" : "Promote to Admin"}
-                    >
-                      <Shield size={14} />
-                    </button>
+                    <fetcher.Form method="post">
+                      <input type="hidden" name="intent" value="toggleRole" />
+                      <input type="hidden" name="uid" value={author.firebaseUid} />
+                      <button 
+                        type="submit" 
+                        className="p-1.5 bg-muted text-foreground rounded hover:bg-indigo-500 hover:text-white transition-colors"
+                        title={author.role === ROLES.ADMIN ? "Demote to Author" : "Promote to Admin"}
+                      >
+                        {author.role === ROLES.ADMIN ? <Shield size={14} /> : <ShieldAlert size={14} />}
+                      </button>
+                    </fetcher.Form>
                     <button
                       onClick={() => handleDeleteAuthor(author.firebaseUid, author.name || 'User')}
                       disabled={fetcher.state !== 'idle'}

@@ -2,6 +2,7 @@ import { type ActionFunctionArgs, type LoaderFunctionArgs } from "react-router";
 import { requireUser } from "~/lib/auth.server";
 import { prisma } from "~/lib/db.server";
 import { type ActionResult } from "~/types/types";
+import { jsonResponse, errorResponse } from "~/lib/api.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   try {
@@ -16,16 +17,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
       where: { userId: user.id, read: false }
     });
 
-    return Response.json({ 
-      success: true, 
-      data: { notifications, unreadCount } 
-    } satisfies ActionResult);
+    return jsonResponse({ notifications, unreadCount });
   } catch (error: any) {
-    return Response.json({
-      success: false,
-      error: "Failed to fetch notifications",
-      message: error.message
-    } satisfies ActionResult, { status: 500 });
+    return errorResponse(error, { status: 500, message: "Failed to fetch notifications" });
   }
 }
 
@@ -56,7 +50,7 @@ export async function action({ request }: ActionFunctionArgs) {
         where: { userId: user.id }
       });
     } else {
-      return Response.json({ success: false, error: "Invalid intent" } satisfies ActionResult, { status: 400 });
+      return errorResponse(new Error("Invalid intent"), { status: 400 });
     }
 
     // Refetch and return the updated state so the UI doesn't clear out
@@ -70,15 +64,8 @@ export async function action({ request }: ActionFunctionArgs) {
       where: { userId: user.id, read: false }
     });
 
-    return Response.json({ 
-      success: true, 
-      data: { notifications, unreadCount } 
-    } satisfies ActionResult);
+    return jsonResponse({ notifications, unreadCount });
   } catch (error: any) {
-    return Response.json({
-      success: false,
-      error: "Failed to process notification action",
-      message: error.message
-    } satisfies ActionResult, { status: 500 });
+    return errorResponse(error, { status: 500, message: "Failed to process notification action" });
   }
 }

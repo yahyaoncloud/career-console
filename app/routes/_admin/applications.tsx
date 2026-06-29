@@ -1,11 +1,10 @@
 import { type LoaderFunctionArgs, type ActionFunctionArgs } from 'react-router';
 import { useLoaderData, useFetcher } from 'react-router';
-import { requireUser } from '../../lib/auth.server';
+import { requireAdmin } from '../../lib/auth.server';
 import { prisma } from '../../lib/db.server';
 import { createLogger } from '../../lib/logger.server';
-import { useToast } from '../../providers/ToastProvider';
 import { z } from 'zod';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Plus, Edit2, Trash2, Save, X, Briefcase, Calendar, MapPin, Building2, Loader2, ArrowRight } from 'lucide-react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { Card } from '../../components/ui/Card';
@@ -13,6 +12,8 @@ import { Heading } from '../../components/ui/Heading';
 import { cn } from '../../lib/utils';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { APPLICATION_STATUS } from '../../constants';
+import { useToast } from '../../providers/ToastProvider';
 
 const ApplicationSchema = z.object({
   id: z.string().optional(),
@@ -22,7 +23,7 @@ const ApplicationSchema = z.object({
   salary: z.string().optional(),
   employmentType: z.enum(['Full-time', 'Part-time', 'Contract', 'Remote', 'Hybrid']).optional(),
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH']).default('MEDIUM'),
-  status: z.enum(['WISHLIST', 'APPLIED', 'HR_SCREENING', 'TECHNICAL', 'OFFER', 'REJECTED', 'ARCHIVED']).default('APPLIED'),
+  status: z.enum([APPLICATION_STATUS.WISHLIST, APPLICATION_STATUS.APPLIED, APPLICATION_STATUS.HR_SCREENING, APPLICATION_STATUS.TECHNICAL, APPLICATION_STATUS.OFFER, APPLICATION_STATUS.REJECTED, 'ARCHIVED']).default(APPLICATION_STATUS.APPLIED),
   appliedDate: z.string().min(1, "Applied Date is required"),
   website: z.string().url("Invalid URL").optional().or(z.literal('')),
   notes: z.string().optional()
@@ -33,9 +34,12 @@ type ApplicationFormData = z.infer<typeof ApplicationSchema>;
 export async function loader({ request }: LoaderFunctionArgs) {
   const logger = createLogger();
   const startTime = Date.now();
+  const url = new URL(request.url);
   
   try {
-    const user = await requireUser(request);
+    const user = await requireAdmin(request);
+    const view = url.searchParams.get('view') || 'list';
+    
     const applications = await prisma.application.findMany({
       where: { userId: user.id, deletedAt: null },
       orderBy: { appliedDate: 'desc' }
@@ -48,7 +52,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       route: '/_admin/applications'
     });
     
-    return { applications };
+    return { applications, view };
   } catch (error: any) {
     logger.error('Failed to load applications', error, { route: '/_admin/applications' });
     throw error;
@@ -58,7 +62,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const logger = createLogger();
   const startTime = Date.now();
-  const user = await requireUser(request);
+  const user = await requireAdmin(request);
   const formData = await request.formData();
   const intent = formData.get('intent');
 
@@ -126,27 +130,23 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function ApplicationsRoute() {
-  const { applications } = useLoaderData<typeof loader>();
-  
-  // Phase 12: Memoize the application list
+  const { applications, view } = useLoaderData<typeof loader>();
   const sortedApplications = React.useMemo(() => applications, [applications]);
-  
   const fetcher = useFetcher<typeof action>();
   const { success, error } = useToast();
   
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
   
-  // Phase 12: Virtual Scrolling setup
   const parentRef = React.useRef<HTMLDivElement>(null);
   const virtualizer = useVirtualizer({
     count: sortedApplications.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 52, // Estimated height of each row in px
+    estimateSize: () => 52,
     overscan: 10,
   });
 
-  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm({
+  const { register, handleSubmit, reset, formState: { errors } } = useForm({
     resolver: zodResolver(ApplicationSchema),
     defaultValues: {
       company: '',
@@ -155,7 +155,7 @@ export default function ApplicationsRoute() {
       salary: '',
       employmentType: 'Full-time',
       priority: 'MEDIUM',
-      status: 'APPLIED',
+      status: APPLICATION_STATUS.APPLIED,
       appliedDate: new Date().toISOString().split('T')[0],
       website: '',
       notes: ''
@@ -163,19 +163,6 @@ export default function ApplicationsRoute() {
   });
 
   const isSubmitting = fetcher.state !== 'idle';
-
-  useEffect(() => {
-    if (fetcher.state === 'idle' && fetcher.data) {
-      if (fetcher.data.success) {
-        success(fetcher.data.message);
-        setEditingId(null);
-        setIsAddingNew(false);
-        reset();
-      } else {
-        error(fetcher.data.message);
-      }
-    }
-  }, [fetcher.data, fetcher.state, reset, success, error]);
 
   const startAdd = () => {
     setIsAddingNew(true);
@@ -187,7 +174,7 @@ export default function ApplicationsRoute() {
       salary: '',
       employmentType: 'Full-time',
       priority: 'MEDIUM',
-      status: 'APPLIED',
+      status: APPLICATION_STATUS.APPLIED,
       appliedDate: new Date().toISOString().split('T')[0],
       website: '',
       notes: ''
@@ -231,12 +218,12 @@ export default function ApplicationsRoute() {
   };
 
   const STATUS_COLORS: Record<string, string> = {
-    'WISHLIST': 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400',
-    'APPLIED': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-    'HR_SCREENING': 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-    'TECHNICAL': 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400',
-    'OFFER': 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-    'REJECTED': 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400',
+    [APPLICATION_STATUS.WISHLIST]: 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400',
+    [APPLICATION_STATUS.APPLIED]: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+    [APPLICATION_STATUS.HR_SCREENING]: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+    [APPLICATION_STATUS.TECHNICAL]: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400',
+    [APPLICATION_STATUS.OFFER]: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+    [APPLICATION_STATUS.REJECTED]: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400',
   };
 
   return (
@@ -300,12 +287,12 @@ export default function ApplicationsRoute() {
                     {...register('status')}
                     className="w-full px-4 py-2.5 text-sm bg-background/50 border border-border/50 rounded hover:border-border focus:border-primary focus:ring-1 focus:ring-primary transition-all text-foreground"
                   >
-                    <option value="WISHLIST">Wishlist</option>
-                    <option value="APPLIED">Applied</option>
-                    <option value="HR_SCREENING">HR Screening</option>
-                    <option value="TECHNICAL">Technical Interview</option>
-                    <option value="OFFER">Offer Received</option>
-                    <option value="REJECTED">Rejected</option>
+                    <option value={APPLICATION_STATUS.WISHLIST}>Wishlist</option>
+                    <option value={APPLICATION_STATUS.APPLIED}>Applied</option>
+                    <option value={APPLICATION_STATUS.HR_SCREENING}>HR Screening</option>
+                    <option value={APPLICATION_STATUS.TECHNICAL}>Technical Interview</option>
+                    <option value={APPLICATION_STATUS.OFFER}>Offer Received</option>
+                    <option value={APPLICATION_STATUS.REJECTED}>Rejected</option>
                   </select>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -429,7 +416,7 @@ export default function ApplicationsRoute() {
                       <span className="text-sm truncate block">{app.position}</span>
                     </div>
                     <div className="w-[15%] hidden md:block pr-2">
-                      <span className={cn("px-2 py-1 rounded text-[10px] font-mono font-bold whitespace-nowrap", STATUS_COLORS[app.status] || STATUS_COLORS['APPLIED'])}>
+                      <span className={cn("px-2 py-1 rounded text-[10px] font-mono font-bold whitespace-nowrap", STATUS_COLORS[app.status] || STATUS_COLORS[APPLICATION_STATUS.APPLIED])}>
                         {app.status}
                       </span>
                     </div>

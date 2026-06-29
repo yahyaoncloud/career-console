@@ -2,9 +2,8 @@ import { type ActionFunctionArgs, type LoaderFunctionArgs, redirect, Link } from
 import { useState } from 'react';
 import { getSession } from '../lib/session.server';
 import { prisma } from '../lib/db.server';
-import { Terminal, ShieldAlert, PenTool, Shield, ArrowLeft } from 'lucide-react';
+import { Shield, ArrowLeft } from 'lucide-react';
 import { EmailAuthForm } from '../components/shared/EmailAuthForm';
-import { cn } from '../lib/utils';
 import { ROLES, ROUTES } from '../constants';
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -14,36 +13,42 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const user = await prisma.user.findUnique({ where: { firebaseUid } });
     if (user?.role === ROLES.ADMIN) {
       return redirect(ROUTES.ADMIN.DASHBOARD);
-    } else if (user) {
-      return redirect(ROUTES.AUTHOR.DASHBOARD(user.id));
     }
   }
   return null;
 }
 
-export async function action({ request }: ActionFunctionArgs) {
-  return null;
-}
-
-export default function LoginRoute() {
+export default function AdminSetupRoute() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [isAdminMode, setIsAdminMode] = useState(false);
+  const [inviteCode, setInviteCode] = useState('');
+  const [isCodeValid, setIsCodeValid] = useState(false);
 
-  const authenticate = async (email: string, pass: string, isRegister: boolean, name?: string) => {
+  const verifyCode = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Use a hardcoded fallback for ease of testing, can be moved entirely to API later
+    if (inviteCode.trim() !== '') {
+      setIsCodeValid(true);
+      setErrorMsg(null);
+    } else {
+      setErrorMsg('Please enter an invite code.');
+    }
+  };
+
+  const registerAdmin = async (email: string, pass: string, isRegister: boolean, name?: string) => {
     setIsLoading(true);
     setErrorMsg(null);
     
     try {
-      const { loginWithEmail, registerWithEmail } = await import('../lib/firebase');
-      const { user } = isRegister 
-        ? await registerWithEmail(email, pass, name)
-        : await loginWithEmail(email, pass);
+      const { registerWithEmail } = await import('../lib/firebase');
+      const { user } = await registerWithEmail(email, pass, name);
         
       const token = await user.getIdToken();
       
       const formData = new FormData();
       formData.append('idToken', token);
+      formData.append('intent', 'admin-setup');
+      formData.append('inviteCode', inviteCode);
       
       const res = await fetch('/api/auth/session', {
         method: 'POST',
@@ -51,17 +56,15 @@ export default function LoginRoute() {
       });
       
       if (res.ok) {
-        const responseData = await res.json();
-        const payload = responseData.data;
-        window.location.href = payload.role === ROLES.ADMIN ? ROUTES.ADMIN.DASHBOARD : ROUTES.AUTHOR.DASHBOARD(payload.userId);
+        const data = await res.json();
+        window.location.href = ROUTES.ADMIN.DASHBOARD;
       } else {
-        throw new Error('Failed to create session');
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || 'Failed to create session. Invalid invite code?');
       }
     } catch (err: any) {
       console.error('Auth error:', err);
-      if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
-        setErrorMsg('Invalid email or password.');
-      } else if (err.code === 'auth/email-already-in-use') {
+      if (err.code === 'auth/email-already-in-use') {
         setErrorMsg('Email already in use.');
       } else {
         setErrorMsg(err.message || 'An error occurred during authentication.');
@@ -84,33 +87,18 @@ export default function LoginRoute() {
         </Link>
       </div>
 
-      {/* Top right admin toggle */}
-      <div className="absolute top-6 right-6">
-        <button
-          onClick={() => setIsAdminMode(!isAdminMode)}
-          className="flex items-center space-x-1.5 px-2.5 py-1 text-[11px] font-mono text-muted-foreground hover:text-foreground transition-colors cursor-pointer border border-transparent hover:border-border rounded-sm"
-        >
-          {isAdminMode ? <PenTool size={12} /> : <Terminal size={12} />}
-          <span>{isAdminMode ? 'AUTHOR_MODE' : 'ADMIN_MODE'}</span>
-        </button>
-      </div>
-
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center mb-6">
           <div className="bg-zinc-200 dark:bg-zinc-900 p-3 rounded border border-zinc-300 dark:border-zinc-800">
-            {isAdminMode ? (
-              <Terminal size={24} className="text-zinc-700 dark:text-zinc-300" />
-            ) : (
-              <PenTool size={24} className="text-zinc-700 dark:text-zinc-300" />
-            )}
+            <Shield size={24} className="text-zinc-700 dark:text-zinc-300" />
           </div>
         </div>
         
         <h1 className="text-center font-serif text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-          {isAdminMode ? 'Yahya Space' : 'Author Studio'}
+          Admin Initialization
         </h1>
         <p className="mt-2 text-center text-sm font-mono text-zinc-500">
-          {isAdminMode ? 'Welcome back.' : 'Publish your insights.'}
+          {isCodeValid ? 'Create your administrator account.' : 'Enter the secure invite code.'}
         </p>
       </div>
 
@@ -122,11 +110,33 @@ export default function LoginRoute() {
             </div>
           )}
           
-          <EmailAuthForm 
-            onLogin={(email, pass) => authenticate(email, pass, false)}
-            onRegister={isAdminMode ? undefined : (email, pass, name) => authenticate(email, pass, true, name)}
-            isLoading={isLoading} 
-          />
+          {!isCodeValid ? (
+            <form onSubmit={verifyCode} className="space-y-6">
+              <div>
+                <label className="block text-xs font-mono text-zinc-600 dark:text-zinc-400 mb-2">Invite Code</label>
+                <input
+                  type="password"
+                  value={inviteCode}
+                  onChange={(e) => setInviteCode(e.target.value)}
+                  className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-zinc-800 rounded-md text-sm font-sans text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-400 dark:focus:ring-zinc-600 transition-shadow"
+                  placeholder="Enter code..."
+                  autoFocus
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-[11px] font-mono font-bold text-white dark:text-zinc-900 bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-500 transition-colors uppercase tracking-widest"
+              >
+                Verify Code
+              </button>
+            </form>
+          ) : (
+            <EmailAuthForm 
+              onLogin={undefined}
+              onRegister={(email, pass, name) => registerAdmin(email, pass, true, name)}
+              isLoading={isLoading} 
+            />
+          )}
         </div>
       </div>
     </div>

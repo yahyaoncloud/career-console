@@ -1,7 +1,6 @@
 import { type ActionFunctionArgs, type LoaderFunctionArgs, redirect } from 'react-router';
 import { useLoaderData, useSubmit, useNavigation, useActionData } from 'react-router';
 import { requireUser } from '../../lib/auth.server';
-import { useToast } from '../../providers/ToastProvider';
 import { prisma } from '../../lib/db.server';
 import { Heading } from '../../components/ui/Heading';
 import { Card } from '../../components/ui/Card';
@@ -10,7 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Save, UserCircle, Globe, Activity, Loader2 } from 'lucide-react';
 import { z } from 'zod';
 import { uploadFile } from '../../lib/supabase';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 const profileSchema = z.object({
   displayName: z.string().min(2, 'Display name must be at least 2 characters'),
@@ -92,22 +91,10 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function AuthorProfileRoute() {
   const { user, profile } = useLoaderData<typeof loader>();
-  const actionData = useActionData<typeof action>();
-  const { success, error } = useToast();
   const submit = useSubmit();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
   const [isUploading, setIsUploading] = useState(false);
-
-  useEffect(() => {
-    if (navigation.state === 'idle' && actionData) {
-      if (actionData.success) {
-        success(actionData.message as string);
-      } else if (actionData.message) {
-        error(actionData.message as string);
-      }
-    }
-  }, [actionData, navigation.state, success, error]);
 
   const { register, handleSubmit, formState: { errors }, watch, setValue } = useForm({
     resolver: zodResolver(profileSchema),
@@ -136,7 +123,7 @@ export default function AuthorProfileRoute() {
       const { url } = await uploadFile(file, folder, bucket, explicitName);
       setValue(field, url, { shouldValidate: true, shouldDirty: true });
     } catch (err: any) {
-      error(`Upload failed: ${err.message}`);
+      console.error(`Upload failed: ${err.message}`);
     } finally {
       setIsUploading(false);
     }

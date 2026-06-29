@@ -7,7 +7,7 @@ import { loader as blogsApiLoader } from '../api.blogs';
 export async function loader(args: LoaderFunctionArgs) {
   try {
     const res = await blogsApiLoader(args);
-    const result = await res.json();
+    const result = res && typeof res.json === 'function' ? await res.json() : (res.data || res);
     return { blogs: result.success ? result.data : [] };
   } catch (error) {
     return { blogs: [] };

@@ -3,6 +3,21 @@ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { requireUser } from "~/lib/auth.server";
 import { jsonResponse, errorResponse } from "~/lib/api.server";
+import { checkRateLimit } from "~/lib/rate-limit.server";
+import { BUCKETS } from "~/lib/supabase";
+import { z } from "zod";
+
+const ALLOWED_EXTENSIONS = new Set(["jpg", "jpeg", "png", "gif", "webp", "pdf", "doc", "docx"]);
+
+const PresignSchema = z.object({
+  filename: z.string().min(1).refine(name => {
+    if (name.includes("..") || name.includes("/")) return false;
+    const ext = name.split(".").pop()?.toLowerCase() || "";
+    return ALLOWED_EXTENSIONS.has(ext);
+  }, "Invalid file name or extension not allowed."),
+  contentType: z.string().min(1),
+  bucket: z.string().optional().default("career-assets").refine(b => BUCKETS.includes(b), "Invalid bucket"),
+});
 
 let s3Client: S3Client | null = null;
 
@@ -33,13 +48,22 @@ export async function action({ request }: ActionFunctionArgs) {
     // 1. Authenticate Request
     await requireUser(request);
 
+    // 1.5 Rate Limiting (5 requests per IP to prevent spam)
+    const ip = request.headers.get("x-forwarded-for") || "unknown";
+    const { allowed } = await checkRateLimit(`presign_${ip}`, 5);
+    if (!allowed) {
+      return errorResponse(new Error("Rate limit exceeded"), { status: 429, requestId, message: "Too many requests. Please try again later." });
+    }
+
     // 2. Parse payload
     const body = await request.json();
-    const { filename, contentType, bucket = "career-assets" } = body || {};
+    const result = PresignSchema.safeParse(body);
 
-    if (!filename) {
-      return errorResponse(new Error("Filename is required"), { status: 400, requestId });
+    if (!result.success) {
+      return errorResponse(result.error, { status: 400, requestId });
     }
+
+    const { filename, contentType, bucket } = result.data;
 
     // 3. Generate Presigned URL
     const command = new PutObjectCommand({

@@ -1,10 +1,9 @@
 import { type LoaderFunctionArgs, type ActionFunctionArgs } from 'react-router';
 import { useLoaderData, useFetcher, Link } from 'react-router';
-import { requireUser } from '../../lib/auth.server';
+import { requireAdmin } from '../../lib/auth.server';
 import { prisma } from '../../lib/db.server';
-import { useToast } from '../../providers/ToastProvider';
 import { z } from 'zod';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Plus, Edit2, Trash2, Save, X, Briefcase, Code, ExternalLink, Loader2, Eye } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useForm } from 'react-hook-form';
@@ -25,16 +24,16 @@ const PortfolioSchema = z.object({
 type PortfolioFormData = z.infer<typeof PortfolioSchema>;
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const user = await requireUser(request);
+  await requireAdmin(request);
   const projects = await prisma.portfolio.findMany({
-    where: { userId: user.id, deletedAt: null },
+    where: { deletedAt: null },
     orderBy: { createdAt: 'desc' }
   });
   return { projects };
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const user = await requireUser(request);
+  const user = await requireAdmin(request);
   const formData = await request.formData();
   const intent = formData.get('intent');
 
@@ -42,7 +41,7 @@ export async function action({ request }: ActionFunctionArgs) {
     if (intent === 'delete') {
       const id = formData.get('id') as string;
       await prisma.portfolio.update({
-        where: { id, userId: user.id },
+        where: { id },
         data: { deletedAt: new Date() }
       });
       return { success: true, message: 'Project deleted' };
@@ -75,7 +74,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     if (intent === 'update' && id) {
       await prisma.portfolio.update({
-        where: { id, userId: user.id },
+        where: { id },
         data: {
           ...rest,
           techStack: techArray,
@@ -96,7 +95,6 @@ export default function PortfolioManagerRoute() {
   const { projects } = useLoaderData<typeof loader>();
   const sortedProjects = React.useMemo(() => projects, [projects]);
   const fetcher = useFetcher<typeof action>();
-  const { success, error } = useToast();
   
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
@@ -116,19 +114,6 @@ export default function PortfolioManagerRoute() {
   });
 
   const isSubmitting = fetcher.state !== 'idle';
-
-  useEffect(() => {
-    if (fetcher.state === 'idle' && fetcher.data) {
-      if (fetcher.data.success) {
-        success(fetcher.data.message || 'Saved successfully');
-        setEditingId(null);
-        setIsAddingNew(false);
-        reset();
-      } else {
-        error(fetcher.data.message);
-      }
-    }
-  }, [fetcher.data, fetcher.state, reset, success, error]);
 
   const startAdd = () => {
     setIsAddingNew(true);

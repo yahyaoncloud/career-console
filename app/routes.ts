@@ -7,7 +7,7 @@ export default [
   route("api/s3/presign", "routes/api.s3.presign.ts"),
   route("api/portfolio", "routes/api.portfolio.ts"),
   route("api/portfolio/:id", "routes/api.portfolio.$id.ts"),
-  route("api/guestbook", "routes/api.guestbook.ts"),
+
   route("api/profile", "routes/api.profile.ts"),
   route("api/blogs", "routes/api.blogs.ts"),
   route("api/blogs/:slug", "routes/api.blogs.$slug.ts"),
@@ -34,6 +34,15 @@ export default [
     route("documents", "routes/_admin/documents.tsx"),
     route("notifications", "routes/_admin/notifications.tsx"),
     route("settings", "routes/_admin/settings.tsx"),
+    
+    // Coming Soon Routes
+    route("calendar", "routes/_admin/coming-soon.tsx"),
+    route("store/products", "routes/_admin/coming-soon.tsx"),
+    route("store/orders", "routes/_admin/coming-soon.tsx"),
+    route("store/inventory", "routes/_admin/coming-soon.tsx"),
+    route("store/coupons", "routes/_admin/coming-soon.tsx"),
+    route("analytics", "routes/_admin/coming-soon.tsx"),
+    route("messages", "routes/_admin/coming-soon.tsx"),
   ]),
 
   layout("routes/_author/_layout.tsx", [

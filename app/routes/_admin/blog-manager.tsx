@@ -1,12 +1,11 @@
 import { type LoaderFunctionArgs, type ActionFunctionArgs } from 'react-router';
 import { useLoaderData, useFetcher } from 'react-router';
-import { requireUser } from '../../lib/auth.server';
+import { requireAdmin } from '../../lib/auth.server';
 import { prisma } from '../../lib/db.server';
-import { useToast } from '../../providers/ToastProvider';
 import fs from 'fs';
 import path from 'path';
 import { z } from 'zod';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { FileText, Plus, Trash2, Edit2, Save, X, Loader2 } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Heading } from '../../components/ui/Heading';
@@ -79,7 +78,7 @@ const BlogSchema = z.object({
 type BlogFormData = z.infer<typeof BlogSchema>;
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const user = await requireUser(request);
+  const user = await requireAdmin(request);
   
   const dir = getBlogsDir();
   const files = await fs.promises.readdir(dir);
@@ -92,11 +91,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
       const markdown = await fs.promises.readFile(path.join(dir, file), 'utf8');
       const { content, ...meta } = parseFrontmatter(markdown);
       
-      // Authors only see their own blogs; Admins see all
-      if (user.role === 'ADMIN' || meta.authorId === user.firebaseUid) {
-        blogs.push({ slug, ...meta });
-        fullBlogs[slug] = content;
-      }
+      blogs.push({ slug, ...meta });
+      fullBlogs[slug] = content;
     }
   }
 
@@ -107,7 +103,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const user = await requireUser(request);
+  const admin = await requireAdmin(request);
   const formData = await request.formData();
   const intent = formData.get('intent');
 
@@ -116,13 +112,6 @@ export async function action({ request }: ActionFunctionArgs) {
       const slug = formData.get('slug') as string;
       if (!isSafeBlogSlug(slug)) throw new Error('Invalid slug');
       
-      // Verify ownership if author
-      if (user.role !== 'ADMIN') {
-        const existing = await fs.promises.readFile(getBlogPath(slug), 'utf8');
-        const meta = parseFrontmatter(existing);
-        if (meta.authorId !== user.firebaseUid) throw new Error('Unauthorized');
-      }
-
       await fs.promises.unlink(getBlogPath(slug));
       return { success: true, message: 'Blog post deleted' };
     }
@@ -147,7 +136,7 @@ export async function action({ request }: ActionFunctionArgs) {
       `tags: ${tags || ''}`,
       `authorName: ${authorName || ''}`,
       `authorLinkedin: ${authorLinkedin || ''}`,
-      `authorId: ${user.firebaseUid}`, // Always lock to current user unless admin is editing (simplification)
+      `authorId: ${admin.firebaseUid}`,
       '---',
       '',
       content
@@ -162,32 +151,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
     await fs.promises.writeFile(getBlogPath(slug), frontmatter, 'utf8');
 
-    // Notify Author if status changed to PUBLISHED
-    if (result.data.status === 'PUBLISHED') {
-      let originalStatus = 'DRAFT';
-      if (originalSlug && fs.existsSync(getBlogPath(originalSlug))) {
-        const existing = await fs.promises.readFile(getBlogPath(originalSlug), 'utf8');
-        const match = existing.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-        const rawFrontmatter = match?.[1] || '';
-        rawFrontmatter.split(/\r?\n/).forEach((line) => {
-          if (line.startsWith('status:')) originalStatus = line.replace('status:', '').trim().toUpperCase();
-        });
-      }
-
-      if (originalStatus !== 'PUBLISHED' && result.data.authorId) {
-        const authorProfile = await prisma.profile.findFirst({ where: { userId: result.data.authorId }});
-        await prisma.notification.create({
-          data: {
-            userId: result.data.authorId,
-            title: `Article Published!`,
-            message: `Your article "${title}" has been approved and published.`,
-            type: 'SUCCESS',
-            link: `/author/${result.data.authorId}/blogs`
-          }
-        });
-      }
-    }
-
     return { success: true, message: `Blog post ${originalSlug ? 'updated' : 'created'}` };
   } catch (error: any) {
     return { success: false, message: error.message };
@@ -197,12 +160,11 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function BlogManagerRoute() {
   const { blogs, fullBlogs, currentUser } = useLoaderData<typeof loader>();
   const fetcher = useFetcher<typeof action>();
-  const { success, error } = useToast();
   
   const [editingSlug, setEditingSlug] = useState<string | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
 
-  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm({
+  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm({
     resolver: zodResolver(BlogSchema),
     defaultValues: {
       originalSlug: '',
@@ -218,19 +180,6 @@ export default function BlogManagerRoute() {
   });
 
   const isSubmitting = fetcher.state !== 'idle';
-
-  useEffect(() => {
-    if (fetcher.state === 'idle' && fetcher.data) {
-      if (fetcher.data.success) {
-        success(fetcher.data.message);
-        setEditingSlug(null);
-        setIsAddingNew(false);
-        reset();
-      } else {
-        error(fetcher.data.message);
-      }
-    }
-  }, [fetcher.data, fetcher.state, reset, success, error]);
 
   const startAdd = () => {
     setIsAddingNew(true);

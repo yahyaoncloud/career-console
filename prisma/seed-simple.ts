@@ -26,7 +26,26 @@ async function seedSampleData() {
     // ─── Profile ────────────────────────────────────────────────────────────
     const profile = await prisma.profile.upsert({
       where: { userId: user.id },
-      update: {},
+      update: {
+        resume: {
+          summary: [
+            'Building scalable infrastructure, serverless architectures, and automation pipelines for modern enterprises.'
+          ],
+          technicalSkills: [
+            { category: "Cloud & Ops", items: ["AWS", "GCP", "Kubernetes", "Docker", "Terraform", "Ansible"] },
+            { category: "Languages", items: ["TypeScript", "Python", "Go", "Bash"] },
+            { category: "Frameworks", items: ["React", "Node.js", "Express", "Next.js"] }
+          ],
+          experience: [
+            { role: "Cloud DevOps Engineer", company: "Tech Solutions Inc.", period: "2023 - Present", description: "Architecting cloud-native solutions, CI/CD pipelines, and infrastructure as code." },
+            { role: "Systems Administrator", company: "Enterprise IT", period: "2021 - 2023", description: "Managed hybrid cloud infrastructure, Linux servers, and automated routine maintenance." }
+          ],
+          certifications: [
+            { name: "AWS Certified Solutions Architect", brand: "Amazon Web Services", date: "2023", status: "completed", credlyLink: "#" },
+            { name: "Certified Kubernetes Administrator", brand: "Cloud Native Computing Foundation", date: "2024", status: "ongoing" }
+          ]
+        }
+      },
       create: {
         userId: user.id,
         displayName: 'Yahya',
@@ -39,6 +58,24 @@ async function seedSampleData() {
         },
         analyticsEnabled: true,
         guestbookEnabled: true,
+        resume: {
+          summary: [
+            'Building scalable infrastructure, serverless architectures, and automation pipelines for modern enterprises.'
+          ],
+          technicalSkills: [
+            { category: "Cloud & Ops", items: ["AWS", "GCP", "Kubernetes", "Docker", "Terraform", "Ansible"] },
+            { category: "Languages", items: ["TypeScript", "Python", "Go", "Bash"] },
+            { category: "Frameworks", items: ["React", "Node.js", "Express", "Next.js"] }
+          ],
+          experience: [
+            { role: "Cloud DevOps Engineer", company: "Tech Solutions Inc.", period: "2023 - Present", description: "Architecting cloud-native solutions, CI/CD pipelines, and infrastructure as code." },
+            { role: "Systems Administrator", company: "Enterprise IT", period: "2021 - 2023", description: "Managed hybrid cloud infrastructure, Linux servers, and automated routine maintenance." }
+          ],
+          certifications: [
+            { name: "AWS Certified Solutions Architect", brand: "Amazon Web Services", date: "2023", status: "completed", credlyLink: "#" },
+            { name: "Certified Kubernetes Administrator", brand: "Cloud Native Computing Foundation", date: "2024", status: "ongoing" }
+          ]
+        }
       },
     })
     console.log(`✅ Profile: ${profile.displayName} (@${profile.slug})`)

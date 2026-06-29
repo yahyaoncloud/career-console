@@ -10,7 +10,7 @@ import { ScribbleAnimation } from '../../components/hero/ScribbleAnimation';
 export function meta() {
   return [
     { title: "Portfolio | yahyaoncloud" },
-    { name: "description", content: "Cloud Engineer Portfolio & Career Console" },
+    { name: "description", content: "Cloud Engineer Portfolio & yahyaoncloud" },
   ];
 }
 
@@ -21,8 +21,13 @@ export async function loader(args: LoaderFunctionArgs) {
     const portfolioArgs = { ...args, request: new Request(new URL('/api/portfolio?limit=6', args.request.url).href) };
     const portfolioResponse = await portfolioApiLoader(portfolioArgs);
 
-    const profileData = await profileResponse.json();
-    const portfolioData = await portfolioResponse.json();
+    const profileData = profileResponse && typeof profileResponse.json === 'function' 
+      ? await profileResponse.json() 
+      : (profileResponse.data || profileResponse);
+      
+    const portfolioData = portfolioResponse && typeof portfolioResponse.json === 'function' 
+      ? await portfolioResponse.json() 
+      : (portfolioResponse.data || portfolioResponse);
 
     const userWithProfile = profileData.success ? {
       name: profileData.data.user?.name || 'Yahya',
@@ -107,7 +112,7 @@ export default function PortfolioHome() {
                 <div className="relative group mt-2">
                   <div className="absolute inset-0 bg-zinc-200 dark:bg-zinc-800 rounded-2xl rotate-3 transition-transform group-hover:rotate-6 z-0"></div>
 
-                  <ScribbleAnimation />
+                  {/* <ScribbleAnimation /> */}
 
                   <img
                     src={avatar}

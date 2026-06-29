@@ -1,10 +1,9 @@
 import { type LoaderFunctionArgs, type ActionFunctionArgs } from 'react-router';
-import { useLoaderData, useFetcher } from 'react-router';
-import { requireUser } from '../../lib/auth.server';
+import { useLoaderData, useFetcher, Form } from 'react-router';
+import { requireAdmin } from '../../lib/auth.server';
 import { prisma } from '../../lib/db.server';
-import { useToast } from '../../providers/ToastProvider';
 import { z } from 'zod';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Plus, Edit2, Trash2, Save, X, Building2, ExternalLink, Mail, Loader2, Link as LinkIcon } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Heading } from '../../components/ui/Heading';
@@ -30,16 +29,16 @@ const CompanySchema = z.object({
 type CompanyFormData = z.infer<typeof CompanySchema>;
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const user = await requireUser(request);
+  await requireAdmin(request);
   const companies = await prisma.company.findMany({
-    where: { userId: user.id, deletedAt: null },
+    where: { deletedAt: null },
     orderBy: { createdAt: 'desc' }
   });
   return { companies };
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const user = await requireUser(request);
+  await requireAdmin(request);
   const formData = await request.formData();
   const intent = formData.get('intent');
 
@@ -47,7 +46,7 @@ export async function action({ request }: ActionFunctionArgs) {
     if (intent === 'delete') {
       const id = formData.get('id') as string;
       await prisma.company.update({
-        where: { id, userId: user.id },
+        where: { id },
         data: { deletedAt: new Date() }
       });
       return { success: true, message: 'Company deleted' };
@@ -68,8 +67,7 @@ export async function action({ request }: ActionFunctionArgs) {
         data: {
           ...rest,
           status: rest.status as any,
-          tags: tagArray,
-          userId: user.id
+          tags: tagArray
         }
       });
       return { success: true, message: 'Company added' };
@@ -77,7 +75,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     if (intent === 'update' && id) {
       await prisma.company.update({
-        where: { id, userId: user.id },
+        where: { id },
         data: {
           ...rest,
           status: rest.status as any,
@@ -96,11 +94,9 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function CompaniesRoute() {
   const { companies } = useLoaderData<typeof loader>();
   
-  // Phase 12: Memoize the company list
   const sortedCompanies = React.useMemo(() => companies, [companies]);
   
   const fetcher = useFetcher<typeof action>();
-  const { success, error } = useToast();
   
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
@@ -123,19 +119,6 @@ export default function CompaniesRoute() {
   });
 
   const isSubmitting = fetcher.state !== 'idle';
-
-  useEffect(() => {
-    if (fetcher.state === 'idle' && fetcher.data) {
-      if (fetcher.data.success) {
-        success(fetcher.data.message);
-        setEditingId(null);
-        setIsAddingNew(false);
-        reset();
-      } else {
-        error(fetcher.data.message);
-      }
-    }
-  }, [fetcher.data, fetcher.state, reset, success, error]);
 
   const startAdd = () => {
     setIsAddingNew(true);

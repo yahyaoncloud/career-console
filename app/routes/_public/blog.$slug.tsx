@@ -2,6 +2,9 @@ import { type LoaderFunctionArgs } from 'react-router';
 import { useLoaderData, Link } from 'react-router';
 import { ArrowLeft, Calendar, User, Tag, Share2, ArrowRight } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/cjs/styles/prism';
+import { ROUTES } from '../../constants';
 import { loader as blogSlugApiLoader } from '../api.blogs.$slug';
 import { loader as blogsApiLoader } from '../api.blogs';
 
@@ -11,7 +14,7 @@ export async function loader(args: LoaderFunctionArgs) {
 
   try {
     const res = await blogSlugApiLoader(args);
-    const result = await res.json();
+    const result = res && typeof res.json === 'function' ? await res.json() : (res.data || res);
 
     if (!result.success) {
       throw new Response("Not Found", { status: 404 });
@@ -21,7 +24,7 @@ export async function loader(args: LoaderFunctionArgs) {
     let nextBlog = null;
     try {
       const allBlogsRes = await blogsApiLoader(args);
-      const allBlogsResult = await allBlogsRes.json();
+      const allBlogsResult = allBlogsRes && typeof allBlogsRes.json === 'function' ? await allBlogsRes.json() : (allBlogsRes.data || allBlogsRes);
       if (allBlogsResult.success && allBlogsResult.data.length > 0) {
         const otherBlogs = allBlogsResult.data.filter((b: any) => b.slug !== slug);
         if (otherBlogs.length > 0) {
@@ -43,7 +46,7 @@ export async function loader(args: LoaderFunctionArgs) {
   }
 }
 
-import { Sparkles, List, Share2, ArrowRight } from 'lucide-react';
+import { Sparkles, List } from 'lucide-react';
 import { useToast } from '../../providers/ToastProvider';
 
 export default function BlogPostRoute() {
@@ -87,8 +90,8 @@ export default function BlogPostRoute() {
 
   return (
     <div className="pb-24 lg:grid lg:grid-cols-[1fr_260px] lg:gap-10 items-start">
-      <article className="min-w-0">
-        <Link to="/blog" className="inline-flex items-center space-x-2 text-xs font-mono text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors group mb-10 w-fit">
+      <div className="max-w-3xl mx-auto">
+        <Link to={ROUTES.PUBLIC.BLOG} className="inline-flex items-center space-x-2 text-xs font-mono text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors group mb-10 w-fit">
           <ArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform" />
           <span className="uppercase tracking-widest font-bold relative after:absolute after:-bottom-0.5 after:left-0 after:w-full after:h-[1.5px] after:bg-current after:origin-bottom-right after:scale-x-0 group-hover:after:origin-bottom-left group-hover:after:scale-x-100 after:transition-transform after:duration-300 after:ease-out">Back</span>
         </Link>
@@ -120,7 +123,7 @@ export default function BlogPostRoute() {
             {meta.authorName && (
               <div className="flex items-center gap-2">
                 <User size={14} className="text-zinc-400" />
-                <Link to={`/author/${meta.authorSlug || meta.authorName.toLowerCase().replace(/\s+/g, '-')}`} className="group relative">
+                <Link to={ROUTES.AUTHOR.PROFILE(meta.authorSlug || meta.authorName.toLowerCase().replace(/\s+/g, '-'))} className="group relative">
                   <span className="relative after:absolute after:-bottom-0.5 after:left-0 after:w-full after:h-[1.5px] after:bg-current after:origin-bottom-right after:scale-x-0 group-hover:after:origin-bottom-left group-hover:after:scale-x-100 after:transition-transform after:duration-300 after:ease-out text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 font-bold transition-colors">
                     {meta.authorName}
                   </span>
@@ -168,7 +171,7 @@ export default function BlogPostRoute() {
               Read Next
             </span>
             <Link
-              to={`/blog/${nextBlog.slug}`}
+              to={`${ROUTES.PUBLIC.BLOG}/${nextBlog.slug}`}
               className="group block p-6 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 bg-zinc-50 dark:bg-zinc-900/30 transition-all duration-300"
             >
               <div className="flex justify-between items-center gap-4">
@@ -187,10 +190,10 @@ export default function BlogPostRoute() {
             </Link>
           </div>
         )}
-      </article>
+      </div>
 
       {/* Sticky Right Sidebar */}
-      <aside className="hidden lg:flex flex-col gap-6 sticky top-24 h-[calc(100vh-6rem)] overflow-y-auto pb-8 pr-2">
+      <aside className="hidden lg:flex flex-col gap-6 sticky mt-12 top-24 h-[calc(80vh-6rem)] overflow-y-auto pb-8 pr-2">
         {/* Table of Contents */}
         {headings.length > 0 && (
           <div className="bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-sm p-5 space-y-4">

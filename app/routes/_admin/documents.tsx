@@ -1,10 +1,9 @@
 import { type LoaderFunctionArgs, type ActionFunctionArgs } from 'react-router';
 import { useLoaderData, useFetcher } from 'react-router';
-import { requireUser } from '../../lib/auth.server';
+import { requireAdmin } from '../../lib/auth.server';
 import { prisma } from '../../lib/db.server';
-import { useToast } from '../../providers/ToastProvider';
 import { z } from 'zod';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Plus, Edit2, Trash2, Save, X, FileText, Download, Loader2 } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Heading } from '../../components/ui/Heading';
@@ -24,16 +23,16 @@ const DocumentSchema = z.object({
 type DocumentFormData = z.infer<typeof DocumentSchema>;
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const user = await requireUser(request);
+  await requireAdmin(request);
   const documents = await prisma.document.findMany({
-    where: { userId: user.id, deletedAt: null },
+    where: { deletedAt: null },
     orderBy: { createdAt: 'desc' }
   });
-  return { documents, user };
+  return { documents };
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const user = await requireUser(request);
+  await requireAdmin(request);
   const formData = await request.formData();
   const intent = formData.get('intent');
 
@@ -41,7 +40,7 @@ export async function action({ request }: ActionFunctionArgs) {
     if (intent === 'delete') {
       const id = formData.get('id') as string;
       await prisma.document.update({
-        where: { id, userId: user.id },
+        where: { id },
         data: { deletedAt: new Date() }
       });
       return { success: true, message: 'Document deleted' };
@@ -60,8 +59,7 @@ export async function action({ request }: ActionFunctionArgs) {
       await prisma.document.create({
         data: {
           ...rest,
-          type: rest.type as any,
-          userId: user.id
+          type: rest.type as any
         }
       });
       return { success: true, message: 'Document added' };
@@ -69,7 +67,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     if (intent === 'update' && id) {
       await prisma.document.update({
-        where: { id, userId: user.id },
+        where: { id },
         data: {
           ...rest,
           type: rest.type as any
@@ -84,10 +82,9 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 }
 
-export default function DocumentsRoute() {
-  const { documents, user } = useLoaderData<typeof loader>();
+export default function DocumentsManagerRoute() {
+  const { documents } = useLoaderData<typeof loader>();
   const fetcher = useFetcher<typeof action>();
-  const { success, error } = useToast();
   
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
@@ -104,19 +101,6 @@ export default function DocumentsRoute() {
   });
 
   const isSubmitting = fetcher.state !== 'idle';
-
-  useEffect(() => {
-    if (fetcher.state === 'idle' && fetcher.data) {
-      if (fetcher.data.success) {
-        success(fetcher.data.message);
-        setEditingId(null);
-        setIsAddingNew(false);
-        reset();
-      } else {
-        error(fetcher.data.message);
-      }
-    }
-  }, [fetcher.data, fetcher.state, reset, success, error]);
 
   const startAdd = () => {
     setIsAddingNew(true);
@@ -169,7 +153,7 @@ export default function DocumentsRoute() {
       const { url } = await uploadFile(file, `user_${user.id}`, 'documents');
       setValue('url', url, { shouldValidate: true, shouldDirty: true });
     } catch (err: any) {
-      error(`Upload failed: ${err.message}`);
+      console.error(`Upload failed: ${err.message}`);
     } finally {
       setIsUploading(false);
     }

@@ -10,10 +10,11 @@ import type { Route } from "./+types/root";
 import "./styles/index.css";
 import { ThemeProvider } from "./providers/ThemeProvider";
 import { ToastProvider } from "./providers/ToastProvider";
+import { GlobalToast } from "./components/shared/GlobalToast";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Career Console" },
+    { title: "yahyaoncloud" },
     { name: "description", content: "Modern job application tracker and portfolio" },
   ];
 }
@@ -60,15 +61,18 @@ export default function App() {
   return (
     <ThemeProvider>
       <ToastProvider>
+        <GlobalToast />
         <Outlet />
       </ToastProvider>
     </ThemeProvider>
   );
 }
 
+import { TriangleAlert, ArrowLeft } from 'lucide-react';
+
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  let message = "Oops!";
-  let details = "An unexpected error occurred.";
+  let message = "Something went wrong";
+  let details = "An unexpected error occurred while loading this page.";
   let stack: string | undefined;
 
   if (error instanceof Error) {
@@ -77,14 +81,41 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   }
 
   return (
-    <main className="pt-16 p-4 container mx-auto">
-      <h1>{message}</h1>
-      <p>{details}</p>
+    <main className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col items-center justify-center p-6 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="relative mb-6">
+        <div className="absolute inset-0 bg-red-500/20 blur-xl rounded-full" />
+        <div className="relative bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-4 rounded-2xl shadow-sm">
+          <TriangleAlert size={48} className="text-red-600 dark:text-red-400" />
+        </div>
+      </div>
+      
+      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-[10px] font-mono font-bold uppercase tracking-widest text-red-600 dark:text-red-400 mb-4">
+        Application Error
+      </div>
+      
+      <h1 className="text-3xl md:text-4xl font-serif font-bold text-zinc-900 dark:text-zinc-100 tracking-tight mb-3">
+        {message}
+      </h1>
+      
+      <p className="text-zinc-500 dark:text-zinc-400 max-w-md mx-auto leading-relaxed mb-8">
+        {details}
+      </p>
+
       {stack && (
-        <pre className="w-full p-4 overflow-x-auto">
-          <code>{stack}</code>
-        </pre>
+        <div className="w-full max-w-2xl bg-zinc-900 text-zinc-300 p-4 rounded-md text-left overflow-x-auto mb-8 shadow-sm">
+          <pre className="text-xs font-mono">
+            <code>{stack}</code>
+          </pre>
+        </div>
       )}
+
+      <button
+        onClick={() => window.location.href = '/'}
+        className="inline-flex items-center gap-2 px-6 py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-sm font-mono font-bold uppercase tracking-widest rounded-sm hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-colors shadow-sm group"
+      >
+        <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+        Return to Home
+      </button>
     </main>
   );
 }

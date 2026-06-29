@@ -3,6 +3,7 @@ import { useLoaderData, Link } from 'react-router';
 import { ArrowLeft, Calendar, Github, ExternalLink, Tag } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { prisma } from '../../lib/db.server';
+import { ROUTES } from '../../constants';
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const { id } = params;
@@ -43,7 +44,7 @@ export default function ProjectDetailRoute() {
   return (
     <div className="pb-24 lg:grid lg:grid-cols-[1fr_260px] lg:gap-10 items-start">
       <article className="min-w-0">
-        <Link to="/" className="inline-flex items-center space-x-2 text-xs font-mono text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors group mb-10 w-fit">
+        <Link to={ROUTES.PUBLIC.HOME} className="inline-flex items-center space-x-2 text-xs font-mono text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors group mb-10 w-fit">
           <ArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform" />
           <span className="uppercase tracking-widest font-bold relative after:absolute after:-bottom-0.5 after:left-0 after:w-full after:h-[1.5px] after:bg-current after:origin-bottom-right after:scale-x-0 group-hover:after:origin-bottom-left group-hover:after:scale-x-100 after:transition-transform after:duration-300 after:ease-out">Back</span>
         </Link>

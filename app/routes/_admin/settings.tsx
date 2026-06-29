@@ -1,15 +1,17 @@
 import { type LoaderFunctionArgs } from 'react-router';
 import { useLoaderData } from 'react-router';
-import { requireUser } from '../../lib/auth.server';
+import { requireAdmin } from '../../lib/auth.server';
+import { prisma } from '../../lib/db.server';
 import { Settings, Shield, Key, Bell, User as UserIcon } from 'lucide-react';
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const user = await requireUser(request);
-  return { user };
+  const user = await requireAdmin(request);
+  const profile = await prisma.profile.findUnique({ where: { userId: user.id } });
+  return { user, profile };
 }
 
 export default function AdminSettingsRoute() {
-  const { user } = useLoaderData<typeof loader>();
+  const { user, profile } = useLoaderData<typeof loader>();
 
   return (
     <div className="space-y-8 max-w-4xl">

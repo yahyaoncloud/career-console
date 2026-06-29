@@ -3,6 +3,8 @@ import { getAuth } from 'firebase-admin/auth';
 import { redirect } from 'react-router';
 import { getSession } from './session.server';
 import { prisma } from './db.server';
+import { ROLES } from '../constants/roles';
+import { ROUTES } from '../constants/routes';
 
 if (!getApps().length) {
   initializeApp({
@@ -19,7 +21,7 @@ export async function requireUser(request: Request) {
   const firebaseUid = session.get("firebaseUid");
 
   if (!firebaseUid) {
-    throw redirect("/login");
+    throw redirect(ROUTES.LOGIN);
   }
 
   // Optionally verify token if we stored it instead of UID, 
@@ -30,7 +32,7 @@ export async function requireUser(request: Request) {
   });
 
   if (!dbUser) {
-    throw redirect("/login");
+    throw redirect(ROUTES.LOGIN);
   }
 
   return dbUser;
@@ -42,8 +44,8 @@ export async function requireUser(request: Request) {
 export async function requireAdmin(request: Request) {
   const user = await requireUser(request);
   
-  if (user.role !== 'ADMIN') {
-    throw redirect("/dashboard");
+  if (user.role !== ROLES.ADMIN) {
+    throw new Response("Unauthorized", { status: 403 });
   }
 
   return user;
