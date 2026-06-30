@@ -1,0 +1,1313 @@
+{
+  "buildManifest": {
+    "serverBundles": {
+      "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0": {
+        "id": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+        "file": "build/server/nodejs_eyJydW50aW1lIjoibm9kZWpzIn0/index.js",
+        "config": {
+          "runtime": "nodejs"
+        }
+      }
+    },
+    "routeIdToServerBundleId": {
+      "root": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.auth.session": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.auth.logout": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.auth.me": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.s3.presign": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.media.presign": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.users": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.users.$id": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.authors": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.authors.$id": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.portfolio": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.portfolio.$id": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.profile": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.profile.me": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.profiles.$slug": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.blogs": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.blogs.$slug": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.author.overview": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.author.blogs": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.admin.overview": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.admin.health": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.guestbook": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.guestbook.$id": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.notifications": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.notifications.broadcast": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.notifications.$id": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.products": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.products.$slug": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.checkout.session": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.webhooks.stripe": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.orders": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.orders.$id": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.downloads.recover": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.downloads.$token": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.admin.products": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.admin.products.$id": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.admin.orders": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.admin.orders.$id": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.admin.coupons": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/login": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/_public/home": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/_public/blog": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/_public/blog.$slug": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/_public/project.$id": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/_public/author.$slug": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/_public/authors.$slug": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/_public/guestbook": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/_admin/dashboard": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/_admin/portfolio-manager": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/_admin/kanban": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/_admin/applications": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/_admin/authors": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/_admin/blog-manager": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/_admin/companies": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/_admin/documents": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/_admin/notifications": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/_admin/settings": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/_admin/coming-soon-calendar": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/_admin/coming-soon-store-products": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/_admin/coming-soon-store-orders": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/_admin/coming-soon-store-inventory": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/_admin/coming-soon-store-coupons": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/_admin/coming-soon-analytics": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/_admin/coming-soon-messages": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/_author/author-dashboard": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/_author/blogs": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/_author/profile": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0"
+    },
+    "routes": {
+      "root": {
+        "id": "root",
+        "file": "app/root.tsx",
+        "path": "",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.auth.session": {
+        "id": "routes/api.auth.session",
+        "parentId": "root",
+        "file": "app/routes/api.auth.session.ts",
+        "path": "api/auth/session",
+        "config": {}
+      },
+      "routes/api.auth.logout": {
+        "id": "routes/api.auth.logout",
+        "parentId": "root",
+        "file": "app/routes/api.auth.logout.ts",
+        "path": "api/auth/logout",
+        "config": {}
+      },
+      "routes/api.auth.me": {
+        "id": "routes/api.auth.me",
+        "parentId": "root",
+        "file": "app/routes/api.auth.me.ts",
+        "path": "api/auth/me",
+        "config": {}
+      },
+      "routes/api.s3.presign": {
+        "id": "routes/api.s3.presign",
+        "parentId": "root",
+        "file": "app/routes/api.s3.presign.ts",
+        "path": "api/s3/presign",
+        "config": {}
+      },
+      "routes/api.media.presign": {
+        "id": "routes/api.media.presign",
+        "parentId": "root",
+        "file": "app/routes/api.media.presign.ts",
+        "path": "api/media/presign",
+        "config": {}
+      },
+      "routes/api.users": {
+        "id": "routes/api.users",
+        "parentId": "root",
+        "file": "app/routes/api.users.ts",
+        "path": "api/users",
+        "config": {}
+      },
+      "routes/api.users.$id": {
+        "id": "routes/api.users.$id",
+        "parentId": "root",
+        "file": "app/routes/api.users.$id.ts",
+        "path": "api/users/:id",
+        "config": {}
+      },
+      "routes/api.authors": {
+        "id": "routes/api.authors",
+        "parentId": "root",
+        "file": "app/routes/api.authors.ts",
+        "path": "api/authors",
+        "config": {}
+      },
+      "routes/api.authors.$id": {
+        "id": "routes/api.authors.$id",
+        "parentId": "root",
+        "file": "app/routes/api.authors.$id.ts",
+        "path": "api/authors/:id",
+        "config": {}
+      },
+      "routes/api.portfolio": {
+        "id": "routes/api.portfolio",
+        "parentId": "root",
+        "file": "app/routes/api.portfolio.ts",
+        "path": "api/portfolio",
+        "config": {}
+      },
+      "routes/api.portfolio.$id": {
+        "id": "routes/api.portfolio.$id",
+        "parentId": "root",
+        "file": "app/routes/api.portfolio.$id.ts",
+        "path": "api/portfolio/:id",
+        "config": {}
+      },
+      "routes/api.profile": {
+        "id": "routes/api.profile",
+        "parentId": "root",
+        "file": "app/routes/api.profile.ts",
+        "path": "api/profile",
+        "config": {}
+      },
+      "routes/api.profile.me": {
+        "id": "routes/api.profile.me",
+        "parentId": "root",
+        "file": "app/routes/api.profile.me.ts",
+        "path": "api/profile/me",
+        "config": {}
+      },
+      "routes/api.profiles.$slug": {
+        "id": "routes/api.profiles.$slug",
+        "parentId": "root",
+        "file": "app/routes/api.profiles.$slug.ts",
+        "path": "api/profiles/:slug",
+        "config": {}
+      },
+      "routes/api.blogs": {
+        "id": "routes/api.blogs",
+        "parentId": "root",
+        "file": "app/routes/api.blogs.ts",
+        "path": "api/blogs",
+        "config": {}
+      },
+      "routes/api.blogs.$slug": {
+        "id": "routes/api.blogs.$slug",
+        "parentId": "root",
+        "file": "app/routes/api.blogs.$slug.ts",
+        "path": "api/blogs/:slug",
+        "config": {}
+      },
+      "routes/api.author.overview": {
+        "id": "routes/api.author.overview",
+        "parentId": "root",
+        "file": "app/routes/api.author.overview.ts",
+        "path": "api/author/overview",
+        "config": {}
+      },
+      "routes/api.author.blogs": {
+        "id": "routes/api.author.blogs",
+        "parentId": "root",
+        "file": "app/routes/api.author.blogs.ts",
+        "path": "api/author/blogs",
+        "config": {}
+      },
+      "routes/api.admin.overview": {
+        "id": "routes/api.admin.overview",
+        "parentId": "root",
+        "file": "app/routes/api.admin.overview.ts",
+        "path": "api/admin/overview",
+        "config": {}
+      },
+      "routes/api.admin.health": {
+        "id": "routes/api.admin.health",
+        "parentId": "root",
+        "file": "app/routes/api.admin.health.ts",
+        "path": "api/admin/health",
+        "config": {}
+      },
+      "routes/api.guestbook": {
+        "id": "routes/api.guestbook",
+        "parentId": "root",
+        "file": "app/routes/api.guestbook.ts",
+        "path": "api/guestbook",
+        "config": {}
+      },
+      "routes/api.guestbook.$id": {
+        "id": "routes/api.guestbook.$id",
+        "parentId": "root",
+        "file": "app/routes/api.guestbook.$id.ts",
+        "path": "api/guestbook/:id",
+        "config": {}
+      },
+      "routes/api.notifications": {
+        "id": "routes/api.notifications",
+        "parentId": "root",
+        "file": "app/routes/api.notifications.ts",
+        "path": "api/notifications",
+        "config": {}
+      },
+      "routes/api.notifications.broadcast": {
+        "id": "routes/api.notifications.broadcast",
+        "parentId": "root",
+        "file": "app/routes/api.notifications.broadcast.ts",
+        "path": "api/notifications/broadcast",
+        "config": {}
+      },
+      "routes/api.notifications.$id": {
+        "id": "routes/api.notifications.$id",
+        "parentId": "root",
+        "file": "app/routes/api.notifications.$id.ts",
+        "path": "api/notifications/:id",
+        "config": {}
+      },
+      "routes/api.products": {
+        "id": "routes/api.products",
+        "parentId": "root",
+        "file": "app/routes/api.products.ts",
+        "path": "api/products",
+        "config": {}
+      },
+      "routes/api.products.$slug": {
+        "id": "routes/api.products.$slug",
+        "parentId": "root",
+        "file": "app/routes/api.products.$slug.ts",
+        "path": "api/products/:slug",
+        "config": {}
+      },
+      "routes/api.checkout.session": {
+        "id": "routes/api.checkout.session",
+        "parentId": "root",
+        "file": "app/routes/api.checkout.session.ts",
+        "path": "api/checkout/session",
+        "config": {}
+      },
+      "routes/api.webhooks.stripe": {
+        "id": "routes/api.webhooks.stripe",
+        "parentId": "root",
+        "file": "app/routes/api.webhooks.stripe.ts",
+        "path": "api/webhooks/stripe",
+        "config": {}
+      },
+      "routes/api.orders": {
+        "id": "routes/api.orders",
+        "parentId": "root",
+        "file": "app/routes/api.orders.ts",
+        "path": "api/orders",
+        "config": {}
+      },
+      "routes/api.orders.$id": {
+        "id": "routes/api.orders.$id",
+        "parentId": "root",
+        "file": "app/routes/api.orders.$id.ts",
+        "path": "api/orders/:id",
+        "config": {}
+      },
+      "routes/api.downloads.recover": {
+        "id": "routes/api.downloads.recover",
+        "parentId": "root",
+        "file": "app/routes/api.downloads.recover.ts",
+        "path": "api/downloads/recover",
+        "config": {}
+      },
+      "routes/api.downloads.$token": {
+        "id": "routes/api.downloads.$token",
+        "parentId": "root",
+        "file": "app/routes/api.downloads.$token.ts",
+        "path": "api/downloads/:token",
+        "config": {}
+      },
+      "routes/api.admin.products": {
+        "id": "routes/api.admin.products",
+        "parentId": "root",
+        "file": "app/routes/api.admin.products.ts",
+        "path": "api/admin/products",
+        "config": {}
+      },
+      "routes/api.admin.products.$id": {
+        "id": "routes/api.admin.products.$id",
+        "parentId": "root",
+        "file": "app/routes/api.admin.products.$id.ts",
+        "path": "api/admin/products/:id",
+        "config": {}
+      },
+      "routes/api.admin.orders": {
+        "id": "routes/api.admin.orders",
+        "parentId": "root",
+        "file": "app/routes/api.admin.orders.ts",
+        "path": "api/admin/orders",
+        "config": {}
+      },
+      "routes/api.admin.orders.$id": {
+        "id": "routes/api.admin.orders.$id",
+        "parentId": "root",
+        "file": "app/routes/api.admin.orders.$id.ts",
+        "path": "api/admin/orders/:id",
+        "config": {}
+      },
+      "routes/api.admin.coupons": {
+        "id": "routes/api.admin.coupons",
+        "parentId": "root",
+        "file": "app/routes/api.admin.coupons.ts",
+        "path": "api/admin/coupons",
+        "config": {}
+      },
+      "routes/login": {
+        "id": "routes/login",
+        "parentId": "root",
+        "file": "app/routes/login.tsx",
+        "path": "login",
+        "config": {}
+      },
+      "routes/_public/_layout": {
+        "id": "routes/_public/_layout",
+        "parentId": "root",
+        "file": "app/routes/_public/_layout.tsx",
+        "config": {}
+      },
+      "routes/_public/home": {
+        "id": "routes/_public/home",
+        "parentId": "routes/_public/_layout",
+        "file": "app/routes/_public/home.tsx",
+        "index": true,
+        "config": {}
+      },
+      "routes/_public/blog": {
+        "id": "routes/_public/blog",
+        "parentId": "routes/_public/_layout",
+        "file": "app/routes/_public/blog.tsx",
+        "path": "blog",
+        "config": {}
+      },
+      "routes/_public/blog.$slug": {
+        "id": "routes/_public/blog.$slug",
+        "parentId": "routes/_public/_layout",
+        "file": "app/routes/_public/blog.$slug.tsx",
+        "path": "blog/:slug",
+        "config": {}
+      },
+      "routes/_public/project.$id": {
+        "id": "routes/_public/project.$id",
+        "parentId": "routes/_public/_layout",
+        "file": "app/routes/_public/project.$id.tsx",
+        "path": "project/:id",
+        "config": {}
+      },
+      "routes/_public/author.$slug": {
+        "id": "routes/_public/author.$slug",
+        "parentId": "routes/_public/_layout",
+        "file": "app/routes/_public/author.$slug.tsx",
+        "path": "author/:slug",
+        "config": {}
+      },
+      "routes/_public/authors.$slug": {
+        "id": "routes/_public/authors.$slug",
+        "parentId": "routes/_public/_layout",
+        "file": "app/routes/_public/authors.$slug.tsx",
+        "path": "authors/:slug",
+        "config": {}
+      },
+      "routes/_public/guestbook": {
+        "id": "routes/_public/guestbook",
+        "parentId": "routes/_public/_layout",
+        "file": "app/routes/_public/guestbook.tsx",
+        "path": "guestbook",
+        "config": {}
+      },
+      "routes/_admin/_layout": {
+        "id": "routes/_admin/_layout",
+        "parentId": "root",
+        "file": "app/routes/_admin/_layout.tsx",
+        "config": {}
+      },
+      "routes/_admin/dashboard": {
+        "id": "routes/_admin/dashboard",
+        "parentId": "routes/_admin/_layout",
+        "file": "app/routes/_admin/dashboard.tsx",
+        "path": "dashboard",
+        "config": {}
+      },
+      "routes/_admin/portfolio-manager": {
+        "id": "routes/_admin/portfolio-manager",
+        "parentId": "routes/_admin/_layout",
+        "file": "app/routes/_admin/portfolio-manager.tsx",
+        "path": "portfolio-manager",
+        "config": {}
+      },
+      "routes/_admin/kanban": {
+        "id": "routes/_admin/kanban",
+        "parentId": "routes/_admin/_layout",
+        "file": "app/routes/_admin/kanban.tsx",
+        "path": "kanban",
+        "config": {}
+      },
+      "routes/_admin/applications": {
+        "id": "routes/_admin/applications",
+        "parentId": "routes/_admin/_layout",
+        "file": "app/routes/_admin/applications.tsx",
+        "path": "applications",
+        "config": {}
+      },
+      "routes/_admin/authors": {
+        "id": "routes/_admin/authors",
+        "parentId": "routes/_admin/_layout",
+        "file": "app/routes/_admin/authors.tsx",
+        "path": "authors",
+        "config": {}
+      },
+      "routes/_admin/blog-manager": {
+        "id": "routes/_admin/blog-manager",
+        "parentId": "routes/_admin/_layout",
+        "file": "app/routes/_admin/blog-manager.tsx",
+        "path": "blog-manager",
+        "config": {}
+      },
+      "routes/_admin/companies": {
+        "id": "routes/_admin/companies",
+        "parentId": "routes/_admin/_layout",
+        "file": "app/routes/_admin/companies.tsx",
+        "path": "companies",
+        "config": {}
+      },
+      "routes/_admin/documents": {
+        "id": "routes/_admin/documents",
+        "parentId": "routes/_admin/_layout",
+        "file": "app/routes/_admin/documents.tsx",
+        "path": "documents",
+        "config": {}
+      },
+      "routes/_admin/notifications": {
+        "id": "routes/_admin/notifications",
+        "parentId": "routes/_admin/_layout",
+        "file": "app/routes/_admin/notifications.tsx",
+        "path": "notifications",
+        "config": {}
+      },
+      "routes/_admin/settings": {
+        "id": "routes/_admin/settings",
+        "parentId": "routes/_admin/_layout",
+        "file": "app/routes/_admin/settings.tsx",
+        "path": "settings",
+        "config": {}
+      },
+      "routes/_admin/coming-soon-calendar": {
+        "id": "routes/_admin/coming-soon-calendar",
+        "parentId": "routes/_admin/_layout",
+        "file": "app/routes/_admin/coming-soon.tsx",
+        "path": "calendar",
+        "config": {}
+      },
+      "routes/_admin/coming-soon-store-products": {
+        "id": "routes/_admin/coming-soon-store-products",
+        "parentId": "routes/_admin/_layout",
+        "file": "app/routes/_admin/coming-soon.tsx",
+        "path": "store/products",
+        "config": {}
+      },
+      "routes/_admin/coming-soon-store-orders": {
+        "id": "routes/_admin/coming-soon-store-orders",
+        "parentId": "routes/_admin/_layout",
+        "file": "app/routes/_admin/coming-soon.tsx",
+        "path": "store/orders",
+        "config": {}
+      },
+      "routes/_admin/coming-soon-store-inventory": {
+        "id": "routes/_admin/coming-soon-store-inventory",
+        "parentId": "routes/_admin/_layout",
+        "file": "app/routes/_admin/coming-soon.tsx",
+        "path": "store/inventory",
+        "config": {}
+      },
+      "routes/_admin/coming-soon-store-coupons": {
+        "id": "routes/_admin/coming-soon-store-coupons",
+        "parentId": "routes/_admin/_layout",
+        "file": "app/routes/_admin/coming-soon.tsx",
+        "path": "store/coupons",
+        "config": {}
+      },
+      "routes/_admin/coming-soon-analytics": {
+        "id": "routes/_admin/coming-soon-analytics",
+        "parentId": "routes/_admin/_layout",
+        "file": "app/routes/_admin/coming-soon.tsx",
+        "path": "analytics",
+        "config": {}
+      },
+      "routes/_admin/coming-soon-messages": {
+        "id": "routes/_admin/coming-soon-messages",
+        "parentId": "routes/_admin/_layout",
+        "file": "app/routes/_admin/coming-soon.tsx",
+        "path": "messages",
+        "config": {}
+      },
+      "routes/_author/_layout": {
+        "id": "routes/_author/_layout",
+        "parentId": "root",
+        "file": "app/routes/_author/_layout.tsx",
+        "config": {}
+      },
+      "routes/_author/author-dashboard": {
+        "id": "routes/_author/author-dashboard",
+        "parentId": "routes/_author/_layout",
+        "file": "app/routes/_author/author-dashboard.tsx",
+        "path": "author/:id/dashboard",
+        "config": {}
+      },
+      "routes/_author/blogs": {
+        "id": "routes/_author/blogs",
+        "parentId": "routes/_author/_layout",
+        "file": "app/routes/_author/blogs.tsx",
+        "path": "author/:id/blogs",
+        "config": {}
+      },
+      "routes/_author/profile": {
+        "id": "routes/_author/profile",
+        "parentId": "routes/_author/_layout",
+        "file": "app/routes/_author/profile.tsx",
+        "path": "author/:id/profile",
+        "config": {}
+      }
+    }
+  },
+  "reactRouterConfig": {
+    "appDirectory": "C:/Users/amena/OneDrive/Desktop/job-application-tracker-&-portfolio/app",
+    "basename": "/",
+    "buildDirectory": "C:/Users/amena/OneDrive/Desktop/job-application-tracker-&-portfolio/build",
+    "future": {
+      "unstable_optimizeDeps": false,
+      "v8_passThroughRequests": false,
+      "v8_trailingSlashAwareDataRequests": false,
+      "unstable_previewServerPrerendering": false,
+      "v8_middleware": false,
+      "v8_splitRouteModules": false,
+      "v8_viteEnvironmentApi": false
+    },
+    "routes": {
+      "root": {
+        "id": "root",
+        "file": "root.tsx",
+        "path": ""
+      },
+      "routes/api.auth.session": {
+        "id": "routes/api.auth.session",
+        "parentId": "root",
+        "file": "routes/api.auth.session.ts",
+        "path": "api/auth/session"
+      },
+      "routes/api.auth.logout": {
+        "id": "routes/api.auth.logout",
+        "parentId": "root",
+        "file": "routes/api.auth.logout.ts",
+        "path": "api/auth/logout"
+      },
+      "routes/api.auth.me": {
+        "id": "routes/api.auth.me",
+        "parentId": "root",
+        "file": "routes/api.auth.me.ts",
+        "path": "api/auth/me"
+      },
+      "routes/api.s3.presign": {
+        "id": "routes/api.s3.presign",
+        "parentId": "root",
+        "file": "routes/api.s3.presign.ts",
+        "path": "api/s3/presign"
+      },
+      "routes/api.media.presign": {
+        "id": "routes/api.media.presign",
+        "parentId": "root",
+        "file": "routes/api.media.presign.ts",
+        "path": "api/media/presign"
+      },
+      "routes/api.users": {
+        "id": "routes/api.users",
+        "parentId": "root",
+        "file": "routes/api.users.ts",
+        "path": "api/users"
+      },
+      "routes/api.users.$id": {
+        "id": "routes/api.users.$id",
+        "parentId": "root",
+        "file": "routes/api.users.$id.ts",
+        "path": "api/users/:id"
+      },
+      "routes/api.authors": {
+        "id": "routes/api.authors",
+        "parentId": "root",
+        "file": "routes/api.authors.ts",
+        "path": "api/authors"
+      },
+      "routes/api.authors.$id": {
+        "id": "routes/api.authors.$id",
+        "parentId": "root",
+        "file": "routes/api.authors.$id.ts",
+        "path": "api/authors/:id"
+      },
+      "routes/api.portfolio": {
+        "id": "routes/api.portfolio",
+        "parentId": "root",
+        "file": "routes/api.portfolio.ts",
+        "path": "api/portfolio"
+      },
+      "routes/api.portfolio.$id": {
+        "id": "routes/api.portfolio.$id",
+        "parentId": "root",
+        "file": "routes/api.portfolio.$id.ts",
+        "path": "api/portfolio/:id"
+      },
+      "routes/api.profile": {
+        "id": "routes/api.profile",
+        "parentId": "root",
+        "file": "routes/api.profile.ts",
+        "path": "api/profile"
+      },
+      "routes/api.profile.me": {
+        "id": "routes/api.profile.me",
+        "parentId": "root",
+        "file": "routes/api.profile.me.ts",
+        "path": "api/profile/me"
+      },
+      "routes/api.profiles.$slug": {
+        "id": "routes/api.profiles.$slug",
+        "parentId": "root",
+        "file": "routes/api.profiles.$slug.ts",
+        "path": "api/profiles/:slug"
+      },
+      "routes/api.blogs": {
+        "id": "routes/api.blogs",
+        "parentId": "root",
+        "file": "routes/api.blogs.ts",
+        "path": "api/blogs"
+      },
+      "routes/api.blogs.$slug": {
+        "id": "routes/api.blogs.$slug",
+        "parentId": "root",
+        "file": "routes/api.blogs.$slug.ts",
+        "path": "api/blogs/:slug"
+      },
+      "routes/api.author.overview": {
+        "id": "routes/api.author.overview",
+        "parentId": "root",
+        "file": "routes/api.author.overview.ts",
+        "path": "api/author/overview"
+      },
+      "routes/api.author.blogs": {
+        "id": "routes/api.author.blogs",
+        "parentId": "root",
+        "file": "routes/api.author.blogs.ts",
+        "path": "api/author/blogs"
+      },
+      "routes/api.admin.overview": {
+        "id": "routes/api.admin.overview",
+        "parentId": "root",
+        "file": "routes/api.admin.overview.ts",
+        "path": "api/admin/overview"
+      },
+      "routes/api.admin.health": {
+        "id": "routes/api.admin.health",
+        "parentId": "root",
+        "file": "routes/api.admin.health.ts",
+        "path": "api/admin/health"
+      },
+      "routes/api.guestbook": {
+        "id": "routes/api.guestbook",
+        "parentId": "root",
+        "file": "routes/api.guestbook.ts",
+        "path": "api/guestbook"
+      },
+      "routes/api.guestbook.$id": {
+        "id": "routes/api.guestbook.$id",
+        "parentId": "root",
+        "file": "routes/api.guestbook.$id.ts",
+        "path": "api/guestbook/:id"
+      },
+      "routes/api.notifications": {
+        "id": "routes/api.notifications",
+        "parentId": "root",
+        "file": "routes/api.notifications.ts",
+        "path": "api/notifications"
+      },
+      "routes/api.notifications.broadcast": {
+        "id": "routes/api.notifications.broadcast",
+        "parentId": "root",
+        "file": "routes/api.notifications.broadcast.ts",
+        "path": "api/notifications/broadcast"
+      },
+      "routes/api.notifications.$id": {
+        "id": "routes/api.notifications.$id",
+        "parentId": "root",
+        "file": "routes/api.notifications.$id.ts",
+        "path": "api/notifications/:id"
+      },
+      "routes/api.products": {
+        "id": "routes/api.products",
+        "parentId": "root",
+        "file": "routes/api.products.ts",
+        "path": "api/products"
+      },
+      "routes/api.products.$slug": {
+        "id": "routes/api.products.$slug",
+        "parentId": "root",
+        "file": "routes/api.products.$slug.ts",
+        "path": "api/products/:slug"
+      },
+      "routes/api.checkout.session": {
+        "id": "routes/api.checkout.session",
+        "parentId": "root",
+        "file": "routes/api.checkout.session.ts",
+        "path": "api/checkout/session"
+      },
+      "routes/api.webhooks.stripe": {
+        "id": "routes/api.webhooks.stripe",
+        "parentId": "root",
+        "file": "routes/api.webhooks.stripe.ts",
+        "path": "api/webhooks/stripe"
+      },
+      "routes/api.orders": {
+        "id": "routes/api.orders",
+        "parentId": "root",
+        "file": "routes/api.orders.ts",
+        "path": "api/orders"
+      },
+      "routes/api.orders.$id": {
+        "id": "routes/api.orders.$id",
+        "parentId": "root",
+        "file": "routes/api.orders.$id.ts",
+        "path": "api/orders/:id"
+      },
+      "routes/api.downloads.recover": {
+        "id": "routes/api.downloads.recover",
+        "parentId": "root",
+        "file": "routes/api.downloads.recover.ts",
+        "path": "api/downloads/recover"
+      },
+      "routes/api.downloads.$token": {
+        "id": "routes/api.downloads.$token",
+        "parentId": "root",
+        "file": "routes/api.downloads.$token.ts",
+        "path": "api/downloads/:token"
+      },
+      "routes/api.admin.products": {
+        "id": "routes/api.admin.products",
+        "parentId": "root",
+        "file": "routes/api.admin.products.ts",
+        "path": "api/admin/products"
+      },
+      "routes/api.admin.products.$id": {
+        "id": "routes/api.admin.products.$id",
+        "parentId": "root",
+        "file": "routes/api.admin.products.$id.ts",
+        "path": "api/admin/products/:id"
+      },
+      "routes/api.admin.orders": {
+        "id": "routes/api.admin.orders",
+        "parentId": "root",
+        "file": "routes/api.admin.orders.ts",
+        "path": "api/admin/orders"
+      },
+      "routes/api.admin.orders.$id": {
+        "id": "routes/api.admin.orders.$id",
+        "parentId": "root",
+        "file": "routes/api.admin.orders.$id.ts",
+        "path": "api/admin/orders/:id"
+      },
+      "routes/api.admin.coupons": {
+        "id": "routes/api.admin.coupons",
+        "parentId": "root",
+        "file": "routes/api.admin.coupons.ts",
+        "path": "api/admin/coupons"
+      },
+      "routes/login": {
+        "id": "routes/login",
+        "parentId": "root",
+        "file": "routes/login.tsx",
+        "path": "login"
+      },
+      "routes/_public/_layout": {
+        "id": "routes/_public/_layout",
+        "parentId": "root",
+        "file": "routes/_public/_layout.tsx"
+      },
+      "routes/_public/home": {
+        "id": "routes/_public/home",
+        "parentId": "routes/_public/_layout",
+        "file": "routes/_public/home.tsx",
+        "index": true
+      },
+      "routes/_public/blog": {
+        "id": "routes/_public/blog",
+        "parentId": "routes/_public/_layout",
+        "file": "routes/_public/blog.tsx",
+        "path": "blog"
+      },
+      "routes/_public/blog.$slug": {
+        "id": "routes/_public/blog.$slug",
+        "parentId": "routes/_public/_layout",
+        "file": "routes/_public/blog.$slug.tsx",
+        "path": "blog/:slug"
+      },
+      "routes/_public/project.$id": {
+        "id": "routes/_public/project.$id",
+        "parentId": "routes/_public/_layout",
+        "file": "routes/_public/project.$id.tsx",
+        "path": "project/:id"
+      },
+      "routes/_public/author.$slug": {
+        "id": "routes/_public/author.$slug",
+        "parentId": "routes/_public/_layout",
+        "file": "routes/_public/author.$slug.tsx",
+        "path": "author/:slug"
+      },
+      "routes/_public/authors.$slug": {
+        "id": "routes/_public/authors.$slug",
+        "parentId": "routes/_public/_layout",
+        "file": "routes/_public/authors.$slug.tsx",
+        "path": "authors/:slug"
+      },
+      "routes/_public/guestbook": {
+        "id": "routes/_public/guestbook",
+        "parentId": "routes/_public/_layout",
+        "file": "routes/_public/guestbook.tsx",
+        "path": "guestbook"
+      },
+      "routes/_admin/_layout": {
+        "id": "routes/_admin/_layout",
+        "parentId": "root",
+        "file": "routes/_admin/_layout.tsx"
+      },
+      "routes/_admin/dashboard": {
+        "id": "routes/_admin/dashboard",
+        "parentId": "routes/_admin/_layout",
+        "file": "routes/_admin/dashboard.tsx",
+        "path": "dashboard"
+      },
+      "routes/_admin/portfolio-manager": {
+        "id": "routes/_admin/portfolio-manager",
+        "parentId": "routes/_admin/_layout",
+        "file": "routes/_admin/portfolio-manager.tsx",
+        "path": "portfolio-manager"
+      },
+      "routes/_admin/kanban": {
+        "id": "routes/_admin/kanban",
+        "parentId": "routes/_admin/_layout",
+        "file": "routes/_admin/kanban.tsx",
+        "path": "kanban"
+      },
+      "routes/_admin/applications": {
+        "id": "routes/_admin/applications",
+        "parentId": "routes/_admin/_layout",
+        "file": "routes/_admin/applications.tsx",
+        "path": "applications"
+      },
+      "routes/_admin/authors": {
+        "id": "routes/_admin/authors",
+        "parentId": "routes/_admin/_layout",
+        "file": "routes/_admin/authors.tsx",
+        "path": "authors"
+      },
+      "routes/_admin/blog-manager": {
+        "id": "routes/_admin/blog-manager",
+        "parentId": "routes/_admin/_layout",
+        "file": "routes/_admin/blog-manager.tsx",
+        "path": "blog-manager"
+      },
+      "routes/_admin/companies": {
+        "id": "routes/_admin/companies",
+        "parentId": "routes/_admin/_layout",
+        "file": "routes/_admin/companies.tsx",
+        "path": "companies"
+      },
+      "routes/_admin/documents": {
+        "id": "routes/_admin/documents",
+        "parentId": "routes/_admin/_layout",
+        "file": "routes/_admin/documents.tsx",
+        "path": "documents"
+      },
+      "routes/_admin/notifications": {
+        "id": "routes/_admin/notifications",
+        "parentId": "routes/_admin/_layout",
+        "file": "routes/_admin/notifications.tsx",
+        "path": "notifications"
+      },
+      "routes/_admin/settings": {
+        "id": "routes/_admin/settings",
+        "parentId": "routes/_admin/_layout",
+        "file": "routes/_admin/settings.tsx",
+        "path": "settings"
+      },
+      "routes/_admin/coming-soon-calendar": {
+        "id": "routes/_admin/coming-soon-calendar",
+        "parentId": "routes/_admin/_layout",
+        "file": "routes/_admin/coming-soon.tsx",
+        "path": "calendar"
+      },
+      "routes/_admin/coming-soon-store-products": {
+        "id": "routes/_admin/coming-soon-store-products",
+        "parentId": "routes/_admin/_layout",
+        "file": "routes/_admin/coming-soon.tsx",
+        "path": "store/products"
+      },
+      "routes/_admin/coming-soon-store-orders": {
+        "id": "routes/_admin/coming-soon-store-orders",
+        "parentId": "routes/_admin/_layout",
+        "file": "routes/_admin/coming-soon.tsx",
+        "path": "store/orders"
+      },
+      "routes/_admin/coming-soon-store-inventory": {
+        "id": "routes/_admin/coming-soon-store-inventory",
+        "parentId": "routes/_admin/_layout",
+        "file": "routes/_admin/coming-soon.tsx",
+        "path": "store/inventory"
+      },
+      "routes/_admin/coming-soon-store-coupons": {
+        "id": "routes/_admin/coming-soon-store-coupons",
+        "parentId": "routes/_admin/_layout",
+        "file": "routes/_admin/coming-soon.tsx",
+        "path": "store/coupons"
+      },
+      "routes/_admin/coming-soon-analytics": {
+        "id": "routes/_admin/coming-soon-analytics",
+        "parentId": "routes/_admin/_layout",
+        "file": "routes/_admin/coming-soon.tsx",
+        "path": "analytics"
+      },
+      "routes/_admin/coming-soon-messages": {
+        "id": "routes/_admin/coming-soon-messages",
+        "parentId": "routes/_admin/_layout",
+        "file": "routes/_admin/coming-soon.tsx",
+        "path": "messages"
+      },
+      "routes/_author/_layout": {
+        "id": "routes/_author/_layout",
+        "parentId": "root",
+        "file": "routes/_author/_layout.tsx"
+      },
+      "routes/_author/author-dashboard": {
+        "id": "routes/_author/author-dashboard",
+        "parentId": "routes/_author/_layout",
+        "file": "routes/_author/author-dashboard.tsx",
+        "path": "author/:id/dashboard"
+      },
+      "routes/_author/blogs": {
+        "id": "routes/_author/blogs",
+        "parentId": "routes/_author/_layout",
+        "file": "routes/_author/blogs.tsx",
+        "path": "author/:id/blogs"
+      },
+      "routes/_author/profile": {
+        "id": "routes/_author/profile",
+        "parentId": "routes/_author/_layout",
+        "file": "routes/_author/profile.tsx",
+        "path": "author/:id/profile"
+      }
+    },
+    "routeDiscovery": {
+      "mode": "lazy",
+      "manifestPath": "/__manifest"
+    },
+    "serverBuildFile": "index.js",
+    "serverModuleFormat": "esm",
+    "ssr": true,
+    "subResourceIntegrity": false,
+    "allowedActionOrigins": false,
+    "unstable_routeConfig": [
+      {
+        "id": "root",
+        "path": "",
+        "file": "root.tsx",
+        "children": [
+          {
+            "file": "routes/api.auth.session.ts",
+            "path": "api/auth/session"
+          },
+          {
+            "file": "routes/api.auth.logout.ts",
+            "path": "api/auth/logout"
+          },
+          {
+            "file": "routes/api.auth.me.ts",
+            "path": "api/auth/me"
+          },
+          {
+            "file": "routes/api.s3.presign.ts",
+            "path": "api/s3/presign"
+          },
+          {
+            "file": "routes/api.media.presign.ts",
+            "path": "api/media/presign"
+          },
+          {
+            "file": "routes/api.users.ts",
+            "path": "api/users"
+          },
+          {
+            "file": "routes/api.users.$id.ts",
+            "path": "api/users/:id"
+          },
+          {
+            "file": "routes/api.authors.ts",
+            "path": "api/authors"
+          },
+          {
+            "file": "routes/api.authors.$id.ts",
+            "path": "api/authors/:id"
+          },
+          {
+            "file": "routes/api.portfolio.ts",
+            "path": "api/portfolio"
+          },
+          {
+            "file": "routes/api.portfolio.$id.ts",
+            "path": "api/portfolio/:id"
+          },
+          {
+            "file": "routes/api.profile.ts",
+            "path": "api/profile"
+          },
+          {
+            "file": "routes/api.profile.me.ts",
+            "path": "api/profile/me"
+          },
+          {
+            "file": "routes/api.profiles.$slug.ts",
+            "path": "api/profiles/:slug"
+          },
+          {
+            "file": "routes/api.blogs.ts",
+            "path": "api/blogs"
+          },
+          {
+            "file": "routes/api.blogs.$slug.ts",
+            "path": "api/blogs/:slug"
+          },
+          {
+            "file": "routes/api.author.overview.ts",
+            "path": "api/author/overview"
+          },
+          {
+            "file": "routes/api.author.blogs.ts",
+            "path": "api/author/blogs"
+          },
+          {
+            "file": "routes/api.admin.overview.ts",
+            "path": "api/admin/overview"
+          },
+          {
+            "file": "routes/api.admin.health.ts",
+            "path": "api/admin/health"
+          },
+          {
+            "file": "routes/api.guestbook.ts",
+            "path": "api/guestbook"
+          },
+          {
+            "file": "routes/api.guestbook.$id.ts",
+            "path": "api/guestbook/:id"
+          },
+          {
+            "file": "routes/api.notifications.ts",
+            "path": "api/notifications"
+          },
+          {
+            "file": "routes/api.notifications.broadcast.ts",
+            "path": "api/notifications/broadcast"
+          },
+          {
+            "file": "routes/api.notifications.$id.ts",
+            "path": "api/notifications/:id"
+          },
+          {
+            "file": "routes/api.products.ts",
+            "path": "api/products"
+          },
+          {
+            "file": "routes/api.products.$slug.ts",
+            "path": "api/products/:slug"
+          },
+          {
+            "file": "routes/api.checkout.session.ts",
+            "path": "api/checkout/session"
+          },
+          {
+            "file": "routes/api.webhooks.stripe.ts",
+            "path": "api/webhooks/stripe"
+          },
+          {
+            "file": "routes/api.orders.ts",
+            "path": "api/orders"
+          },
+          {
+            "file": "routes/api.orders.$id.ts",
+            "path": "api/orders/:id"
+          },
+          {
+            "file": "routes/api.downloads.recover.ts",
+            "path": "api/downloads/recover"
+          },
+          {
+            "file": "routes/api.downloads.$token.ts",
+            "path": "api/downloads/:token"
+          },
+          {
+            "file": "routes/api.admin.products.ts",
+            "path": "api/admin/products"
+          },
+          {
+            "file": "routes/api.admin.products.$id.ts",
+            "path": "api/admin/products/:id"
+          },
+          {
+            "file": "routes/api.admin.orders.ts",
+            "path": "api/admin/orders"
+          },
+          {
+            "file": "routes/api.admin.orders.$id.ts",
+            "path": "api/admin/orders/:id"
+          },
+          {
+            "file": "routes/api.admin.coupons.ts",
+            "path": "api/admin/coupons"
+          },
+          {
+            "file": "routes/login.tsx",
+            "path": "login"
+          },
+          {
+            "file": "routes/_public/_layout.tsx",
+            "children": [
+              {
+                "file": "routes/_public/home.tsx",
+                "index": true
+              },
+              {
+                "file": "routes/_public/blog.tsx",
+                "path": "blog"
+              },
+              {
+                "file": "routes/_public/blog.$slug.tsx",
+                "path": "blog/:slug"
+              },
+              {
+                "file": "routes/_public/project.$id.tsx",
+                "path": "project/:id"
+              },
+              {
+                "file": "routes/_public/author.$slug.tsx",
+                "path": "author/:slug"
+              },
+              {
+                "file": "routes/_public/authors.$slug.tsx",
+                "path": "authors/:slug"
+              },
+              {
+                "file": "routes/_public/guestbook.tsx",
+                "path": "guestbook"
+              }
+            ]
+          },
+          {
+            "file": "routes/_admin/_layout.tsx",
+            "children": [
+              {
+                "file": "routes/_admin/dashboard.tsx",
+                "path": "dashboard"
+              },
+              {
+                "file": "routes/_admin/portfolio-manager.tsx",
+                "path": "portfolio-manager"
+              },
+              {
+                "file": "routes/_admin/kanban.tsx",
+                "path": "kanban"
+              },
+              {
+                "file": "routes/_admin/applications.tsx",
+                "path": "applications"
+              },
+              {
+                "file": "routes/_admin/authors.tsx",
+                "path": "authors"
+              },
+              {
+                "file": "routes/_admin/blog-manager.tsx",
+                "path": "blog-manager"
+              },
+              {
+                "file": "routes/_admin/companies.tsx",
+                "path": "companies"
+              },
+              {
+                "file": "routes/_admin/documents.tsx",
+                "path": "documents"
+              },
+              {
+                "file": "routes/_admin/notifications.tsx",
+                "path": "notifications"
+              },
+              {
+                "file": "routes/_admin/settings.tsx",
+                "path": "settings"
+              },
+              {
+                "file": "routes/_admin/coming-soon.tsx",
+                "path": "calendar",
+                "id": "routes/_admin/coming-soon-calendar"
+              },
+              {
+                "file": "routes/_admin/coming-soon.tsx",
+                "path": "store/products",
+                "id": "routes/_admin/coming-soon-store-products"
+              },
+              {
+                "file": "routes/_admin/coming-soon.tsx",
+                "path": "store/orders",
+                "id": "routes/_admin/coming-soon-store-orders"
+              },
+              {
+                "file": "routes/_admin/coming-soon.tsx",
+                "path": "store/inventory",
+                "id": "routes/_admin/coming-soon-store-inventory"
+              },
+              {
+                "file": "routes/_admin/coming-soon.tsx",
+                "path": "store/coupons",
+                "id": "routes/_admin/coming-soon-store-coupons"
+              },
+              {
+                "file": "routes/_admin/coming-soon.tsx",
+                "path": "analytics",
+                "id": "routes/_admin/coming-soon-analytics"
+              },
+              {
+                "file": "routes/_admin/coming-soon.tsx",
+                "path": "messages",
+                "id": "routes/_admin/coming-soon-messages"
+              }
+            ]
+          },
+          {
+            "file": "routes/_author/_layout.tsx",
+            "children": [
+              {
+                "file": "routes/_author/author-dashboard.tsx",
+                "path": "author/:id/dashboard"
+              },
+              {
+                "file": "routes/_author/blogs.tsx",
+                "path": "author/:id/blogs"
+              },
+              {
+                "file": "routes/_author/profile.tsx",
+                "path": "author/:id/profile"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "viteConfig": {
+    "build": {
+      "assetsDir": "assets"
+    }
+  }
+}
