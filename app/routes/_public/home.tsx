@@ -23,6 +23,8 @@ export function meta() {
 }
 
 export async function loader(args: LoaderFunctionArgs): Promise<LoaderData> {
+  console.log("=== HOME LOADER STARTED ===");
+
   const CACHE_KEY_PROFILE = 'public:profile';
   const CACHE_KEY_PROJECTS = 'public:projects';
 
@@ -52,6 +54,9 @@ export async function loader(args: LoaderFunctionArgs): Promise<LoaderData> {
   // if (projects && projects.length > 0) {
   //   setCache(CACHE_KEY_PROJECTS, projects, CACHE_TTL.MEDIUM);
   // }
+
+  console.log("Final profile:", profile);
+  console.log("Final projects:", projects);
 
   return {
     user: profile ? {
