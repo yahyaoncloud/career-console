@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "react-router dev",
-    "build": "react-router build",
+    "build": "prisma generate && react-router build",
     "start": "react-router-serve build/server/index.js",
     "clean": "rm -rf build .react-router dist",
     "lint": "tsc --noEmit",
