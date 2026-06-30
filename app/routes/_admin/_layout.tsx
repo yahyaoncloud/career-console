@@ -1,6 +1,6 @@
 import { type LoaderFunctionArgs } from 'react-router';
 import { useLoaderData } from 'react-router';
-import { Database, Activity, Briefcase, FileText, Table, Kanban as KanbanIcon, Building2, UserCircle, Settings, FileCode, Bell, PieChart, MessageSquare, Calendar, ShoppingBag, ClipboardList, Package, Tag } from 'lucide-react';
+import { Database, Activity, Briefcase, FileText, Table, Kanban as KanbanIcon, Building2, UserCircle, Settings, FileCode, Bell, PieChart, MessageSquare, Calendar, ShoppingBag, ClipboardList, Package, Tag, Shield } from 'lucide-react';
 import { requireUser } from '../../lib/auth.server';
 import { DashboardLayout } from '../../components/shared/DashboardLayout';
 import { ROLES, ROUTES } from '../../constants';
@@ -26,7 +26,7 @@ export default function AdminLayout() {
     { to: ROUTES.ADMIN.COMPANIES, label: 'Companies', icon: Building2 },
     { to: ROUTES.ADMIN.CALENDAR, label: 'Calendar', icon: Calendar, comingSoon: true },
     // --- Content ---
-    { to: ROUTES.ADMIN.PORTFOLIO, label: 'Portfolio CMS', icon: Briefcase, section: 'Content' },
+    { to: ROUTES.ADMIN.PORTFOLIO, label: 'Projects Management', icon: Briefcase, section: 'Content' },
     { to: ROUTES.ADMIN.BLOGS, label: 'Blog CMS', icon: FileText },
     { to: ROUTES.ADMIN.DOCUMENTS, label: 'Documents', icon: FileCode },
     { to: ROUTES.ADMIN.AUTHORS, label: 'Authors', icon: UserCircle },
@@ -39,7 +39,8 @@ export default function AdminLayout() {
     { to: ROUTES.ADMIN.ANALYTICS, label: 'Analytics', icon: PieChart, section: 'Insights', comingSoon: true },
     { to: ROUTES.ADMIN.MESSAGES, label: 'Messages', icon: MessageSquare, comingSoon: true },
     // --- System ---
-    { to: ROUTES.ADMIN.NOTIFICATIONS, label: 'Notifications', icon: Bell, section: 'System' },
+    { to: ROUTES.ADMIN.ADMIN_MANAGEMENT, label: 'Admin Management', icon: Shield, section: 'System' },
+    { to: ROUTES.ADMIN.NOTIFICATIONS, label: 'Notifications', icon: Bell },
     { to: ROUTES.ADMIN.SETTINGS, label: 'Settings', icon: Settings },
   ];
 

@@ -1,72 +1,53 @@
-import { type LoaderFunctionArgs } from 'react-router';
-import fs from 'fs';
-import path from 'path';
+import { type ActionFunctionArgs, type LoaderFunctionArgs } from 'react-router';
 import { jsonResponse, errorResponse } from '../lib/api.server';
+import { parseRequestBody, methodNotAllowed } from '../lib/request.server';
+import { requireActiveAuthor } from '../policies/authz.server';
+import { deleteBlog, getBlogBySlug, transitionBlog, updateBlog } from '../services/blog.server';
 
-const getBlogsDir = () => {
-  return path.join(process.cwd(), 'content', 'blogs');
-};
-interface BlogPost {
-  title: string;
-  date: string;
-  excerpt: string;
-  tags: string[];
-  authorName?: string;
-  authorSlug?: string;
-  content: string;
-}
-
-const parseFrontmatter = (markdown: string): Omit<BlogPost, 'contentHtml'> & { content: string } => {
-  const match = markdown.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
-  const rawFrontmatter = match?.[1] || '';
-  const content = match?.[2] || markdown;
-  
-  const fields: Record<string, string> = {};
-  rawFrontmatter.split(/\r?\n/).forEach((line) => {
-    const separator = line.indexOf(':');
-    if (separator === -1) return;
-    const key = line.trim().slice(0, separator).trim();
-    const value = line.trim().slice(separator + 1).trim();
-    if (key) fields[key] = value;
-  });
-
-  return {
-    title: fields.title || 'Untitled',
-    date: fields.date || '',
-    excerpt: fields.excerpt || '',
-    tags: fields.tags ? fields.tags.split(',').map((tag) => tag.trim()).filter(Boolean) : [],
-    authorName: fields.authorName || '',
-    authorSlug: fields.authorSlug || fields.authorName?.toLowerCase().replace(/\s+/g, '-') || '',
-    content: content.trim(),
-  };
-};
-
-export async function loader({ params }: LoaderFunctionArgs) {
+export async function loader({ params, request }: LoaderFunctionArgs) {
   const { slug } = params;
   if (!slug) {
     return errorResponse(new Error('Slug is required'), { status: 400 });
   }
 
   try {
-    const dir = getBlogsDir();
-    const filePath = path.join(dir, `${slug}.md`);
-    if (!fs.existsSync(filePath)) {
+    const url = new URL(request.url);
+    const publicOnly = url.searchParams.get('scope') !== 'all';
+    const blog = await getBlogBySlug(slug, { publicOnly });
+    if (!blog) {
       return errorResponse(new Error('Blog post not found'), { status: 404 });
     }
 
-    const fileContent = await fs.promises.readFile(filePath, 'utf8');
-    const parsedData = parseFrontmatter(fileContent);
-
-    return jsonResponse({
-      title: parsedData.title,
-      date: parsedData.date,
-      excerpt: parsedData.excerpt,
-      tags: parsedData.tags,
-      authorName: parsedData.authorName,
-      authorSlug: parsedData.authorSlug,
-      content: parsedData.content
-    });
+    return jsonResponse(blog);
   } catch (error: any) {
+    if (error instanceof Response) throw error;
+    return errorResponse(error, { status: 500 });
+  }
+}
+
+export async function action({ request, params }: ActionFunctionArgs) {
+  const { slug } = params;
+  if (!slug) return errorResponse(new Error('Slug is required'), { status: 400 });
+
+  try {
+    const user = await requireActiveAuthor(request);
+
+    if (request.method === 'PATCH') {
+      const payload = await parseRequestBody(request);
+      const next = payload.intent && payload.status
+        ? await transitionBlog(user, slug, String(payload.status))
+        : await updateBlog(user, slug, payload as any);
+      return jsonResponse(next);
+    }
+
+    if (request.method === 'DELETE') {
+      const result = await deleteBlog(user, slug);
+      return jsonResponse(result);
+    }
+
+    return methodNotAllowed(request.method, ['PATCH', 'DELETE']);
+  } catch (error: any) {
+    if (error instanceof Response) throw error;
     return errorResponse(error, { status: 500 });
   }
 }

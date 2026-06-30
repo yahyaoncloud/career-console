@@ -32,12 +32,13 @@ export function errorResponse(
   error: unknown,
   options?: {
     code?: string;
+    message?: string;
     status?: number;
     requestId?: string;
     headers?: HeadersInit;
   }
 ) {
-  const { code = "INTERNAL_ERROR", status = 500, requestId, headers } = options || {};
+  const { code = "INTERNAL_ERROR", message, status = 500, requestId, headers } = options || {};
 
   if (error instanceof z.ZodError) {
     return data(
@@ -52,7 +53,7 @@ export function errorResponse(
     );
   }
 
-  const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+  const errorMessage = message || (error instanceof Error ? error.message : "An unexpected error occurred");
 
   return data(
     {

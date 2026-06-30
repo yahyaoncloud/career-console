@@ -1,6 +1,6 @@
 import { ActionFunctionArgs, data } from "react-router";
 import { getAuth } from "firebase-admin/auth";
-import { commitSession, getSession } from "~/lib/session.server";
+import { commitSession, getSession, createSession } from "~/lib/session.server";
 import { prisma } from "~/lib/db.server";
 import { ROLES } from "~/constants/roles";
 import { type ActionResult } from "~/types/types";
@@ -43,7 +43,7 @@ export async function action({ request }: ActionFunctionArgs) {
       let assignedRole = ROLES.AUTHOR;
       
       // Auto-promote specific email
-      if (email === 'ykinwork1@gmail.com') {
+      if (email === process.env.ADMIN_EMAIL) {
         assignedRole = ROLES.ADMIN;
       } 
       // Handle explicit admin setup with valid invite code
@@ -65,9 +65,8 @@ export async function action({ request }: ActionFunctionArgs) {
       });
     }
 
-    // 3. Set the session cookie
-    const session = await getSession(request.headers.get("Cookie"));
-    session.set("firebaseUid", firebaseUid);
+    // 3. Set the session cookie with TTL
+    const session = await createSession(firebaseUid);
 
     return jsonResponse(
       { role: dbUser.role, userId: dbUser.id },

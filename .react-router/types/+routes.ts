@@ -20,8 +20,30 @@ type Pages = {
   "/api/auth/logout": {
     params: {};
   };
+  "/api/auth/me": {
+    params: {};
+  };
   "/api/s3/presign": {
     params: {};
+  };
+  "/api/media/presign": {
+    params: {};
+  };
+  "/api/users": {
+    params: {};
+  };
+  "/api/users/:id": {
+    params: {
+      "id": string;
+    };
+  };
+  "/api/authors": {
+    params: {};
+  };
+  "/api/authors/:id": {
+    params: {
+      "id": string;
+    };
   };
   "/api/portfolio": {
     params: {};
@@ -34,6 +56,14 @@ type Pages = {
   "/api/profile": {
     params: {};
   };
+  "/api/profile/me": {
+    params: {};
+  };
+  "/api/profiles/:slug": {
+    params: {
+      "slug": string;
+    };
+  };
   "/api/blogs": {
     params: {};
   };
@@ -42,7 +72,84 @@ type Pages = {
       "slug": string;
     };
   };
+  "/api/author/overview": {
+    params: {};
+  };
+  "/api/author/blogs": {
+    params: {};
+  };
+  "/api/admin/overview": {
+    params: {};
+  };
+  "/api/admin/health": {
+    params: {};
+  };
+  "/api/guestbook": {
+    params: {};
+  };
+  "/api/guestbook/:id": {
+    params: {
+      "id": string;
+    };
+  };
   "/api/notifications": {
+    params: {};
+  };
+  "/api/notifications/broadcast": {
+    params: {};
+  };
+  "/api/notifications/:id": {
+    params: {
+      "id": string;
+    };
+  };
+  "/api/products": {
+    params: {};
+  };
+  "/api/products/:slug": {
+    params: {
+      "slug": string;
+    };
+  };
+  "/api/checkout/session": {
+    params: {};
+  };
+  "/api/webhooks/stripe": {
+    params: {};
+  };
+  "/api/orders": {
+    params: {};
+  };
+  "/api/orders/:id": {
+    params: {
+      "id": string;
+    };
+  };
+  "/api/downloads/recover": {
+    params: {};
+  };
+  "/api/downloads/:token": {
+    params: {
+      "token": string;
+    };
+  };
+  "/api/admin/products": {
+    params: {};
+  };
+  "/api/admin/products/:id": {
+    params: {
+      "id": string;
+    };
+  };
+  "/api/admin/orders": {
+    params: {};
+  };
+  "/api/admin/orders/:id": {
+    params: {
+      "id": string;
+    };
+  };
+  "/api/admin/coupons": {
     params: {};
   };
   "/login": {
@@ -62,6 +169,11 @@ type Pages = {
     };
   };
   "/author/:slug": {
+    params: {
+      "slug": string;
+    };
+  };
+  "/authors/:slug": {
     params: {
       "slug": string;
     };
@@ -99,6 +211,27 @@ type Pages = {
   "/settings": {
     params: {};
   };
+  "/calendar": {
+    params: {};
+  };
+  "/store/products": {
+    params: {};
+  };
+  "/store/orders": {
+    params: {};
+  };
+  "/store/inventory": {
+    params: {};
+  };
+  "/store/coupons": {
+    params: {};
+  };
+  "/analytics": {
+    params: {};
+  };
+  "/messages": {
+    params: {};
+  };
   "/author/:id/dashboard": {
     params: {
       "id": string;
@@ -119,7 +252,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/api/auth/session" | "/api/auth/logout" | "/api/s3/presign" | "/api/portfolio" | "/api/portfolio/:id" | "/api/profile" | "/api/blogs" | "/api/blogs/:slug" | "/api/notifications" | "/login" | "/blog" | "/blog/:slug" | "/project/:id" | "/author/:slug" | "/guestbook" | "/dashboard" | "/portfolio-manager" | "/kanban" | "/applications" | "/authors" | "/blog-manager" | "/companies" | "/documents" | "/notifications" | "/settings" | "/author/:id/dashboard" | "/author/:id/blogs" | "/author/:id/profile";
+    page: "/" | "/api/auth/session" | "/api/auth/logout" | "/api/auth/me" | "/api/s3/presign" | "/api/media/presign" | "/api/users" | "/api/users/:id" | "/api/authors" | "/api/authors/:id" | "/api/portfolio" | "/api/portfolio/:id" | "/api/profile" | "/api/profile/me" | "/api/profiles/:slug" | "/api/blogs" | "/api/blogs/:slug" | "/api/author/overview" | "/api/author/blogs" | "/api/admin/overview" | "/api/admin/health" | "/api/guestbook" | "/api/guestbook/:id" | "/api/notifications" | "/api/notifications/broadcast" | "/api/notifications/:id" | "/api/products" | "/api/products/:slug" | "/api/checkout/session" | "/api/webhooks/stripe" | "/api/orders" | "/api/orders/:id" | "/api/downloads/recover" | "/api/downloads/:token" | "/api/admin/products" | "/api/admin/products/:id" | "/api/admin/orders" | "/api/admin/orders/:id" | "/api/admin/coupons" | "/login" | "/blog" | "/blog/:slug" | "/project/:id" | "/author/:slug" | "/authors/:slug" | "/guestbook" | "/dashboard" | "/portfolio-manager" | "/kanban" | "/applications" | "/authors" | "/blog-manager" | "/companies" | "/documents" | "/notifications" | "/settings" | "/calendar" | "/store/products" | "/store/orders" | "/store/inventory" | "/store/coupons" | "/analytics" | "/messages" | "/author/:id/dashboard" | "/author/:id/blogs" | "/author/:id/profile";
   };
   "routes/api.auth.session.ts": {
     id: "routes/api.auth.session";
@@ -129,9 +262,33 @@ type RouteFiles = {
     id: "routes/api.auth.logout";
     page: "/api/auth/logout";
   };
+  "routes/api.auth.me.ts": {
+    id: "routes/api.auth.me";
+    page: "/api/auth/me";
+  };
   "routes/api.s3.presign.ts": {
     id: "routes/api.s3.presign";
     page: "/api/s3/presign";
+  };
+  "routes/api.media.presign.ts": {
+    id: "routes/api.media.presign";
+    page: "/api/media/presign";
+  };
+  "routes/api.users.ts": {
+    id: "routes/api.users";
+    page: "/api/users";
+  };
+  "routes/api.users.$id.ts": {
+    id: "routes/api.users.$id";
+    page: "/api/users/:id";
+  };
+  "routes/api.authors.ts": {
+    id: "routes/api.authors";
+    page: "/api/authors";
+  };
+  "routes/api.authors.$id.ts": {
+    id: "routes/api.authors.$id";
+    page: "/api/authors/:id";
   };
   "routes/api.portfolio.ts": {
     id: "routes/api.portfolio";
@@ -145,6 +302,14 @@ type RouteFiles = {
     id: "routes/api.profile";
     page: "/api/profile";
   };
+  "routes/api.profile.me.ts": {
+    id: "routes/api.profile.me";
+    page: "/api/profile/me";
+  };
+  "routes/api.profiles.$slug.ts": {
+    id: "routes/api.profiles.$slug";
+    page: "/api/profiles/:slug";
+  };
   "routes/api.blogs.ts": {
     id: "routes/api.blogs";
     page: "/api/blogs";
@@ -153,9 +318,93 @@ type RouteFiles = {
     id: "routes/api.blogs.$slug";
     page: "/api/blogs/:slug";
   };
+  "routes/api.author.overview.ts": {
+    id: "routes/api.author.overview";
+    page: "/api/author/overview";
+  };
+  "routes/api.author.blogs.ts": {
+    id: "routes/api.author.blogs";
+    page: "/api/author/blogs";
+  };
+  "routes/api.admin.overview.ts": {
+    id: "routes/api.admin.overview";
+    page: "/api/admin/overview";
+  };
+  "routes/api.admin.health.ts": {
+    id: "routes/api.admin.health";
+    page: "/api/admin/health";
+  };
+  "routes/api.guestbook.ts": {
+    id: "routes/api.guestbook";
+    page: "/api/guestbook";
+  };
+  "routes/api.guestbook.$id.ts": {
+    id: "routes/api.guestbook.$id";
+    page: "/api/guestbook/:id";
+  };
   "routes/api.notifications.ts": {
     id: "routes/api.notifications";
     page: "/api/notifications";
+  };
+  "routes/api.notifications.broadcast.ts": {
+    id: "routes/api.notifications.broadcast";
+    page: "/api/notifications/broadcast";
+  };
+  "routes/api.notifications.$id.ts": {
+    id: "routes/api.notifications.$id";
+    page: "/api/notifications/:id";
+  };
+  "routes/api.products.ts": {
+    id: "routes/api.products";
+    page: "/api/products";
+  };
+  "routes/api.products.$slug.ts": {
+    id: "routes/api.products.$slug";
+    page: "/api/products/:slug";
+  };
+  "routes/api.checkout.session.ts": {
+    id: "routes/api.checkout.session";
+    page: "/api/checkout/session";
+  };
+  "routes/api.webhooks.stripe.ts": {
+    id: "routes/api.webhooks.stripe";
+    page: "/api/webhooks/stripe";
+  };
+  "routes/api.orders.ts": {
+    id: "routes/api.orders";
+    page: "/api/orders";
+  };
+  "routes/api.orders.$id.ts": {
+    id: "routes/api.orders.$id";
+    page: "/api/orders/:id";
+  };
+  "routes/api.downloads.recover.ts": {
+    id: "routes/api.downloads.recover";
+    page: "/api/downloads/recover";
+  };
+  "routes/api.downloads.$token.ts": {
+    id: "routes/api.downloads.$token";
+    page: "/api/downloads/:token";
+  };
+  "routes/api.admin.products.ts": {
+    id: "routes/api.admin.products";
+    page: "/api/admin/products";
+  };
+  "routes/api.admin.products.$id.ts": {
+    id: "routes/api.admin.products.$id";
+    page: "/api/admin/products/:id";
+  };
+  "routes/api.admin.orders.ts": {
+    id: "routes/api.admin.orders";
+    page: "/api/admin/orders";
+  };
+  "routes/api.admin.orders.$id.ts": {
+    id: "routes/api.admin.orders.$id";
+    page: "/api/admin/orders/:id";
+  };
+  "routes/api.admin.coupons.ts": {
+    id: "routes/api.admin.coupons";
+    page: "/api/admin/coupons";
   };
   "routes/login.tsx": {
     id: "routes/login";
@@ -163,7 +412,7 @@ type RouteFiles = {
   };
   "routes/_public/_layout.tsx": {
     id: "routes/_public/_layout";
-    page: "/" | "/blog" | "/blog/:slug" | "/project/:id" | "/author/:slug" | "/guestbook";
+    page: "/" | "/blog" | "/blog/:slug" | "/project/:id" | "/author/:slug" | "/authors/:slug" | "/guestbook";
   };
   "routes/_public/home.tsx": {
     id: "routes/_public/home";
@@ -185,13 +434,17 @@ type RouteFiles = {
     id: "routes/_public/author.$slug";
     page: "/author/:slug";
   };
+  "routes/_public/authors.$slug.tsx": {
+    id: "routes/_public/authors.$slug";
+    page: "/authors/:slug";
+  };
   "routes/_public/guestbook.tsx": {
     id: "routes/_public/guestbook";
     page: "/guestbook";
   };
   "routes/_admin/_layout.tsx": {
     id: "routes/_admin/_layout";
-    page: "/dashboard" | "/portfolio-manager" | "/kanban" | "/applications" | "/authors" | "/blog-manager" | "/companies" | "/documents" | "/notifications" | "/settings";
+    page: "/dashboard" | "/portfolio-manager" | "/kanban" | "/applications" | "/authors" | "/blog-manager" | "/companies" | "/documents" | "/notifications" | "/settings" | "/calendar" | "/store/products" | "/store/orders" | "/store/inventory" | "/store/coupons" | "/analytics" | "/messages";
   };
   "routes/_admin/dashboard.tsx": {
     id: "routes/_admin/dashboard";
@@ -233,6 +486,28 @@ type RouteFiles = {
     id: "routes/_admin/settings";
     page: "/settings";
   };
+  "routes/_admin/coming-soon.tsx": {
+    id: "routes/_admin/coming-soon-calendar";
+    page: "/calendar";
+  } | {
+    id: "routes/_admin/coming-soon-store-products";
+    page: "/store/products";
+  } | {
+    id: "routes/_admin/coming-soon-store-orders";
+    page: "/store/orders";
+  } | {
+    id: "routes/_admin/coming-soon-store-inventory";
+    page: "/store/inventory";
+  } | {
+    id: "routes/_admin/coming-soon-store-coupons";
+    page: "/store/coupons";
+  } | {
+    id: "routes/_admin/coming-soon-analytics";
+    page: "/analytics";
+  } | {
+    id: "routes/_admin/coming-soon-messages";
+    page: "/messages";
+  };
   "routes/_author/_layout.tsx": {
     id: "routes/_author/_layout";
     page: "/author/:id/dashboard" | "/author/:id/blogs" | "/author/:id/profile";
@@ -255,13 +530,42 @@ type RouteModules = {
   "root": typeof import("./app/root.tsx");
   "routes/api.auth.session": typeof import("./app/routes/api.auth.session.ts");
   "routes/api.auth.logout": typeof import("./app/routes/api.auth.logout.ts");
+  "routes/api.auth.me": typeof import("./app/routes/api.auth.me.ts");
   "routes/api.s3.presign": typeof import("./app/routes/api.s3.presign.ts");
+  "routes/api.media.presign": typeof import("./app/routes/api.media.presign.ts");
+  "routes/api.users": typeof import("./app/routes/api.users.ts");
+  "routes/api.users.$id": typeof import("./app/routes/api.users.$id.ts");
+  "routes/api.authors": typeof import("./app/routes/api.authors.ts");
+  "routes/api.authors.$id": typeof import("./app/routes/api.authors.$id.ts");
   "routes/api.portfolio": typeof import("./app/routes/api.portfolio.ts");
   "routes/api.portfolio.$id": typeof import("./app/routes/api.portfolio.$id.ts");
   "routes/api.profile": typeof import("./app/routes/api.profile.ts");
+  "routes/api.profile.me": typeof import("./app/routes/api.profile.me.ts");
+  "routes/api.profiles.$slug": typeof import("./app/routes/api.profiles.$slug.ts");
   "routes/api.blogs": typeof import("./app/routes/api.blogs.ts");
   "routes/api.blogs.$slug": typeof import("./app/routes/api.blogs.$slug.ts");
+  "routes/api.author.overview": typeof import("./app/routes/api.author.overview.ts");
+  "routes/api.author.blogs": typeof import("./app/routes/api.author.blogs.ts");
+  "routes/api.admin.overview": typeof import("./app/routes/api.admin.overview.ts");
+  "routes/api.admin.health": typeof import("./app/routes/api.admin.health.ts");
+  "routes/api.guestbook": typeof import("./app/routes/api.guestbook.ts");
+  "routes/api.guestbook.$id": typeof import("./app/routes/api.guestbook.$id.ts");
   "routes/api.notifications": typeof import("./app/routes/api.notifications.ts");
+  "routes/api.notifications.broadcast": typeof import("./app/routes/api.notifications.broadcast.ts");
+  "routes/api.notifications.$id": typeof import("./app/routes/api.notifications.$id.ts");
+  "routes/api.products": typeof import("./app/routes/api.products.ts");
+  "routes/api.products.$slug": typeof import("./app/routes/api.products.$slug.ts");
+  "routes/api.checkout.session": typeof import("./app/routes/api.checkout.session.ts");
+  "routes/api.webhooks.stripe": typeof import("./app/routes/api.webhooks.stripe.ts");
+  "routes/api.orders": typeof import("./app/routes/api.orders.ts");
+  "routes/api.orders.$id": typeof import("./app/routes/api.orders.$id.ts");
+  "routes/api.downloads.recover": typeof import("./app/routes/api.downloads.recover.ts");
+  "routes/api.downloads.$token": typeof import("./app/routes/api.downloads.$token.ts");
+  "routes/api.admin.products": typeof import("./app/routes/api.admin.products.ts");
+  "routes/api.admin.products.$id": typeof import("./app/routes/api.admin.products.$id.ts");
+  "routes/api.admin.orders": typeof import("./app/routes/api.admin.orders.ts");
+  "routes/api.admin.orders.$id": typeof import("./app/routes/api.admin.orders.$id.ts");
+  "routes/api.admin.coupons": typeof import("./app/routes/api.admin.coupons.ts");
   "routes/login": typeof import("./app/routes/login.tsx");
   "routes/_public/_layout": typeof import("./app/routes/_public/_layout.tsx");
   "routes/_public/home": typeof import("./app/routes/_public/home.tsx");
@@ -269,6 +573,7 @@ type RouteModules = {
   "routes/_public/blog.$slug": typeof import("./app/routes/_public/blog.$slug.tsx");
   "routes/_public/project.$id": typeof import("./app/routes/_public/project.$id.tsx");
   "routes/_public/author.$slug": typeof import("./app/routes/_public/author.$slug.tsx");
+  "routes/_public/authors.$slug": typeof import("./app/routes/_public/authors.$slug.tsx");
   "routes/_public/guestbook": typeof import("./app/routes/_public/guestbook.tsx");
   "routes/_admin/_layout": typeof import("./app/routes/_admin/_layout.tsx");
   "routes/_admin/dashboard": typeof import("./app/routes/_admin/dashboard.tsx");
@@ -281,6 +586,13 @@ type RouteModules = {
   "routes/_admin/documents": typeof import("./app/routes/_admin/documents.tsx");
   "routes/_admin/notifications": typeof import("./app/routes/_admin/notifications.tsx");
   "routes/_admin/settings": typeof import("./app/routes/_admin/settings.tsx");
+  "routes/_admin/coming-soon-calendar": typeof import("./app/routes/_admin/coming-soon.tsx");
+  "routes/_admin/coming-soon-store-products": typeof import("./app/routes/_admin/coming-soon.tsx");
+  "routes/_admin/coming-soon-store-orders": typeof import("./app/routes/_admin/coming-soon.tsx");
+  "routes/_admin/coming-soon-store-inventory": typeof import("./app/routes/_admin/coming-soon.tsx");
+  "routes/_admin/coming-soon-store-coupons": typeof import("./app/routes/_admin/coming-soon.tsx");
+  "routes/_admin/coming-soon-analytics": typeof import("./app/routes/_admin/coming-soon.tsx");
+  "routes/_admin/coming-soon-messages": typeof import("./app/routes/_admin/coming-soon.tsx");
   "routes/_author/_layout": typeof import("./app/routes/_author/_layout.tsx");
   "routes/_author/author-dashboard": typeof import("./app/routes/_author/author-dashboard.tsx");
   "routes/_author/blogs": typeof import("./app/routes/_author/blogs.tsx");

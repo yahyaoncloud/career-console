@@ -1,6 +1,6 @@
 import { type LoaderFunctionArgs } from 'react-router';
 import { useLoaderData, Link } from 'react-router';
-import { ArrowLeft, Calendar, Github, ExternalLink, Tag } from 'lucide-react';
+import { ArrowLeft, Github, ExternalLink } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { prisma } from '../../lib/db.server';
 import { ROUTES } from '../../constants';
@@ -42,44 +42,44 @@ export default function ProjectDetailRoute() {
   };
 
   return (
-    <div className="pb-24 lg:grid lg:grid-cols-[1fr_260px] lg:gap-10 items-start">
+    <div className="pb-16 lg:grid lg:grid-cols-[1fr_220px] lg:gap-10 items-start">
       <article className="min-w-0">
-        <Link to={ROUTES.PUBLIC.HOME} className="inline-flex items-center space-x-2 text-xs font-mono text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors group mb-10 w-fit">
-          <ArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform" />
-          <span className="uppercase tracking-widest font-bold relative after:absolute after:-bottom-0.5 after:left-0 after:w-full after:h-[1.5px] after:bg-current after:origin-bottom-right after:scale-x-0 group-hover:after:origin-bottom-left group-hover:after:scale-x-100 after:transition-transform after:duration-300 after:ease-out">Back</span>
+        <Link to={ROUTES.PUBLIC.HOME} className="link-underline inline-flex items-center space-x-2 text-xs font-mono text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors mb-8 w-fit uppercase tracking-widest">
+          <ArrowLeft size={14} />
+          <span>Back</span>
         </Link>
 
-        <header className="space-y-6 pb-8 border-b border-zinc-200 dark:border-zinc-800 mb-10">
+        <header className="space-y-5 pb-8 border-b border-zinc-200 dark:border-zinc-800 mb-10">
           <div className="flex flex-wrap gap-2">
-            <span className="flex items-center gap-1 font-mono text-[10px] px-2 py-0.5 bg-zinc-200/60 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300 rounded uppercase font-bold">
+            <span className="font-mono text-[10px] px-2 py-0.5 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300 uppercase">
               {project.category}
             </span>
             {project.techStack.map(tag => (
-              <span key={tag} className="flex items-center gap-1 font-mono text-[10px] px-2 py-0.5 bg-zinc-200/60 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300 rounded uppercase">
-                <Tag size={10} /> {tag}
+              <span key={tag} className="font-mono text-[10px] px-2 py-0.5 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300 uppercase">
+                {tag}
               </span>
             ))}
           </div>
           
-          <h1 className="text-3xl md:text-5xl font-serif font-bold tracking-tight text-zinc-900 dark:text-zinc-100 leading-tight">
+          <h1 className="text-3xl md:text-4xl font-sans font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 leading-tight">
             {project.title}
           </h1>
           
-          <p className="text-lg text-zinc-600 dark:text-zinc-400 font-sans leading-relaxed">
+          <p className="text-base text-zinc-600 dark:text-zinc-400 font-sans leading-7">
             {project.description}
           </p>
 
-          <div className="flex flex-wrap items-center gap-6 pt-4">
+          <div className="flex flex-wrap items-center gap-5 pt-2">
             {project.githubLink && (
-              <a href={project.githubLink} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm font-mono text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors group">
+              <a href={project.githubLink} target="_blank" rel="noreferrer" className="link-underline flex items-center gap-2 text-sm font-mono text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors group">
                 <Github size={16} /> 
-                <span className="relative after:absolute after:-bottom-0.5 after:left-0 after:w-full after:h-[1.5px] after:bg-current after:origin-bottom-right after:scale-x-0 group-hover:after:origin-bottom-left group-hover:after:scale-x-100 after:transition-transform after:duration-300 after:ease-out">Source Code</span>
+                <span>Source Code</span>
               </a>
             )}
             {project.demoLink && (
-              <a href={project.demoLink} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm font-mono text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors group">
+              <a href={project.demoLink} target="_blank" rel="noreferrer" className="link-underline flex items-center gap-2 text-sm font-mono text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors group">
                 <ExternalLink size={16} /> 
-                <span className="relative after:absolute after:-bottom-0.5 after:left-0 after:w-full after:h-[1.5px] after:bg-current after:origin-bottom-right after:scale-x-0 group-hover:after:origin-bottom-left group-hover:after:scale-x-100 after:transition-transform after:duration-300 after:ease-out">Live Demo</span>
+                <span>Live Demo</span>
               </a>
             )}
           </div>
@@ -87,14 +87,14 @@ export default function ProjectDetailRoute() {
 
         {project.caseStudy ? (
           <div className="prose dark:prose-invert prose-zinc max-w-none font-sans 
-            prose-headings:font-serif prose-headings:font-bold prose-headings:text-zinc-900 dark:prose-headings:text-zinc-100
+            prose-headings:font-sans prose-headings:font-semibold prose-headings:text-zinc-900 dark:prose-headings:text-zinc-100
             prose-h1:text-4xl prose-h2:text-2xl prose-h3:text-xl
             prose-p:leading-relaxed prose-p:text-zinc-700 dark:prose-p:text-zinc-300
-            prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline
+            prose-a:text-zinc-950 dark:prose-a:text-zinc-100 prose-a:underline
             prose-strong:text-zinc-900 dark:prose-strong:text-zinc-100 prose-strong:font-bold
-            prose-code:text-indigo-600 dark:prose-code:text-indigo-400 prose-code:bg-zinc-100 dark:prose-code:bg-zinc-900 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-sm prose-code:border prose-code:border-zinc-200 dark:prose-code:border-zinc-800 prose-code:before:content-none prose-code:after:content-none prose-code:font-mono prose-code:text-sm
+            prose-code:text-zinc-700 dark:prose-code:text-zinc-300 prose-code:bg-zinc-100 dark:prose-code:bg-zinc-900 prose-code:px-1.5 prose-code:py-0.5 prose-code:border prose-code:border-zinc-200 dark:prose-code:border-zinc-800 prose-code:before:content-none prose-code:after:content-none prose-code:font-mono prose-code:text-sm
             prose-pre:bg-zinc-50 dark:prose-pre:bg-zinc-950 prose-pre:border prose-pre:border-zinc-200 dark:prose-pre:border-zinc-800 prose-pre:rounded-sm
-            prose-blockquote:border-l-2 prose-blockquote:border-l-indigo-500 prose-blockquote:bg-zinc-50 dark:prose-blockquote:bg-zinc-900/50 prose-blockquote:px-6 prose-blockquote:py-3 prose-blockquote:rounded-r-sm prose-blockquote:not-italic prose-blockquote:text-zinc-600 dark:prose-blockquote:text-zinc-400
+            prose-blockquote:border-l-2 prose-blockquote:border-l-zinc-300 dark:prose-blockquote:border-l-zinc-700 prose-blockquote:px-6 prose-blockquote:py-3 prose-blockquote:not-italic prose-blockquote:text-zinc-600 dark:prose-blockquote:text-zinc-400
             prose-img:rounded-sm prose-img:border prose-img:border-zinc-200 dark:prose-img:border-zinc-800"
           >
             <ReactMarkdown
@@ -113,18 +113,16 @@ export default function ProjectDetailRoute() {
             </ReactMarkdown>
           </div>
         ) : (
-          <div className="py-12 text-center border border-dashed border-zinc-200 dark:border-zinc-800 rounded">
+          <div className="py-12 border-y border-zinc-200 dark:border-zinc-800">
             <p className="text-zinc-500 font-mono text-sm uppercase tracking-widest">No detailed case study available.</p>
           </div>
         )}
       </article>
 
-      {/* Table of Contents Sidebar */}
       {headings.length > 0 && (
         <aside className="hidden lg:block sticky top-24">
-          <div className="bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-zinc-800 rounded-sm p-5">
-            <h3 className="font-mono text-xs uppercase tracking-widest font-bold text-zinc-900 dark:text-zinc-100 mb-4 pb-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+          <div className="border-l border-zinc-200 dark:border-zinc-800 pl-5">
+            <h3 className="font-mono text-xs uppercase tracking-widest text-zinc-900 dark:text-zinc-100 mb-4">
               Contents
             </h3>
             <nav className="space-y-2">
@@ -133,15 +131,13 @@ export default function ProjectDetailRoute() {
                   key={i}
                   href={`#${h.id}`}
                   onClick={(e) => scrollToHeading(e, h.id)}
-                  className={`block font-sans text-sm transition-colors hover:text-indigo-600 dark:hover:text-indigo-400 group w-fit ${
+                  className={`link-underline block font-sans text-sm transition-colors hover:text-zinc-950 dark:hover:text-zinc-100 w-fit ${
                     h.level === 3 
                       ? 'pl-4 text-zinc-500 dark:text-zinc-400' 
                       : 'text-zinc-700 dark:text-zinc-300 font-medium'
                   }`}
                 >
-                  <span className="relative after:absolute after:-bottom-0.5 after:left-0 after:w-full after:h-[1.5px] after:bg-current after:origin-bottom-right after:scale-x-0 group-hover:after:origin-bottom-left group-hover:after:scale-x-100 after:transition-transform after:duration-300 after:ease-out">
-                    {h.text}
-                  </span>
+                  {h.text}
                 </a>
               ))}
             </nav>

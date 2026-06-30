@@ -49,3 +49,45 @@ export function ThemeToggle({ className }: { className?: string }) {
     </div>
   );
 }
+
+export function MobileThemeToggle({ className }: { className?: string }) {
+  const { theme, setTheme } = useTheme();
+
+  return (
+    <div className={cn("inline-flex bg-zinc-100 dark:bg-zinc-900/50 p-1 rounded-full border border-zinc-200 dark:border-zinc-800 w-fit shrink-0", className)}>
+      <button
+        onClick={() => setTheme('light')}
+        className={cn(
+          "px-4 py-2 text-xs font-mono font-bold uppercase tracking-wider rounded-full transition-all",
+          theme === 'light'
+            ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm"
+            : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+        )}
+      >
+        Light
+      </button>
+      <button
+        onClick={() => setTheme('dark')}
+        className={cn(
+          "px-4 py-2 text-xs font-mono font-bold uppercase tracking-wider rounded-full transition-all",
+          theme === 'dark'
+            ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm"
+            : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+        )}
+      >
+        Dark
+      </button>
+      <button
+        onClick={() => setTheme('system')}
+        className={cn(
+          "px-4 py-2 text-xs font-mono font-bold uppercase tracking-wider rounded-full transition-all",
+          theme === 'system'
+            ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm"
+            : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+        )}
+      >
+        System
+      </button>
+    </div>
+  );
+}

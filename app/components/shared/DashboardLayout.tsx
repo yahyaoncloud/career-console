@@ -177,20 +177,23 @@ export function DashboardLayout({
                   {userEmail?.split('@')[0] || userRole}
                 </span>
               </div>
-              <Form method="post" action="/api/auth/logout" onSubmit={() => setMobileMenuOpen(false)}>
-                <button
-                  type="submit"
-                  className={cn(
-                    "flex items-center space-x-1.5 px-3 py-1.5 border rounded text-xs font-mono transition-colors cursor-pointer",
-                    userRole === ROLES.AUTHOR
-                      ? "border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-red-600 hover:border-red-200 text-zinc-600 dark:text-zinc-400"
-                      : "border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400"
-                  )}
-                >
-                  <LogOut size={14} />
-                  <span>Sign Out</span>
-                </button>
-              </Form>
+              <div className="flex items-center gap-2">
+                <ThemeToggle />
+                <Form method="post" action="/api/auth/logout" onSubmit={() => setMobileMenuOpen(false)}>
+                  <button
+                    type="submit"
+                    className={cn(
+                      "flex items-center space-x-1.5 px-3 py-1.5 border rounded text-xs font-mono transition-colors cursor-pointer",
+                      userRole === ROLES.AUTHOR
+                        ? "border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-red-600 hover:border-red-200 text-zinc-600 dark:text-zinc-400"
+                        : "border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400"
+                    )}
+                  >
+                    <LogOut size={14} />
+                    <span>Sign Out</span>
+                  </button>
+                </Form>
+              </div>
             </div>
 
             <div className="flex flex-col space-y-1">
@@ -220,7 +223,7 @@ export function DashboardLayout({
 
         {/* Main Content (scrollable) */}
         <main className="flex-1 overflow-y-auto">
-          <div className={cn("w-full p-4 sm:p-6 lg:p-8", userRole === ROLES.AUTHOR ? "max-w-[1200px] mx-auto" : "max-w-none")}>
+          <div className="w-full p-4 sm:p-6 lg:p-8">
             <Outlet />
           </div>
         </main>

@@ -16,6 +16,7 @@
       "@/*": ["./*"],
       "~/*": ["./app/*"]
     },
+    "types": ["node", "react", "react-dom", "vite/client"],
     "noEmit": true,
     "skipLibCheck": true
   },

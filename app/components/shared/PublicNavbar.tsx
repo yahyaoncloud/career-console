@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router';
-import { ThemeToggle } from './ThemeToggle';
+import { ThemeToggle, MobileThemeToggle } from './ThemeToggle';
 import { cn } from '../../lib/utils';
 
 interface PublicNavbarProps {
@@ -116,7 +116,6 @@ export function PublicNavbar({
 
       {/* Right side controls – hidden on mobile, shown on desktop */}
       <div className="hidden sm:flex items-center space-x-3">
-        <ThemeToggle />
         <button
           onClick={onEnterConsole}
           className="mono-text text-xs bg-primary text-primary-foreground px-3.5 py-2 rounded border border-primary hover:bg-primary/90 transition-colors cursor-pointer font-semibold text-center tracking-wider shadow-sm"
@@ -156,18 +155,22 @@ export function PublicNavbar({
                 })}
               </div>
 
+              {/* Theme toggle - segmented control */}
+              <div className="flex justify-center">
+                <MobileThemeToggle />
+              </div>
+
               {/* Divider */}
               <div className="border-t border-border" />
 
-              {/* Theme toggle and Publish button */}
-              <div className="flex items-center justify-between px-2">
-                <ThemeToggle />
+              {/* Publish button */}
+              <div className="px-2">
                 <button
                   onClick={() => {
                     setMobileMenuOpen(false);
                     onEnterConsole();
                   }}
-                  className="mono-text text-xs bg-primary text-primary-foreground px-3.5 py-2 rounded border border-primary hover:bg-primary/90 transition-colors cursor-pointer font-semibold tracking-wider shadow-sm"
+                  className="mono-text text-xs bg-primary text-primary-foreground px-3.5 py-2 rounded border border-primary hover:bg-primary/90 transition-colors cursor-pointer font-semibold tracking-wider shadow-sm w-full"
                 >
                   Publish?
                 </button>

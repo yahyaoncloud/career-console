@@ -3,6 +3,7 @@ export const ROUTES = {
     HOME: '/',
     BLOG: '/blog',
     GUESTBOOK: '/guestbook',
+    AUTHOR: (slug: string) => `/authors/${slug}`,
   },
   ADMIN: {
     DASHBOARD: '/dashboard',
@@ -18,6 +19,7 @@ export const ROUTES = {
     NOTIFICATIONS: '/notifications',
     PORTFOLIO: '/portfolio-manager',
     SETTINGS: '/settings',
+    ADMIN_MANAGEMENT: '/admin-management',
     ECOMMERCE: {
       PRODUCTS: '/store/products',
       ORDERS: '/store/orders',

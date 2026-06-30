@@ -1,6 +1,9 @@
-import { type LoaderFunctionArgs } from 'react-router';
-import { prisma } from '../lib/db.server';
+import { type ActionFunctionArgs, type LoaderFunctionArgs } from 'react-router';
 import { jsonResponse, errorResponse } from '../lib/api.server';
+import { parseRequestBody, methodNotAllowed } from '../lib/request.server';
+import { requireRole } from '../policies/authz.server';
+import { ROLES } from '../constants/roles';
+import { createPortfolioProject, listPublicPortfolio } from '../services/portfolio.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
@@ -9,55 +12,26 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const username = url.searchParams.get('author');
 
   try {
-    const whereClause: any = {
-      deletedAt: null,
-    };
-
-    if (category) {
-      whereClause.category = category;
-    }
-
-    if (username) {
-      whereClause.user = {
-        profile: {
-          slug: username
-        }
-      };
-    }
-
-    const projects = await prisma.portfolio.findMany({
-      where: whereClause,
-      orderBy: { createdAt: 'desc' },
-      take: limit || 50, // default limit to prevent over-fetching
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        architectureDiagram: true,
-        techStack: true,
-        githubLink: true,
-        demoLink: true,
-        caseStudy: true,
-        category: true,
-        createdAt: true,
-        updatedAt: true,
-        user: {
-          select: {
-            name: true,
-            profile: {
-              select: {
-                displayName: true,
-                slug: true,
-                avatar: true,
-              }
-            }
-          }
-        }
-      }
-    });
-
+    const projects = await listPublicPortfolio({ category, author: username, limit });
     return jsonResponse(projects, { meta: { count: projects.length } });
   } catch (error: any) {
+    if (error instanceof Response) throw error;
+    return errorResponse(error, { status: 500 });
+  }
+}
+
+export async function action({ request }: ActionFunctionArgs) {
+  if (request.method !== 'POST') {
+    return methodNotAllowed(request.method, ['POST']);
+  }
+
+  try {
+    const user = await requireRole(request, [ROLES.ADMIN]);
+    const payload = await parseRequestBody(request);
+    const project = await createPortfolioProject(user.id, payload as any);
+    return jsonResponse(project, { status: 201 });
+  } catch (error: any) {
+    if (error instanceof Response) throw error;
     return errorResponse(error, { status: 500 });
   }
 }

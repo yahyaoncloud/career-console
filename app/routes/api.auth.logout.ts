@@ -5,7 +5,7 @@ import { ROUTES } from "~/constants/routes";
 export async function action({ request }: ActionFunctionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
 
-  return redirect(ROUTES.LOGIN, {
+  return redirect(ROUTES.AUTH.LOGIN, {
     headers: {
       "Set-Cookie": await destroySession(session),
     },

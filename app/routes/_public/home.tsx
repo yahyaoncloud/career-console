@@ -1,11 +1,19 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { type LoaderFunctionArgs, useLoaderData, Link } from 'react-router';
-import { ArrowUpRight, Monitor, Code2, Server, Briefcase, Github, Linkedin, ExternalLink } from 'lucide-react';
+import { Github, Linkedin, ExternalLink, Mail, Instagram, X } from 'lucide-react';
 import { getPublicUrl } from '~/lib/supabase';
-import { loader as profileApiLoader } from '../api.profile';
-import { loader as portfolioApiLoader } from '../api.portfolio';
-import { TypingGreeting } from '../../components/hero/TypingGreeting';
-import { ScribbleAnimation } from '../../components/hero/ScribbleAnimation';
+import { getPublicProfile } from '../../services/profile.server';
+import { listPublicPortfolio } from '../../services/portfolio.server';
+import { getCache, setCache, CACHE_TTL } from '~/lib/cache.server';
+
+interface LoaderData {
+  user: {
+    name: string;
+    profile: any;
+  } | null;
+  projects: any[];
+  errorMsg?: string;
+}
 
 export function meta() {
   return [
@@ -14,57 +22,69 @@ export function meta() {
   ];
 }
 
-export async function loader(args: LoaderFunctionArgs) {
-  try {
-    // Invoke API loaders directly to bypass SSR network layer issues
-    const profileResponse = await profileApiLoader(args);
-    const portfolioArgs = { ...args, request: new Request(new URL('/api/portfolio?limit=6', args.request.url).href) };
-    const portfolioResponse = await portfolioApiLoader(portfolioArgs);
+export async function loader(args: LoaderFunctionArgs): Promise<LoaderData> {
+  const CACHE_KEY_PROFILE = 'public:profile';
+  const CACHE_KEY_PROJECTS = 'public:projects';
 
-    const profileData = profileResponse && typeof profileResponse.json === 'function' 
-      ? await profileResponse.json() 
-      : (profileResponse.data || profileResponse);
-      
-    const portfolioData = portfolioResponse && typeof portfolioResponse.json === 'function' 
-      ? await portfolioResponse.json() 
-      : (portfolioResponse.data || portfolioResponse);
+  // Try to get from cache first
+  const cachedProfile = getCache<any>(CACHE_KEY_PROFILE);
+  const cachedProjects = getCache<any[]>(CACHE_KEY_PROJECTS);
 
-    const userWithProfile = profileData.success ? {
-      name: profileData.data.user?.name || 'Yahya',
-      profile: profileData.data
-    } : null;
+  let profile: any = null;
+  let projects: any[] = [];
 
-    const projects = portfolioData.success ? portfolioData.data : [];
+  if (cachedProfile && cachedProjects) {
+    profile = cachedProfile;
+    projects = cachedProjects;
+  } else {
+    // Fetch fresh data
+    const [profileResult, projectsResult] = await Promise.allSettled([
+      getPublicProfile(),
+      listPublicPortfolio({ limit: 6 }),
+    ]);
 
-    return {
-      user: userWithProfile,
-      projects
-    };
-  } catch (error: any) {
-    console.error("Home loader API fetch error:", error);
-    return {
-      errorMsg: error.message || String(error),
-      user: {
-        name: 'Yahya',
-        profile: {
-          displayName: 'Yahya',
-          bio: 'Building scalable infrastructure, serverless architectures, and automation pipelines.',
-          avatar: '',
-          showImage: true,
-          socialLinks: {
-            github: 'github.com/yahyaoncloud',
-            linkedin: 'linkedin.com/in/yahyaoncloud'
-          }
-        }
-      },
-      projects: []
-    };
+    profile = profileResult.status === 'fulfilled' ? profileResult.value : null;
+    projects = projectsResult.status === 'fulfilled' ? projectsResult.value : [];
+
+    // Cache the results
+    if (profile) {
+      setCache(CACHE_KEY_PROFILE, profile, CACHE_TTL.LONG);
+    }
+    if (projects && projects.length > 0) {
+      setCache(CACHE_KEY_PROJECTS, projects, CACHE_TTL.MEDIUM);
+    }
   }
+
+  return {
+    user: profile ? {
+      name: profile.user?.name || 'Yahya',
+      profile,
+    } : null,
+    projects: projects || [],
+    errorMsg: (!projects || projects.length === 0) ? 'No projects found' : undefined,
+  };
 }
 
 
 export default function PortfolioHome() {
-  const { user, projects, errorMsg } = useLoaderData<typeof loader>();
+  const loaderData = useLoaderData<typeof loader>();
+  const { user, projects, errorMsg } = loaderData;
+  const [isImageViewerOpen, setIsImageViewerOpen] = React.useState(false);
+
+  // Lock body scroll when modal is open
+  React.useEffect(() => {
+    if (isImageViewerOpen) {
+      document.body.style.overflow = 'hidden';
+      const handleEscape = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') setIsImageViewerOpen(false);
+      };
+      window.addEventListener('keydown', handleEscape);
+      return () => {
+        document.body.style.overflow = '';
+        window.removeEventListener('keydown', handleEscape);
+      };
+    }
+  }, [isImageViewerOpen]);
 
   const showImage = user?.profile?.showImage ?? true; // Admin togglable feature flag
   const rawAvatar = user?.profile?.avatar;
@@ -72,73 +92,52 @@ export default function PortfolioHome() {
   const dbSocialLinks = user?.profile?.socialLinks as any;
   const socialLinks = dbSocialLinks && typeof dbSocialLinks === 'object' && Object.keys(dbSocialLinks).length > 0
     ? dbSocialLinks
-    : { github: 'github.com/yahyaoncloud', linkedin: 'linkedin.com/in/yahyaoncloud' };
+    : {};
 
   const resume = user?.profile?.resume as any || {};
 
-  const summaryParagraphs = resume.summary || [
-    user?.profile?.bio || 'Building scalable infrastructure, serverless architectures, and automation pipelines for modern enterprises.'
-  ];
+  const summaryParagraphs = resume.summary || user?.profile?.bio ? [user?.profile?.bio] : [];
 
-  // Use seeded resume data, or fallback to mock data
-  const technicalSkills = resume.technicalSkills || [
-    { category: "Cloud & Ops", items: ["AWS", "GCP", "Kubernetes", "Docker", "Terraform", "Ansible"] },
-    { category: "Languages", items: ["TypeScript", "Python", "Go", "Bash"] },
-    { category: "Frameworks", items: ["React", "Node.js", "Express", "Next.js"] }
-  ];
-
-  const experience = resume.experience || [
-    { role: "Cloud DevOps Engineer", company: "Tech Solutions Inc.", period: "2023 - Present", description: "Architecting cloud-native solutions, CI/CD pipelines, and infrastructure as code." },
-    { role: "Systems Administrator", company: "Enterprise IT", period: "2021 - 2023", description: "Managed hybrid cloud infrastructure, Linux servers, and automated routine maintenance." }
-  ];
+  const technicalSkills = resume.technicalSkills || [];
+  const experience = resume.experience || [];
 
   const certifications = resume.certifications || [];
 
   return (
-    <div className="flex flex-col space-y-20 pb-10">
-      {errorMsg && (
-        <div className="bg-red-500/10 border border-red-500/20 text-red-500 font-mono text-xs p-4 rounded-sm">
-          <strong>API Fetch Error:</strong> {errorMsg}
+    <div className="flex flex-col space-y-14 pb-8">
+      {!user && (
+        <div className="bg-amber-500/10 border border-amber-500/20 text-amber-500 font-mono text-xs p-4 rounded-sm">
+          <strong>Loading profile data...</strong> Please check back later.
         </div>
       )}
       {/* HEADER SECTION (Hero + Summary) */}
-      <section className="pt-8">
+      <section className="pt-4">
         <div className="flex flex-col gap-8">
 
-          <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start text-center sm:text-left">
-            {/* Avatar & Socials Column */}
-            <div className="flex flex-col gap-4 items-center shrink-0">
+          <div className="flex flex-col sm:flex-row gap-6 items-start">
+            <div className="flex flex-row sm:flex-col gap-4 items-center shrink-0">
               {showImage && avatar && (
-                <div className="relative group mt-2">
-                  <div className="absolute inset-0 bg-zinc-200 dark:bg-zinc-800 rounded-2xl rotate-3 transition-transform group-hover:rotate-6 z-0"></div>
-
-                  {/* <ScribbleAnimation /> */}
-
-                  <img
-                    src={avatar}
-                    alt="Profile"
-                    className="relative z-10 w-44 h-44 sm:w-48 sm:h-48 rounded-2xl object-cover shadow-xl border border-white dark:border-zinc-950"
-                  />
-                </div>
+                <img
+                  src={avatar}
+                  alt="Profile"
+                  className="w-28 h-28 sm:w-36 sm:h-36 rounded-sm object-cover border border-zinc-200 dark:border-zinc-800 cursor-pointer hover:opacity-90 transition-opacity"
+                  width={144}
+                  height={144}
+                  decoding="async"
+                  fetchPriority="high"
+                  onClick={() => setIsImageViewerOpen(true)}
+                />
               )}
 
-              {/* Info Bento Column (Moved under avatar) */}
-              <div className="w-44 z-20 sm:w-48 bg-zinc-100 dark:bg-zinc-950 p-4 rounded-lg border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-3">
-                <span className="font-mono text-[10px] text-zinc-500 dark:text-zinc-400 uppercase tracking-widest block text-center">
-                  Links & Socials
-                </span>
-                <div className="space-y-2">
+              <div className="space-y-2">
                   {socialLinks.github && (
                     <a
                       href={`https://${socialLinks.github}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="group flex items-center justify-between text-xs text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white font-mono transition-colors"
+                      className="link-underline flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white font-mono transition-colors"
                     >
-                      <span className="flex items-center relative after:absolute after:-bottom-0.5 after:left-0 after:w-full after:h-[1px] after:bg-current after:origin-bottom-right after:scale-x-0 group-hover:after:origin-bottom-left group-hover:after:scale-x-100 after:transition-transform after:duration-300 after:ease-out">
-                        <Github size={12} className="mr-1.5" /> GitHub
-                      </span>
-                      <ExternalLink size={10} className="opacity-50 group-hover:opacity-100 transition-opacity duration-300" />
+                      <Github size={13} /> GitHub
                     </a>
                   )}
                   {socialLinks.linkedin && (
@@ -146,24 +145,47 @@ export default function PortfolioHome() {
                       href={`https://${socialLinks.linkedin}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="group flex items-center justify-between text-xs text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white font-mono transition-colors"
+                      className="link-underline flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white font-mono transition-colors"
                     >
-                      <span className="flex items-center relative after:absolute after:-bottom-0.5 after:left-0 after:w-full after:h-[1px] after:bg-current after:origin-bottom-right after:scale-x-0 group-hover:after:origin-bottom-left group-hover:after:scale-x-100 after:transition-transform after:duration-300 after:ease-out">
-                        <Linkedin size={12} className="mr-1.5" /> LinkedIn
-                      </span>
-                      <ExternalLink size={10} className="opacity-50 group-hover:opacity-100 transition-opacity duration-300" />
+                      <Linkedin size={13} /> LinkedIn
                     </a>
                   )}
-                </div>
+                  {socialLinks.email && (
+                    <a
+                      href={socialLinks.email.startsWith('mailto:') ? socialLinks.email : `mailto:${socialLinks.email}`}
+                      className="link-underline flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white font-mono transition-colors"
+                    >
+                      <Mail size={13} /> Email
+                    </a>
+                  )}
+                  {socialLinks.instagram && (
+                    <a
+                      href={`https://${socialLinks.instagram}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="link-underline flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white font-mono transition-colors"
+                    >
+                      <Instagram size={13} /> Instagram
+                    </a>
+                  )}
               </div>
             </div>
 
-            {/* Bio Column */}
-            <div className="space-y-4 pt-2 z-10">
-              <TypingGreeting />
+            <div className="space-y-4 pt-1">
+              <div className="space-y-2">
+                <p className="font-mono text-[11px] uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+                  Cloud Engineer
+                </p>
+                <h1 className="text-3xl sm:text-4xl font-sans font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
+                  {user?.profile?.displayName || user?.name || 'Yahya'}
+                </h1>
+              </div>
               <div className="space-y-3">
                 {summaryParagraphs.map((para: string, idx: number) => (
-                  <p key={idx} className="text-sm sm:text-base text-zinc-600 dark:text-zinc-400 font-sans leading-relaxed max-w-xl mx-auto sm:mx-0">
+                  <p 
+                    key={idx} 
+                    className="text-sm sm:text-base text-zinc-600 dark:text-zinc-400 font-sans leading-7 max-w-2xl"
+                  >
                     {para}
                   </p>
                 ))}
@@ -173,20 +195,48 @@ export default function PortfolioHome() {
         </div>
       </section>
 
-      {/* Interactive Resume Timeline View */}
+      {/* Image Viewer Modal */}
+      {isImageViewerOpen && avatar && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 sm:p-8"
+          onClick={() => setIsImageViewerOpen(false)}
+        >
+          <div className="relative max-w-5xl max-h-[90vh] w-full flex items-center justify-center">
+            <button
+              className="absolute top-2 right-2 sm:top-4 sm:right-4 z-10 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsImageViewerOpen(false);
+              }}
+              aria-label="Close image viewer"
+            >
+              <X size={24} />
+            </button>
+            <img
+              src={avatar}
+              alt="Profile"
+              className="max-w-full max-h-[85vh] object-contain rounded-sm shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        </div>
+      )}
+
       <section className="space-y-6">
         <div className="border-b border-zinc-200 dark:border-zinc-800 pb-2">
-          <h2 className="font-mono text-sm uppercase tracking-widest text-zinc-600 dark:text-zinc-300 font-bold">
+          <h2 className="font-mono text-xs uppercase tracking-widest text-zinc-600 dark:text-zinc-300">
             Work Experience
           </h2>
         </div>
-        <div className="space-y-6 relative before:absolute before:inset-0 before:left-3.5 before:w-[1px] before:bg-zinc-200 dark:before:bg-zinc-800">
+        <div className="space-y-6">
           {experience.map((job, idx) => (
-            <div key={idx} className="relative pl-8 space-y-2 group">
-              <div className="absolute left-3.5 top-1.5 w-1.5 h-1.5 rounded-full bg-zinc-950 dark:bg-zinc-200 -translate-x-1/2 group-hover:scale-125 transition-transform" />
+            <div 
+              key={idx} 
+              className="space-y-2"
+            >
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start">
                 <div className="space-y-0.5">
-                  <h3 className="font-serif text-lg font-bold text-zinc-900 dark:text-zinc-100">
+                  <h3 className="font-sans text-base font-semibold text-zinc-900 dark:text-zinc-100">
                     {job.company}
                   </h3>
                   <p className="font-mono text-xs text-zinc-500 dark:text-zinc-400 uppercase">
@@ -197,32 +247,32 @@ export default function PortfolioHome() {
                   {job.period}
                 </span>
               </div>
-              <ul className="text-sm space-y-1.5 text-zinc-600 dark:text-zinc-300 pl-4 list-disc font-sans pt-1">
-                <li className="leading-relaxed">
-                  {job.description}
-                </li>
-              </ul>
+              <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-7 font-sans">
+                {job.description}
+              </p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Core Technology Stack Bento */}
       <section className="space-y-6">
         <div className="border-b border-zinc-200 dark:border-zinc-800 pb-2">
-          <h2 className="font-mono text-sm uppercase tracking-widest text-zinc-600 dark:text-zinc-300 font-bold">
+          <h2 className="font-mono text-xs uppercase tracking-widest text-zinc-600 dark:text-zinc-300">
             Skills & Technologies
           </h2>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           {technicalSkills.map((skillGroup, idx) => (
-            <div key={idx} className="bg-zinc-50 dark:bg-zinc-950/20 p-4 rounded border border-zinc-200 dark:border-zinc-800 space-y-2">
-              <span className="font-mono text-[10px] text-zinc-400 uppercase font-bold block">
+            <div 
+              key={idx} 
+              className="space-y-2"
+            >
+              <span className="font-mono text-xs text-zinc-500 uppercase block">
                 {skillGroup.category}
               </span>
               <div className="flex flex-wrap gap-1">
                 {skillGroup.items.map(skill => (
-                  <span key={skill} className="font-mono text-[10px] px-2 py-0.5 bg-zinc-200/60 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300 rounded uppercase">
+                  <span key={skill} className="font-mono text-sm px-2 py-0.5 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300 uppercase">
                     {skill}
                   </span>
                 ))}
@@ -236,20 +286,21 @@ export default function PortfolioHome() {
       {certifications.length > 0 && (
         <section className="space-y-6">
           <div className="border-b border-zinc-200 dark:border-zinc-800 pb-2">
-            <h2 className="font-mono text-sm uppercase tracking-widest text-zinc-600 dark:text-zinc-300 font-bold">
+            <h2 className="font-mono text-xs uppercase tracking-widest text-zinc-600 dark:text-zinc-300">
               Certifications
             </h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {certifications.map((cert: any, idx: number) => (
-              <div key={idx} className="bg-zinc-50 dark:bg-zinc-950/20 p-4 rounded border border-zinc-200 dark:border-zinc-800 space-y-2 group">
+              <div 
+                key={idx} 
+                className="border border-zinc-200 dark:border-zinc-800 p-4 space-y-2 group"
+              >
                 <div className="flex justify-between items-start gap-2">
-                  <h3 className="font-serif font-bold text-zinc-900 dark:text-zinc-100 text-sm leading-snug">
+                  <h3 className="font-sans font-semibold text-zinc-900 dark:text-zinc-100 text-sm leading-snug">
                     {cert.credlyLink ? (
-                      <a href={cert.credlyLink} target="_blank" rel="noreferrer" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors inline-flex items-center gap-1 group/link">
-                        <span className="relative after:absolute after:-bottom-0.5 after:left-0 after:w-full after:h-[1.5px] after:bg-current after:origin-bottom-right after:scale-x-0 group-hover/link:after:origin-bottom-left group-hover/link:after:scale-x-100 after:transition-transform after:duration-300 after:ease-out">
-                          {cert.name}
-                        </span>
+                      <a href={cert.credlyLink} target="_blank" rel="noreferrer" className="link-underline hover:text-zinc-950 dark:hover:text-zinc-100 transition-colors inline-flex items-center gap-1 group/link">
+                        <span>{cert.name}</span>
                         <ExternalLink size={10} className="opacity-0 group-hover/link:opacity-100 transition-opacity" />
                       </a>
                     ) : (
@@ -257,7 +308,7 @@ export default function PortfolioHome() {
                     )}
                   </h3>
                   {cert.status === 'ongoing' && (
-                    <span className="shrink-0 inline-flex items-center rounded-sm border border-indigo-200 dark:border-indigo-800/50 bg-indigo-50 dark:bg-indigo-900/20 px-1.5 py-0.5 text-[9px] font-mono font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                    <span className="shrink-0 inline-flex items-center border border-zinc-200 dark:border-zinc-800 px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                       Ongoing
                     </span>
                   )}
@@ -280,23 +331,24 @@ export default function PortfolioHome() {
       {/* Featured Projects */}
       <section className="space-y-6">
         <div className="border-b border-zinc-200 dark:border-zinc-800 pb-2">
-          <h2 className="font-mono text-sm uppercase tracking-widest text-zinc-600 dark:text-zinc-300 font-bold">
+          <h2 className="font-mono text-xs uppercase tracking-widest text-zinc-600 dark:text-zinc-300">
             Featured Projects
           </h2>
         </div>
         <div className="grid grid-cols-1 gap-6">
-          {projects.map((project: any) => (
-            <div key={project.id} className="bg-zinc-50 dark:bg-zinc-950/40 p-6 rounded border border-zinc-200 dark:border-zinc-800 space-y-4 hover:border-zinc-400 dark:hover:border-zinc-700 transition-colors">
+          {projects.map((project: any, idx: number) => (
+            <div 
+              key={project.id} 
+              className="border-b border-zinc-200 dark:border-zinc-800 pb-6 space-y-4 last:border-b-0"
+            >
               <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                 <div className="space-y-2 sm:space-y-1">
-                  <span className="inline-block font-mono text-[10px] px-2 py-0.5 bg-zinc-200/60 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300 rounded uppercase font-bold">
+                  <span className="inline-block font-mono text-[10px] text-zinc-500 dark:text-zinc-400 uppercase">
                     {project.category}
                   </span>
-                  <h3 className="font-serif text-xl font-bold text-zinc-950 dark:text-zinc-100 transition-colors">
-                    <Link to={`/project/${project.id}`} className="group">
-                      <span className="relative after:absolute after:-bottom-0.5 after:left-0 after:w-full after:h-[1.5px] after:bg-current after:origin-bottom-right after:scale-x-0 group-hover:after:origin-bottom-left group-hover:after:scale-x-100 after:transition-transform after:duration-300 after:ease-out">
-                        {project.title}
-                      </span>
+                  <h3 className="font-sans text-xl font-semibold text-zinc-950 dark:text-zinc-100 transition-colors">
+                    <Link to={`/project/${project.id}`} className="link-underline">
+                      <span>{project.title}</span>
                     </Link>
                   </h3>
                 </div>
@@ -314,13 +366,13 @@ export default function PortfolioHome() {
                 </div>
               </div>
 
-              <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed font-sans">
+              <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-7 font-sans">
                 {project.description}
               </p>
 
               <div className="flex flex-wrap gap-1.5 pt-1">
                 {project.techStack.map((tech: string) => (
-                  <span key={tech} className="font-mono text-[10px] px-2 py-0.5 bg-zinc-200/60 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300 rounded uppercase">
+                  <span key={tech} className="font-mono text-[10px] px-2 py-0.5 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300 uppercase">
                     {tech}
                   </span>
                 ))}

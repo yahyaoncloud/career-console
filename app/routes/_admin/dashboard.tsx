@@ -9,40 +9,73 @@ import { APPLICATION_STATUS } from '../../constants';
 import React, { useState, useEffect } from 'react';
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  await requireAdmin(request);
+  try {
+    await requireAdmin(request);
 
-  const applications = await prisma.application.findMany({
-    orderBy: { updatedAt: 'desc' }
-  });
+    // Fault tolerant data fetching with fallbacks
+    let applications: any[] = [];
+    let logs: any[] = [];
+    let dbError: any = null;
 
-  const logs = await prisma.log.findMany({
-    take: 10,
-    orderBy: { createdAt: 'desc' }
-  });
-
-  const geminiTopics = [
-    { topic: "Zero Trust Architecture in Multi-Cloud", description: "Implement identity-aware proxies and micro-segmentation for improved security posture across AWS and GCP environments.", action: "Review IAM policies and network boundaries." },
-    { topic: "Optimizing Kubernetes Resources", description: "Leverage Vertical Pod Autoscaler and right-sizing techniques to reduce cluster costs while maintaining application performance.", action: "Audit pod resource requests and limits." },
-    { topic: "Automating Incident Response", description: "Use Serverless functions (AWS Lambda/GCP Cloud Functions) to automatically remediate common alerts and reduce MTTR.", action: "Build a prototype runbook automation." },
-    { topic: "eBPF for Deep Network Observability", description: "Deploy eBPF-based tooling like Cilium to gain granular insights into network flows and application performance without sidecars.", action: "Evaluate Cilium for the next cluster upgrade." }
-  ];
-  
-  const randomTopic = geminiTopics[Math.floor(Math.random() * geminiTopics.length)];
-
-  const recommendation: { disabled: boolean; data: { topic: string; description: string; action: string } | null } = {
-    disabled: false,
-    data: {
-      topic: randomTopic.topic,
-      description: randomTopic.description,
-      action: randomTopic.action
+    try {
+      applications = await prisma.application.findMany({
+        orderBy: { updatedAt: 'desc' }
+      });
+    } catch (error: any) {
+      console.error('Failed to fetch applications:', error);
+      dbError = dbError || { applications: error.message };
+      applications = []; // Fallback to empty array
     }
-  };
 
-  return { applications, logs, recommendation };
+    try {
+      logs = await prisma.log.findMany({
+        take: 10,
+        orderBy: { createdAt: 'desc' }
+      });
+    } catch (error: any) {
+      console.error('Failed to fetch logs:', error);
+      dbError = dbError || { logs: error.message };
+      logs = []; // Fallback to empty array
+    }
+
+    const geminiTopics = [
+      { topic: "Zero Trust Architecture in Multi-Cloud", description: "Implement identity-aware proxies and micro-segmentation for improved security posture across AWS and GCP environments.", action: "Review IAM policies and network boundaries." },
+      { topic: "Optimizing Kubernetes Resources", description: "Leverage Vertical Pod Autoscaler and right-sizing techniques to reduce cluster costs while maintaining application performance.", action: "Audit pod resource requests and limits." },
+      { topic: "Automating Incident Response", description: "Use Serverless functions (AWS Lambda/GCP Cloud Functions) to automatically remediate common alerts and reduce MTTR.", action: "Build a prototype runbook automation." },
+      { topic: "eBPF for Deep Network Observability", description: "Deploy eBPF-based tooling like Cilium to gain granular insights into network flows and application performance without sidecars.", action: "Evaluate Cilium for the next cluster upgrade." }
+    ];
+    
+    const randomTopic = geminiTopics[Math.floor(Math.random() * geminiTopics.length)];
+
+    const recommendation: { disabled: boolean; data: { topic: string; description: string; action: string } | null } = {
+      disabled: false,
+      data: {
+        topic: randomTopic.topic,
+        description: randomTopic.description,
+        action: randomTopic.action
+      }
+    };
+
+    return { applications, logs, recommendation, dbError };
+  } catch (error: any) {
+    // Handle authentication/authorization errors
+    if (error.status === 401 || error.status === 403) {
+      throw error; // Let the error boundary handle auth errors
+    }
+    
+    // For other errors, return a degraded state instead of failing completely
+    console.error('Dashboard loader error:', error);
+    return {
+      applications: [],
+      logs: [],
+      recommendation: { disabled: true, data: null },
+      dbError: { general: error.message }
+    };
+  }
 }
 
 export default function DashboardOverview() {
-  const { applications, logs, recommendation } = useLoaderData<typeof loader>();
+  const { applications, logs, recommendation, dbError } = useLoaderData<typeof loader>();
   const [minutesToMidnight, setMinutesToMidnight] = useState(0);
   const [timeRemainingStr, setTimeRemainingStr] = useState('');
 
@@ -93,6 +126,28 @@ export default function DashboardOverview() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
+      {/* Error Banner for Fault Tolerance */}
+      {dbError && (
+        <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 p-4 rounded-md">
+          <div className="flex items-start gap-3">
+            <AlertCircle size={18} className="text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+            <div className="flex-1">
+              <h4 className="font-mono text-xs font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wider mb-1">
+                Degraded Service Mode
+              </h4>
+              <p className="text-sm text-amber-700 dark:text-amber-400">
+                Some dashboard data is unavailable. The system is operating in a limited capacity.
+              </p>
+              {dbError.general && (
+                <p className="text-xs font-mono text-amber-600 dark:text-amber-500 mt-1">
+                  Error: {dbError.general}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="border-b border-zinc-200 dark:border-zinc-800 pb-4">
         <Heading variant="h1" className="flex items-center gap-3">
           <LayoutDashboard size={28} className="text-zinc-400" />
