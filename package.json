@@ -5,11 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "react-router dev",
-    "build": "prisma generate && react-router build",
+    "build": "prisma generate ; react-router build",
     "start": "react-router-serve build/server/index.js",
     "clean": "rm -rf build .react-router dist",
     "lint": "tsc --noEmit",
-    "typecheck": "react-router typegen && tsc",
+    "typecheck": "react-router typegen ; tsc",
     "seed": "tsx prisma/seed-simple.ts",
     "seed:migrate": "tsx prisma/seed-mongo-to-postgres.ts",
     "db:push": "npx prisma db push"

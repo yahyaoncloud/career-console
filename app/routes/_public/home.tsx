@@ -26,34 +26,32 @@ export async function loader(args: LoaderFunctionArgs): Promise<LoaderData> {
   const CACHE_KEY_PROFILE = 'public:profile';
   const CACHE_KEY_PROJECTS = 'public:projects';
 
-  // Try to get from cache first
-  const cachedProfile = getCache<any>(CACHE_KEY_PROFILE);
-  const cachedProjects = getCache<any[]>(CACHE_KEY_PROJECTS);
+  // Temporarily disable cache for debugging
+  // const cachedProfile = getCache<any>(CACHE_KEY_PROFILE);
+  // const cachedProjects = getCache<any[]>(CACHE_KEY_PROJECTS);
 
   let profile: any = null;
   let projects: any[] = [];
 
-  if (cachedProfile && cachedProjects) {
-    profile = cachedProfile;
-    projects = cachedProjects;
-  } else {
-    // Fetch fresh data
-    const [profileResult, projectsResult] = await Promise.allSettled([
-      getPublicProfile(),
-      listPublicPortfolio({ limit: 6 }),
-    ]);
+  // Fetch fresh data directly
+  const [profileResult, projectsResult] = await Promise.allSettled([
+    getPublicProfile(),
+    listPublicPortfolio({ limit: 6 }),
+  ]);
 
-    profile = profileResult.status === 'fulfilled' ? profileResult.value : null;
-    projects = projectsResult.status === 'fulfilled' ? projectsResult.value : [];
+  console.log("Profile result:", profileResult);
+  console.log("Projects result:", projectsResult);
 
-    // Cache the results
-    if (profile) {
-      setCache(CACHE_KEY_PROFILE, profile, CACHE_TTL.LONG);
-    }
-    if (projects && projects.length > 0) {
-      setCache(CACHE_KEY_PROJECTS, projects, CACHE_TTL.MEDIUM);
-    }
-  }
+  profile = profileResult.status === 'fulfilled' ? profileResult.value : null;
+  projects = projectsResult.status === 'fulfilled' ? projectsResult.value : [];
+
+  // Cache the results
+  // if (profile) {
+  //   setCache(CACHE_KEY_PROFILE, profile, CACHE_TTL.LONG);
+  // }
+  // if (projects && projects.length > 0) {
+  //   setCache(CACHE_KEY_PROJECTS, projects, CACHE_TTL.MEDIUM);
+  // }
 
   return {
     user: profile ? {
